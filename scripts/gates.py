@@ -39,6 +39,7 @@ GATES = [
     ("G3", "真实数据完整性"),
     ("G4", "语法 / 导入"),
     ("G5", "文档-CLI 漂移"),
+    ("G6", "账本已固化进 git"),
 ]
 
 BASH_CANDIDATES = [
@@ -71,6 +72,9 @@ def gate_cmd(gid):
         return [sys.executable, "-m", "py_compile", "scripts/alpha_ledger.py"]
     if gid == "G5":
         return [sys.executable, "scripts/check_doc_cli.py"]
+    if gid == "G6":
+        # 该脚本自己打印哨兵（因为它在 git 不存在时要给出具体修复提示）
+        return [sys.executable, "scripts/gates_git_frozen.py", "--emit-sentinel"]
     return None
 
 
@@ -102,9 +106,15 @@ def run_one(gid):
 
     body = (r.stdout or "") + (r.stderr or "")
     lines = [l for l in body.splitlines() if l.strip()]
+    # G6 自带哨兵：去掉它，避免重复输出
+    own = [l for l in lines if l.startswith("__GATE_")]
+    lines = [l for l in lines if not l.startswith("__GATE_")]
     tail = lines[-12:] if r.returncode == 0 else lines[-18:]
     for l in tail:
         print("  " + l)
+    if own:
+        print(own[-1])
+        return 0 if "__GATE_PASS__" in own[-1] else 1
     if r.returncode == 0:
         print("__GATE_PASS__ %s" % gid)
         return 0

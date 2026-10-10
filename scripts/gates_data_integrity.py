@@ -129,11 +129,14 @@ def main():
         seen[k] = v
 
     # 孤儿 actual（attribution 追记不参与）
+    # 判定为【告警】而非【错误】：录入基线年份的观测值（如 FY2025）本身是合法用途，
+    # 而指标名拼错已在写入时被词表拦住，所以这里只需可见，不必阻断。
     pkeys = {(r["ticker"], r["metric"], _al.norm_period(r["forecast_period"])) for r in preds}
     for r in acts:
         k = (r["ticker"], r["metric"], _al.norm_period(r["period"]))
         if k not in pkeys:
-            problems.append("孤儿实际值（无对应预测）: %s" % (k,))
+            warnings.append("基线观测（无对应预测）: %s %s %s = %s  [非错误，仅提示]"
+                            % (k[0], k[1], k[2], r.get("actual_value")))
     for r in atts:
         k = (r["ticker"], r["metric"], _al.norm_period(r["period"]))
         if k not in pkeys:

@@ -17,6 +17,7 @@ v1.1 修复（把纪律变成代码约束）:
 import argparse
 import json
 import os
+import subprocess
 import sys
 import datetime as dt
 
@@ -157,6 +158,45 @@ def append(path, rec):
     ensure()
     with open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    autocommit(path, rec)
+
+
+# ── [D-18/A1] 写入即固化 ──────────────────────────────────────
+# 铁律「旧预测永不覆盖」不能只靠自觉。每次追加账本后自动 git commit。
+# 保护措施：只在真实账本目录生效；测试（ALPHA_RADAR_HOME 指向临时目录）不会触发。
+def _git(*args):
+    try:
+        return subprocess.run(["git"] + list(args), cwd=ROOT, capture_output=True,
+                              text=True, encoding="utf-8", errors="replace")
+    except Exception:
+        return None
+
+
+def autocommit_enabled():
+    if os.environ.get("ALPHA_RADAR_AUTOCOMMIT", "1") == "0":
+        return False
+    if DATA != os.path.join(ROOT, "data"):     # 临时库（测试）不提交
+        return False
+    r = _git("rev-parse", "--is-inside-work-tree")
+    return r is not None and r.returncode == 0
+
+
+def autocommit(path, rec):
+    if not autocommit_enabled():
+        return
+    rel = os.path.relpath(path, ROOT).replace("\\", "/")
+    kind = rec.get("record_type", "record")
+    ident = ("%s %s %s %s" % (rec.get("ticker", ""), rec.get("metric", ""),
+                              rec.get("forecast_period", rec.get("period", "")),
+                              rec.get("scenario", ""))).strip()
+    msg = "ledger(%s): %s" % (kind, ident)
+    _git("add", rel)
+    r = _git("commit", "-q", "-m", msg)
+    if r is not None and r.returncode == 0:
+        print("  ⤷ git 已固化: %s" % msg)
+    elif r is not None and "nothing to commit" not in (r.stdout or "") + (r.stderr or ""):
+        print("  ⚠ git 固化失败（记录已写入，请手动 commit）: %s"
+              % ((r.stderr or r.stdout or "").strip()[:200]))
 
 
 def load(path):
@@ -341,8 +381,22 @@ def cmd_actual(a):
         if attribution is None:
             die("未知归因 '%s'。可选: %s" % (a.attribution, ", ".join(sorted(set(ATTRIBUTIONS.values())))))
 
+    # [D-17 扩展] 实际值重复 / 重述检测
+    prior = [r for r in load(ACT)
+             if r.get("record_type") != "attribution" and "actual_value" in r
+             and r["ticker"] == a.ticker.upper() and r["metric"] == metric
+             and norm_period(r["period"]) == period]
+    if prior:
+        last = prior[-1]
+        if last["actual_value"] == a.value and last["unit"] == unit and not a.allow_duplicate:
+            die("重复实际值：(ticker=%s, metric=%s, period=%s) 已记录 %s，数值相同。\n"
+                "  如确实要重复，加 --allow-duplicate" % (a.ticker.upper(), metric, period,
+                                                    fmt(last["actual_value"], last["unit"])))
+        if last["actual_value"] != a.value:
+            print("⚠ 重述：该期已有 %s，本次录入 %s —— 报告将采用最新值"
+                  % (fmt(last["actual_value"], last["unit"]), fmt(a.value, unit)))
+
     rec = {
-        "record_type": "actual",
         "ticker": a.ticker.upper(),
         "metric": metric,
         "metric_kind": kind,
@@ -908,6 +962,7 @@ def main():
     q.add_argument("--attribution", default=None,
                    help="误差归因: Demand/MarketShare/Margin/CapEx/Management/M&A/Macro/FX/Valuation")
     q.add_argument("--allow-custom", action="store_true")
+    q.add_argument("--allow-duplicate", action="store_true")
     q.add_argument("--force", action="store_true", help="单位不一致时强制录入（会留痕并被排除评分）")
     q.set_defaults(func=cmd_actual)
 
