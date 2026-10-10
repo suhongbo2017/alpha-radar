@@ -1,0 +1,172 @@
+
+==========================================================================================
+KEYWORD: free cash flow   hits=8
+
+--- ctx @113008 ---
+, press releases, public conference calls and webcasts. We use these channels, as well as social media, to communicate with our investors and the public about our Company, our services and other issues. It is possible that the information we post on social media could be deemed to be material information. Therefore, we encourage investors, the media and others interested in our Company to review the information we post on the social media channels listed on our investor relations website. 
+ Our free cash flow and non-GAAP consolidated income from operations measures included in the section entitled “Key Business Metrics—Free Cash Flow,” and “Key Business Metrics—Non-GAAP Consolidated Income from Operations” are not in accordance with U.S. Generally Accepted Accounting Principles (“GAAP”). These non-GAAP financial measures are not intended to be considered in isolation or as a substitute for, or superior to, financial information prepared and presented in accordance with GAAP. These measures may be different from non-GAAP financial measures used by other companies, limiting their usefulness for comparison purposes. We encourage investors to carefully consider our results under GAAP, as well as our supplemental non-GAAP results, to more fully understand our business. 
+ Overview 
+ ServiceNow delivers solutions that help public and private organizations govern, secure and manage artificial intelligence and digitalize and streamline workflows to drive collaboration, productivity and better experiences across the enterprise. At the core of these solutions is the ServiceNow AI Platform (“Platform”), a robust, cloud-based Platform that facilitates comprehensive delivery of seamless workflows and drives digital transformation across all departments and personas within an organization. Our Platform’s single data fabric and integrated data layer supports organizations’ operation
+
+--- ctx @113136 ---
+investors and the public about our Company, our services and other issues. It is possible that the information we post on social media could be deemed to be material information. Therefore, we encourage investors, the media and others interested in our Company to review the information we post on the social media channels listed on our investor relations website. 
+ Our free cash flow and non-GAAP consolidated income from operations measures included in the section entitled “Key Business Metrics—Free Cash Flow,” and “Key Business Metrics—Non-GAAP Consolidated Income from Operations” are not in accordance with U.S. Generally Accepted Accounting Principles (“GAAP”). These non-GAAP financial measures are not intended to be considered in isolation or as a substitute for, or superior to, financial information prepared and presented in accordance with GAAP. These measures may be different from non-GAAP financial measures used by other companies, limiting their usefulness for comparison purposes. We encourage investors to carefully consider our results under GAAP, as well as our supplemental non-GAAP results, to more fully understand our business. 
+ Overview 
+ ServiceNow delivers solutions that help public and private organizations govern, secure and manage artificial intelligence and digitalize and streamline workflows to drive collaboration, productivity and better experiences across the enterprise. At the core of these solutions is the ServiceNow AI Platform (“Platform”), a robust, cloud-based Platform that facilitates comprehensive delivery of seamless workflows and drives digital transformation across all departments and personas within an organization. Our Platform’s single data fabric and integrated data layer supports organizations’ operationalization of their AI strategy with speed, scale and security. Our workflow applications built on the Platform are grouped into 
+
+--- ctx @122306 ---
+rability. ACV is calculated based on the foreign exchange rate in effect at the time the contract was signed. Foreign exchange rate fluctuations could cause some variability in the number of customers with ACV greater than $5 million. We believe information regarding the total number of customers with ACV greater than $5 million provides useful information to investors because it is an indicator of our growing customer base and demonstrates the value customers are receiving from the Platform. 
+ Free cash flow. We define free cash flow, a non-GAAP financial measure, as GAAP net cash provided by operating activities plus cash outflows for legal settlements and business combination and other related costs including compensation expense, reduced by purchases of property and equipment. Purchases of property and equipment are otherwise included in cash used in investing activities under GAAP. We believe information regarding free cash flow provides useful information to investors because it is an indicator of the strength and performance of our business operations. However, our calculation of free cash flow may not be comparable to similar measures used by other companies. Our calculation of free cash flow is provided below: 
+ 32 
+ Table of Contents 
+ Six Months Ended June 30, 
+ % Change 
+ 2026 
+ 2025 
+ (dollars in millions) 
+ GAAP net cash provided by operating activities 
+ $ 
+ 2,257 
+ $ 
+ 2,393 
+ (6 
+ %) 
+ Purchases of property and equipment 
+ (255) 
+ (395) 
+ (35 
+ %) 
+ Business combination and other related costs 
+ 297 
+ 14 
+ NM 
+ Non-GAAP free cash flow 
+ $ 
+ 2,299 
+ $ 
+ 2,012 
+ 14 
+ % 
+ NM - Not meaningful 
+ We have historically seen higher collections in the quarter ended March 31 due to seasonality in timing of entering into customer contracts, which is significantly higher in the quarter ended December 31. Additionally, we have historically seen higher disbursements
+
+--- ctx @122332 ---
+d based on the foreign exchange rate in effect at the time the contract was signed. Foreign exchange rate fluctuations could cause some variability in the number of customers with ACV greater than $5 million. We believe information regarding the total number of customers with ACV greater than $5 million provides useful information to investors because it is an indicator of our growing customer base and demonstrates the value customers are receiving from the Platform. 
+ Free cash flow. We define free cash flow, a non-GAAP financial measure, as GAAP net cash provided by operating activities plus cash outflows for legal settlements and business combination and other related costs including compensation expense, reduced by purchases of property and equipment. Purchases of property and equipment are otherwise included in cash used in investing activities under GAAP. We believe information regarding free cash flow provides useful information to investors because it is an indicator of the strength and performance of our business operations. However, our calculation of free cash flow may not be comparable to similar measures used by other companies. Our calculation of free cash flow is provided below: 
+ 32 
+ Table of Contents 
+ Six Months Ended June 30, 
+ % Change 
+ 2026 
+ 2025 
+ (dollars in millions) 
+ GAAP net cash provided by operating activities 
+ $ 
+ 2,257 
+ $ 
+ 2,393 
+ (6 
+ %) 
+ Purchases of property and equipment 
+ (255) 
+ (395) 
+ (35 
+ %) 
+ Business combination and other related costs 
+ 297 
+ 14 
+ NM 
+ Non-GAAP free cash flow 
+ $ 
+ 2,299 
+ $ 
+ 2,012 
+ 14 
+ % 
+ NM - Not meaningful 
+ We have historically seen higher collections in the quarter ended March 31 due to seasonality in timing of entering into customer contracts, which is significantly higher in the quarter ended December 31. Additionally, we have historically seen higher disbursements in the quarters ended Mar
+
+==========================================================================================
+KEYWORD: Non-GAAP income from operations   hits=1
+
+--- ctx @125517 ---
+6 
+ 2025 
+ (dollars in millions) 
+ (dollars in millions) 
+ GAAP income from operations 
+ $ 
+ 162 
+ $ 
+ 358 
+ (55 
+ %) 
+ $ 
+ 665 
+ $ 
+ 809 
+ (18 
+ %) 
+ Stock-based compensation 
+ 655 
+ 499 
+ 31 
+ % 
+ 1,213 
+ 969 
+ 25 
+ % 
+ Amortization of purchased intangibles 
+ 219 
+ 25 
+ NM 
+ 296 
+ 46 
+ NM 
+ Business combination and other related costs 
+ 75 
+ 14 
+ NM 
+ 118 
+ 25 
+ 372 
+ % 
+ Impairment of assets 
+ — 
+ 30 
+ (100 
+ %) 
+ — 
+ 30 
+ (100 
+ %) 
+ Severance costs 
+ 62 
+ 29 
+ 114 
+ % 
+ 80 
+ 29 
+ 176 
+ % 
+ Non-GAAP income from operations 
+ $ 
+ 1,173 
+ $ 
+ 955 
+ 23 
+ % 
+ $ 
+ 2,372 
+ $ 
+ 1,908 
+ 24 
+ % 
+ NM - Not meaningful 
+ Renewal rate . We calculate our renewal rate by subtracting our attrition rate from 100%. Our attrition rate for a period is equal to the ACV from customers lost during the period, divided by the sum of (i) the total ACV from all customers that renewed during the period, excluding changes in price or users, and (ii) the total ACV from all customers lost during the period. Accordingly, our renewal rate is calculated based on ACV and is not based on the number of customers that have renewed. Further, our renewal rate does not reflect increased or decreased purchases from our customers to the extent such customers are not lost customers or lapsed renewals. A lost customer is a customer that did not renew an expiring contract and that, in our judgment, will not be renewed. Typically, a customer that reduces its subscription upon renewal is not considered a lost customer. However, in instances where the subscription decrease represents the majority of the customer’s ACV, we may deem the renewal as a lost customer. For our renewal rate calculation, we define a customer as an entity with a separate 
+ 33 
+ Table of Contents 
+ production instance of our service and an active subscription contract as of the measurement date, instead of an entity with a unique GULT or DU
+
+==========================================================================================
+KEYWORD: Now Assist   hits=0

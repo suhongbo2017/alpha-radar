@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Gate G3 —— 真实数据（data/*.jsonl）完整性
+
+这套系统的全部价值建立在"预测完整性"上，所以账本本身要能被体检。
+
+检查：
+  1. JSONL 每行可解析
+  2. 预测条数不少于基线（防止误删）
+  3. 必填字段齐全
+  4. metric 命中词表
+  5. 同一 (ticker, metric, period, version, scenario) 不出现数值冲突
+  6. actual 的 metric 必须有对应 prediction（防止孤儿实际值）
+逐条列出问题，退出码 0/1。
+"""
+import json
+import os
+import sys
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+
+import importlib.util
+_spec = importlib.util.spec_from_file_location("al", os.path.join(ROOT, "scripts", "alpha_ledger.py"))
+_al = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_al)
+
+DATA = os.path.join(ROOT, "data")
+PRED = os.path.join(DATA, "predictions.jsonl")
+ACT = os.path.join(DATA, "actuals.jsonl")
+DEC = os.path.join(DATA, "decisions.jsonl")
+BASELINE = 15  # 2026-10-07 已登记 15 条；只允许增加
+
+REQ_PRED = {"ticker", "analysis_date", "forecast_version", "scenario",
+            "metric", "forecast_period", "forecast_value", "unit"}
+REQ_ACT = {"ticker", "metric", "period", "actual_value", "unit"}
+REQ_DEC = {"ticker", "decision_date", "action", "price", "currency"}
+
+problems = []
+warnings = []
+
+
+def load_jsonl(path, label):
+    if not os.path.exists(path):
+        return []
+    out = []
+    with open(path, encoding="utf-8") as f:
+        for i, line in enumerate(f, 1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                out.append(json.loads(line))
+            except Exception as e:
+                problems.append("%s 第 %d 行无法解析: %s" % (label, i, e))
+    return out
+
+
+def main():
+    preds = load_jsonl(PRED, "predictions.jsonl")
+    raw_acts = load_jsonl(ACT, "actuals.jsonl")
+    decs = load_jsonl(DEC, "decisions.jsonl")
+    # actuals.jsonl 里可能混有 attribution 追记，分开处理
+    acts = [r for r in raw_acts if r.get("record_type") != "attribution"]
+    atts = [r for r in raw_acts if r.get("record_type") == "attribution"]
+
+    print("  predictions=%d  actuals=%d  attributions=%d  decisions=%d"
+          % (len(preds), len(acts), len(atts), len(decs)))
+
+    if len(preds) < BASELINE:
+        problems.append("预测条数 %d < 基线 %d —— 可能有记录被误删/覆盖" % (len(preds), BASELINE))
+
+    for i, r in enumerate(preds, 1):
+        miss = REQ_PRED - set(r)
+        if miss:
+            problems.append("predictions #%d 缺字段: %s" % (i, ",".join(sorted(miss))))
+            continue
+        if _al.canonical_metric(r["metric"])[0] is None:
+            problems.append("predictions #%d 指标 '%s' 不在词表中" % (i, r["metric"]))
+        if not isinstance(r["forecast_value"], (int, float)):
+            problems.append("predictions #%d forecast_value 非数值" % i)
+        p = r.get("probability")
+        if p is not None and not (0 < p <= 1):
+            problems.append("predictions #%d probability=%s 越界（应 0-1）" % (i, p))
+
+    for i, r in enumerate(acts, 1):
+        miss = REQ_ACT - set(r)
+        if miss:
+            problems.append("actuals #%d 缺字段: %s" % (i, ",".join(sorted(miss))))
+            continue
+        if _al.canonical_metric(r["metric"])[0] is None:
+            problems.append("actuals #%d 指标 '%s' 不在词表中" % (i, r["metric"]))
+        if r.get("attribution") and _al.canonical_attribution(r["attribution"]) is None:
+            problems.append("actuals #%d 归因 '%s' 非法" % (i, r["attribution"]))
+
+    for i, r in enumerate(atts, 1):
+        if _al.canonical_attribution(r.get("attribution", "")) is None:
+            problems.append("attribution #%d 归因 '%s' 非法" % (i, r.get("attribution")))
+
+    # [D-05] 决策库校验
+    for i, r in enumerate(decs, 1):
+        miss = REQ_DEC - set(r)
+        if miss:
+            problems.append("decisions #%d 缺字段: %s" % (i, ",".join(sorted(miss))))
+            continue
+        if _al.canonical_action(r["action"]) is None:
+            problems.append("decisions #%d 动作 '%s' 不在动作表中" % (i, r["action"]))
+        if not isinstance(r["price"], (int, float)) or r["price"] <= 0:
+            problems.append("decisions #%d price 非法: %s" % (i, r.get("price")))
+        # 违反赔率纪律只告警不报错 —— 如实记录错误决策本身就是这套系统的价值
+        if r["action"] in ("Buy", "StrongBuy", "Core", "Starter") \
+           and r.get("odds") is not None and r["odds"] < 1:
+            warnings.append("decisions #%d: %s 在赔率 %.2f:1 时选了 %s（违反赔率纪律，已如实留痕）"
+                            % (i, r["ticker"], r["odds"], r["action"]))
+
+    # 版本内数值冲突
+    seen = {}
+    for r in preds:
+        k = (r.get("ticker"), r.get("metric"), _al.norm_period(r.get("forecast_period", "")),
+             r.get("forecast_version", "v1"), r.get("scenario"))
+        v = r.get("forecast_value")
+        if k in seen and seen[k] != v:
+            problems.append("版本内数值冲突 %s: %s vs %s" % (k, seen[k], v))
+        seen[k] = v
+
+    # 孤儿 actual（attribution 追记不参与）
+    pkeys = {(r["ticker"], r["metric"], _al.norm_period(r["forecast_period"])) for r in preds}
+    for r in acts:
+        k = (r["ticker"], r["metric"], _al.norm_period(r["period"]))
+        if k not in pkeys:
+            problems.append("孤儿实际值（无对应预测）: %s" % (k,))
+    for r in atts:
+        k = (r["ticker"], r["metric"], _al.norm_period(r["period"]))
+        if k not in pkeys:
+            problems.append("孤儿归因（无对应预测）: %s" % (k,))
+
+    for w in warnings:
+        print("  ⚠ " + w)
+    if problems:
+        for p in problems:
+            print("  ✗ " + p)
+        print("  G3: %d 处问题" % len(problems))
+        return 1
+    print("  G3: 账本完整" + ("（%d 条告警）" % len(warnings) if warnings else ""))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,172 @@
+
+==========================================================================================
+KEYWORD: remaining performance obligation   hits=27
+
+--- ctx @88965 ---
+om contract assets and business combinations. 
+ The majority of revenue recognized for these services is from the beginning of period unearned revenue balance. 
+ Revenue recognized over time primarily includes Cloud Services subscription and support revenue, which is generally recognized ratably over time, and professional services and other revenue, which is generally recognized ratably or as delivered. 
+ Revenue recognized at a point in time substantially consists of term software licenses. 
+ Remaining Performance Obligation 
+ Remaining performance obligation represents contracted revenue that has not yet been recognized and includes unearned revenue and unbilled amounts that will be recognized as revenue in future periods. The transaction price allocated to the remaining performance obligation is based on SSP. Remaining performance obligation is influenced by several factors, including seasonality, the timing of renewals, the timing of term license deliveries, average contract terms and foreign currency exchange rates. Remaining performance obligation is also impacted by acquisitions. Unbilled portions of the remaining performance obligation denominated in foreign currencies are revalued each period based on the period end exchange rates. Remaining performance obligation is subject to future economic risks, including bankruptcies, regulatory changes and other market factors. 
+ 17 
+ Table of Contents 
+ The Company excludes amounts related to performance obligations from professional services contracts that are billed and recognized on a time and materials basis. 
+ The majority of the Company's noncurrent remaining performance obligation is expected to be recognized in the next 13 to 36 months. 
+ Remaining performance obligation consisted of the following (in billions): 
+ Current 
+ Noncurrent 
+ Total 
+ As of July 31, 2026 
+ $ 
+ 33.5 
+ $ 
+ 32.8 
+ $ 
+ 66.3 
+ As of Janu
+
+--- ctx @89000 ---
+binations. 
+ The majority of revenue recognized for these services is from the beginning of period unearned revenue balance. 
+ Revenue recognized over time primarily includes Cloud Services subscription and support revenue, which is generally recognized ratably over time, and professional services and other revenue, which is generally recognized ratably or as delivered. 
+ Revenue recognized at a point in time substantially consists of term software licenses. 
+ Remaining Performance Obligation 
+ Remaining performance obligation represents contracted revenue that has not yet been recognized and includes unearned revenue and unbilled amounts that will be recognized as revenue in future periods. The transaction price allocated to the remaining performance obligation is based on SSP. Remaining performance obligation is influenced by several factors, including seasonality, the timing of renewals, the timing of term license deliveries, average contract terms and foreign currency exchange rates. Remaining performance obligation is also impacted by acquisitions. Unbilled portions of the remaining performance obligation denominated in foreign currencies are revalued each period based on the period end exchange rates. Remaining performance obligation is subject to future economic risks, including bankruptcies, regulatory changes and other market factors. 
+ 17 
+ Table of Contents 
+ The Company excludes amounts related to performance obligations from professional services contracts that are billed and recognized on a time and materials basis. 
+ The majority of the Company's noncurrent remaining performance obligation is expected to be recognized in the next 13 to 36 months. 
+ Remaining performance obligation consisted of the following (in billions): 
+ Current 
+ Noncurrent 
+ Total 
+ As of July 31, 2026 
+ $ 
+ 33.5 
+ $ 
+ 32.8 
+ $ 
+ 66.3 
+ As of January 31, 2026 
+ $ 
+ 35.1 
+ $ 
+ 37.3 
+
+--- ctx @89240 ---
+ly recognized ratably over time, and professional services and other revenue, which is generally recognized ratably or as delivered. 
+ Revenue recognized at a point in time substantially consists of term software licenses. 
+ Remaining Performance Obligation 
+ Remaining performance obligation represents contracted revenue that has not yet been recognized and includes unearned revenue and unbilled amounts that will be recognized as revenue in future periods. The transaction price allocated to the remaining performance obligation is based on SSP. Remaining performance obligation is influenced by several factors, including seasonality, the timing of renewals, the timing of term license deliveries, average contract terms and foreign currency exchange rates. Remaining performance obligation is also impacted by acquisitions. Unbilled portions of the remaining performance obligation denominated in foreign currencies are revalued each period based on the period end exchange rates. Remaining performance obligation is subject to future economic risks, including bankruptcies, regulatory changes and other market factors. 
+ 17 
+ Table of Contents 
+ The Company excludes amounts related to performance obligations from professional services contracts that are billed and recognized on a time and materials basis. 
+ The majority of the Company's noncurrent remaining performance obligation is expected to be recognized in the next 13 to 36 months. 
+ Remaining performance obligation consisted of the following (in billions): 
+ Current 
+ Noncurrent 
+ Total 
+ As of July 31, 2026 
+ $ 
+ 33.5 
+ $ 
+ 32.8 
+ $ 
+ 66.3 
+ As of January 31, 2026 
+ $ 
+ 35.1 
+ $ 
+ 37.3 
+ $ 
+ 72.4 
+ 3. Investments 
+ Marketable Securities 
+ As of July 31, 2026, marketable securities consisted of the following (in millions): 
+ Amortized
+Cost 
+ Unrealized
+Gains 
+ Unrealized
+Losses 
+ Fair Value 
+ Corporate notes and obligation
+
+--- ctx @89290 ---
+services and other revenue, which is generally recognized ratably or as delivered. 
+ Revenue recognized at a point in time substantially consists of term software licenses. 
+ Remaining Performance Obligation 
+ Remaining performance obligation represents contracted revenue that has not yet been recognized and includes unearned revenue and unbilled amounts that will be recognized as revenue in future periods. The transaction price allocated to the remaining performance obligation is based on SSP. Remaining performance obligation is influenced by several factors, including seasonality, the timing of renewals, the timing of term license deliveries, average contract terms and foreign currency exchange rates. Remaining performance obligation is also impacted by acquisitions. Unbilled portions of the remaining performance obligation denominated in foreign currencies are revalued each period based on the period end exchange rates. Remaining performance obligation is subject to future economic risks, including bankruptcies, regulatory changes and other market factors. 
+ 17 
+ Table of Contents 
+ The Company excludes amounts related to performance obligations from professional services contracts that are billed and recognized on a time and materials basis. 
+ The majority of the Company's noncurrent remaining performance obligation is expected to be recognized in the next 13 to 36 months. 
+ Remaining performance obligation consisted of the following (in billions): 
+ Current 
+ Noncurrent 
+ Total 
+ As of July 31, 2026 
+ $ 
+ 33.5 
+ $ 
+ 32.8 
+ $ 
+ 66.3 
+ As of January 31, 2026 
+ $ 
+ 35.1 
+ $ 
+ 37.3 
+ $ 
+ 72.4 
+ 3. Investments 
+ Marketable Securities 
+ As of July 31, 2026, marketable securities consisted of the following (in millions): 
+ Amortized
+Cost 
+ Unrealized
+Gains 
+ Unrealized
+Losses 
+ Fair Value 
+ Corporate notes and obligations 
+ $ 
+ 1,570 
+ $ 
+ 1 
+ $ 
+ ( 7 ) 
+ $ 
+ 1,564 
+ U.
+
+==========================================================================================
+KEYWORD: Informatica   hits=24
+
+--- ctx @21318 ---
+ber 2026-02-01 2026-07-31 0001108524 us-gaap:DevelopedTechnologyRightsMember 2026-07-31 0001108524 us-gaap:CustomerRelationshipsMember 2026-01-31 0001108524 us-gaap:CustomerRelationshipsMember 2026-02-01 2026-07-31 0001108524 us-gaap:CustomerRelationshipsMember 2026-07-31 0001108524 us-gaap:OtherIntangibleAssetsMember 2026-01-31 0001108524 us-gaap:OtherIntangibleAssetsMember 2026-02-01 2026-07-31 0001108524 us-gaap:OtherIntangibleAssetsMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:Informatica364DayCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:Informatica364DayCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2028SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2028SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:April2028SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:April2028SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2028SeniorSustainabilityNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2028SeniorSustainabilityNotesMember 2026-01-31 0001108524 us-gaap:LineOfCreditMember crm:InformaticaThreeYearCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:InformaticaThreeYearCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2029SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2029SeniorNotesMember 2026-01-31 0001108524 us-gaap:LineOfCreditMember crm:A2026TermLoanCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:A2026TermLoanCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2031SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2031SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:September2031SeniorNotesMember 2026-0
+
+--- ctx @21410 ---
+108524 us-gaap:CustomerRelationshipsMember 2026-01-31 0001108524 us-gaap:CustomerRelationshipsMember 2026-02-01 2026-07-31 0001108524 us-gaap:CustomerRelationshipsMember 2026-07-31 0001108524 us-gaap:OtherIntangibleAssetsMember 2026-01-31 0001108524 us-gaap:OtherIntangibleAssetsMember 2026-02-01 2026-07-31 0001108524 us-gaap:OtherIntangibleAssetsMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:Informatica364DayCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:Informatica364DayCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2028SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2028SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:April2028SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:April2028SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2028SeniorSustainabilityNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2028SeniorSustainabilityNotesMember 2026-01-31 0001108524 us-gaap:LineOfCreditMember crm:InformaticaThreeYearCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:InformaticaThreeYearCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2029SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2029SeniorNotesMember 2026-01-31 0001108524 us-gaap:LineOfCreditMember crm:A2026TermLoanCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:A2026TermLoanCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2031SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2031SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:September2031SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:September2031SeniorNotesMember 2026-01-31 0001
+
+--- ctx @22002 ---
+arch2028SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2028SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:April2028SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:April2028SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2028SeniorSustainabilityNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2028SeniorSustainabilityNotesMember 2026-01-31 0001108524 us-gaap:LineOfCreditMember crm:InformaticaThreeYearCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:InformaticaThreeYearCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2029SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2029SeniorNotesMember 2026-01-31 0001108524 us-gaap:LineOfCreditMember crm:A2026TermLoanCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:A2026TermLoanCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2031SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2031SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:September2031SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:September2031SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2033SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2033SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2036SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2036SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2041SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2041SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2046SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:Marc
+
+--- ctx @22097 ---
+tesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:April2028SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:April2028SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2028SeniorSustainabilityNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2028SeniorSustainabilityNotesMember 2026-01-31 0001108524 us-gaap:LineOfCreditMember crm:InformaticaThreeYearCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:InformaticaThreeYearCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2029SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2029SeniorNotesMember 2026-01-31 0001108524 us-gaap:LineOfCreditMember crm:A2026TermLoanCreditAgreementMember 2026-07-31 0001108524 us-gaap:LineOfCreditMember crm:A2026TermLoanCreditAgreementMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2031SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2031SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:September2031SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:September2031SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2033SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2033SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2036SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2036SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2041SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:July2041SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:March2046SeniorNotesMember 2026-07-31 0001108524 us-gaap:SeniorNotesMember crm:March2046SeniorNotesMember 2026-01-31 0001108524 us-gaap:SeniorNotesMember crm:July2051SeniorNotesM
+
+==========================================================================================
+KEYWORD: Agentforce   hits=34
+
+--- ctx @7307 ---
+mber srt:MinimumMember 2026-07-31 0001108524 us-gaap:BuildingAndBuildingImprovementsMember srt:MaximumMember 2026-07-31 0001108524 crm:ComputerEquipmentAndSoftwareMember srt:MinimumMember 2026-07-31 0001108524 crm:ComputerEquipmentAndSoftwareMember srt:MaximumMember 2026-07-31 0001108524 us-gaap:FurnitureAndFixturesMember 2026-07-31 0001108524 us-gaap:LeaseholdImprovementsMember srt:MaximumMember 2026-07-31 0001108524 crm:StockOptionsandRestrictedStockMember 2026-02-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2026-05-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2025-05-01 2025-07-31 0001108524 crm:AgentforceAppsMember 2026-02-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2025-02-01 2025-07-31 0001108524 crm:Data360PlatformAndOtherMember 2026-05-01 2026-07-31 0001108524 crm:Data360PlatformAndOtherMember 2025-05-01 2025-07-31 0001108524 crm:Data360PlatformAndOtherMember 2026-02-01 2026-07-31 0001108524 crm:Data360PlatformAndOtherMember 2025-02-01 2025-07-31 0001108524 srt:AmericasMember 2026-05-01 2026-07-31 0001108524 srt:AmericasMember 2025-05-01 2025-07-31 0001108524 srt:AmericasMember 2026-02-01 2026-07-31 0001108524 srt:AmericasMember 2025-02-01 2025-07-31 0001108524 srt:EuropeMember 2026-05-01 2026-07-31 0001108524 srt:EuropeMember 2025-05-01 2025-07-31 0001108524 srt:EuropeMember 2026-02-01 2026-07-31 0001108524 srt:EuropeMember 2025-02-01 2025-07-31 0001108524 srt:AsiaPacificMember 2026-05-01 2026-07-31 0001108524 srt:AsiaPacificMember 2025-05-01 2025-07-31 0001108524 srt:AsiaPacificMember 2026-02-01 2026-07-31 0001108524 srt:AsiaPacificMember 2025-02-01 2025-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2026-02-01 2026-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2026-05-01 2026-07-31 0001108524 country:US u
+
+--- ctx @7365 ---
+ingAndBuildingImprovementsMember srt:MaximumMember 2026-07-31 0001108524 crm:ComputerEquipmentAndSoftwareMember srt:MinimumMember 2026-07-31 0001108524 crm:ComputerEquipmentAndSoftwareMember srt:MaximumMember 2026-07-31 0001108524 us-gaap:FurnitureAndFixturesMember 2026-07-31 0001108524 us-gaap:LeaseholdImprovementsMember srt:MaximumMember 2026-07-31 0001108524 crm:StockOptionsandRestrictedStockMember 2026-02-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2026-05-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2025-05-01 2025-07-31 0001108524 crm:AgentforceAppsMember 2026-02-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2025-02-01 2025-07-31 0001108524 crm:Data360PlatformAndOtherMember 2026-05-01 2026-07-31 0001108524 crm:Data360PlatformAndOtherMember 2025-05-01 2025-07-31 0001108524 crm:Data360PlatformAndOtherMember 2026-02-01 2026-07-31 0001108524 crm:Data360PlatformAndOtherMember 2025-02-01 2025-07-31 0001108524 srt:AmericasMember 2026-05-01 2026-07-31 0001108524 srt:AmericasMember 2025-05-01 2025-07-31 0001108524 srt:AmericasMember 2026-02-01 2026-07-31 0001108524 srt:AmericasMember 2025-02-01 2025-07-31 0001108524 srt:EuropeMember 2026-05-01 2026-07-31 0001108524 srt:EuropeMember 2025-05-01 2025-07-31 0001108524 srt:EuropeMember 2026-02-01 2026-07-31 0001108524 srt:EuropeMember 2025-02-01 2025-07-31 0001108524 srt:AsiaPacificMember 2026-05-01 2026-07-31 0001108524 srt:AsiaPacificMember 2025-05-01 2025-07-31 0001108524 srt:AsiaPacificMember 2026-02-01 2026-07-31 0001108524 srt:AsiaPacificMember 2025-02-01 2025-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2026-02-01 2026-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2026-05-01 2026-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFr
+
+--- ctx @7423 ---
+-31 0001108524 crm:ComputerEquipmentAndSoftwareMember srt:MinimumMember 2026-07-31 0001108524 crm:ComputerEquipmentAndSoftwareMember srt:MaximumMember 2026-07-31 0001108524 us-gaap:FurnitureAndFixturesMember 2026-07-31 0001108524 us-gaap:LeaseholdImprovementsMember srt:MaximumMember 2026-07-31 0001108524 crm:StockOptionsandRestrictedStockMember 2026-02-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2026-05-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2025-05-01 2025-07-31 0001108524 crm:AgentforceAppsMember 2026-02-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2025-02-01 2025-07-31 0001108524 crm:Data360PlatformAndOtherMember 2026-05-01 2026-07-31 0001108524 crm:Data360PlatformAndOtherMember 2025-05-01 2025-07-31 0001108524 crm:Data360PlatformAndOtherMember 2026-02-01 2026-07-31 0001108524 crm:Data360PlatformAndOtherMember 2025-02-01 2025-07-31 0001108524 srt:AmericasMember 2026-05-01 2026-07-31 0001108524 srt:AmericasMember 2025-05-01 2025-07-31 0001108524 srt:AmericasMember 2026-02-01 2026-07-31 0001108524 srt:AmericasMember 2025-02-01 2025-07-31 0001108524 srt:EuropeMember 2026-05-01 2026-07-31 0001108524 srt:EuropeMember 2025-05-01 2025-07-31 0001108524 srt:EuropeMember 2026-02-01 2026-07-31 0001108524 srt:EuropeMember 2025-02-01 2025-07-31 0001108524 srt:AsiaPacificMember 2026-05-01 2026-07-31 0001108524 srt:AsiaPacificMember 2025-05-01 2025-07-31 0001108524 srt:AsiaPacificMember 2026-02-01 2026-07-31 0001108524 srt:AsiaPacificMember 2025-02-01 2025-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2026-02-01 2026-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2026-05-01 2026-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2025-05-01 2025-07-31 0001108
+
+--- ctx @7481 ---
+MinimumMember 2026-07-31 0001108524 crm:ComputerEquipmentAndSoftwareMember srt:MaximumMember 2026-07-31 0001108524 us-gaap:FurnitureAndFixturesMember 2026-07-31 0001108524 us-gaap:LeaseholdImprovementsMember srt:MaximumMember 2026-07-31 0001108524 crm:StockOptionsandRestrictedStockMember 2026-02-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2026-05-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2025-05-01 2025-07-31 0001108524 crm:AgentforceAppsMember 2026-02-01 2026-07-31 0001108524 crm:AgentforceAppsMember 2025-02-01 2025-07-31 0001108524 crm:Data360PlatformAndOtherMember 2026-05-01 2026-07-31 0001108524 crm:Data360PlatformAndOtherMember 2025-05-01 2025-07-31 0001108524 crm:Data360PlatformAndOtherMember 2026-02-01 2026-07-31 0001108524 crm:Data360PlatformAndOtherMember 2025-02-01 2025-07-31 0001108524 srt:AmericasMember 2026-05-01 2026-07-31 0001108524 srt:AmericasMember 2025-05-01 2025-07-31 0001108524 srt:AmericasMember 2026-02-01 2026-07-31 0001108524 srt:AmericasMember 2025-02-01 2025-07-31 0001108524 srt:EuropeMember 2026-05-01 2026-07-31 0001108524 srt:EuropeMember 2025-05-01 2025-07-31 0001108524 srt:EuropeMember 2026-02-01 2026-07-31 0001108524 srt:EuropeMember 2025-02-01 2025-07-31 0001108524 srt:AsiaPacificMember 2026-05-01 2026-07-31 0001108524 srt:AsiaPacificMember 2025-05-01 2025-07-31 0001108524 srt:AsiaPacificMember 2026-02-01 2026-07-31 0001108524 srt:AsiaPacificMember 2025-02-01 2025-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2026-02-01 2026-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2026-05-01 2026-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember us-gaap:RevenueFromContractWithCustomerMember 2025-05-01 2025-07-31 0001108524 country:US us-gaap:GeographicConcentrationRiskMember u

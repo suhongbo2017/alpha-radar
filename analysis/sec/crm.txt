@@ -1,0 +1,200 @@
+#### Salesforce, Inc. (CRM) ####
+
+== Revenue [annual] ==
+  end=2010-01-31  1.306B  form=10-K fy2011FY
+  end=2011-01-31  1.657B  form=10-K fy2012FY
+  end=2012-01-31  2.267B  form=10-K fy2013FY
+  end=2013-01-31  3.050B  form=10-K fy2013FY
+  end=2014-01-31  4.071B  form=10-K fy2015FY
+  end=2015-01-31  5.374B  form=8-K fyNoneNone
+  end=2016-01-31  6.667B  form=10-K fy2017FY
+  end=2017-01-31  8.392B  form=10-K fy2017FY
+
+== Revenue(contract) [annual] ==
+  end=2019-01-31  13.282B  form=10-K fy2021FY
+  end=2020-01-31  17.098B  form=10-K fy2022FY
+  end=2021-01-31  21.252B  form=10-K fy2023FY
+  end=2022-01-31  26.492B  form=10-K fy2024FY
+  end=2023-01-31  31.352B  form=10-K fy2025FY
+  end=2024-01-31  34.857B  form=10-K fy2025FY
+  end=2025-01-31  37.895B  form=10-K fy2025FY
+  end=2026-01-31  41.525B  form=10-K fy2025FY
+
+== GrossProfit [annual] ==
+  end=2019-01-31  9.831B  form=10-K fy2021FY
+  end=2020-01-31  12.863B  form=10-K fy2022FY
+  end=2021-01-31  15.814B  form=10-K fy2023FY
+  end=2022-01-31  19.466B  form=10-K fy2024FY
+  end=2023-01-31  22.992B  form=10-K fy2025FY
+  end=2024-01-31  26.316B  form=10-K fy2025FY
+  end=2025-01-31  29.252B  form=10-K fy2025FY
+  end=2026-01-31  32.255B  form=10-K fy2025FY
+
+== COGS [annual] ==
+  end=2008-01-31  0.172B  form=10-K fy2009FY
+  end=2009-01-31  0.220B  form=10-K fy2010FY
+  end=2010-01-31  0.258B  form=10-K fy2011FY
+  end=2011-01-31  0.324B  form=10-K fy2012FY
+  end=2012-01-31  0.489B  form=10-K fy2013FY
+  end=2013-01-31  0.684B  form=10-K fy2013FY
+  end=2014-01-31  0.968B  form=10-K fy2013FY
+
+== OpInc [annual] ==
+  end=2019-01-31  0.535B  form=10-K fy2021FY
+  end=2020-01-31  0.297B  form=10-K fy2022FY
+  end=2021-01-31  0.455B  form=10-K fy2023FY
+  end=2022-01-31  0.548B  form=10-K fy2024FY
+  end=2023-01-31  1.030B  form=10-K fy2025FY
+  end=2024-01-31  5.011B  form=10-K fy2025FY
+  end=2025-01-31  7.205B  form=10-K fy2025FY
+  end=2026-01-31  8.331B  form=10-K fy2025FY
+
+== NetIncome [annual] ==
+  end=2019-01-31  1.110B  form=10-K fy2021FY
+  end=2020-01-31  0.126B  form=10-K fy2022FY
+  end=2021-01-31  4.072B  form=10-K fy2023FY
+  end=2022-01-31  1.444B  form=DEF 14A fyNoneNone
+  end=2023-01-31  0.208B  form=DEF 14A fyNoneNone
+  end=2024-01-31  4.136B  form=DEF 14A fyNoneNone
+  end=2025-01-31  6.197B  form=DEF 14A fyNoneNone
+  end=2026-01-31  7.457B  form=DEF 14A fyNoneNone
+
+== R&D [annual] ==
+  end=2019-01-31  1.886B  form=10-K fy2021FY
+  end=2020-01-31  2.766B  form=10-K fy2022FY
+  end=2021-01-31  3.598B  form=10-K fy2023FY
+  end=2022-01-31  4.465B  form=10-K fy2024FY
+  end=2023-01-31  5.055B  form=10-K fy2025FY
+  end=2024-01-31  4.906B  form=10-K fy2025FY
+  end=2025-01-31  5.493B  form=10-K fy2025FY
+  end=2026-01-31  5.993B  form=10-K fy2025FY
+
+== S&M [annual] ==
+  end=2019-01-31  6.064B  form=10-K fy2021FY
+  end=2020-01-31  7.930B  form=10-K fy2022FY
+  end=2021-01-31  9.674B  form=10-K fy2023FY
+  end=2022-01-31  11.855B  form=10-K fy2024FY
+  end=2023-01-31  13.526B  form=10-K fy2025FY
+  end=2024-01-31  12.877B  form=10-K fy2025FY
+  end=2025-01-31  13.257B  form=10-K fy2025FY
+  end=2026-01-31  14.345B  form=10-K fy2025FY
+
+== SBC [annual] ==
+  end=2019-01-31  1.283B  form=10-K fy2021FY
+  end=2020-01-31  1.785B  form=10-K fy2022FY
+  end=2021-01-31  2.190B  form=10-K fy2023FY
+  end=2022-01-31  2.779B  form=10-K fy2024FY
+  end=2023-01-31  3.279B  form=10-K fy2025FY
+  end=2024-01-31  2.787B  form=10-K fy2025FY
+  end=2025-01-31  3.183B  form=10-K fy2025FY
+  end=2026-01-31  3.509B  form=10-K fy2025FY
+
+== OCF [annual] ==
+  end=2019-01-31  3.398B  form=10-K fy2021FY
+  end=2020-01-31  4.331B  form=10-K fy2022FY
+  end=2021-01-31  4.801B  form=10-K fy2023FY
+  end=2022-01-31  6.000B  form=10-K fy2024FY
+  end=2023-01-31  7.111B  form=10-K fy2025FY
+  end=2024-01-31  10.234B  form=10-K fy2025FY
+  end=2025-01-31  13.092B  form=10-K fy2025FY
+  end=2026-01-31  14.996B  form=10-K fy2025FY
+
+== CapEx [annual] ==
+  end=2019-01-31  0.595B  form=10-K fy2021FY
+  end=2020-01-31  0.643B  form=10-K fy2022FY
+  end=2021-01-31  0.710B  form=10-K fy2023FY
+  end=2022-01-31  0.717B  form=10-K fy2024FY
+  end=2023-01-31  0.798B  form=10-K fy2025FY
+  end=2024-01-31  0.736B  form=10-K fy2025FY
+  end=2025-01-31  0.658B  form=10-K fy2025FY
+  end=2026-01-31  0.594B  form=10-K fy2025FY
+
+== D&A [annual] ==
+  end=2019-01-31  0.411B  form=10-K fy2021FY
+  end=2020-01-31  0.455B  form=10-K fy2022FY
+  end=2021-01-31  0.579B  form=10-K fy2023FY
+  end=2022-01-31  0.678B  form=10-K fy2024FY
+  end=2023-01-31  0.903B  form=10-K fy2025FY
+  end=2024-01-31  1.100B  form=10-K fy2025FY
+  end=2025-01-31  1.000B  form=10-K fy2025FY
+  end=2026-01-31  1.200B  form=10-K fy2025FY
+
+== Revenue [Q] ==
+  end=2015-04-30  1.511B  form=10-K fy2017FY
+  end=2015-07-31  1.635B  form=10-K fy2017FY
+  end=2015-10-31  1.712B  form=10-K fy2017FY
+  end=2016-01-31  1.809B  form=10-K fy2017FY
+  end=2016-04-30  1.917B  form=10-K fy2017FY
+  end=2016-07-31  2.037B  form=10-K fy2017FY
+  end=2016-10-31  2.145B  form=10-K fy2017FY
+  end=2017-01-31  2.294B  form=10-K fy2017FY
+
+== Revenue(contract) [Q] ==
+  end=2024-04-30  9.133B  form=10-Q fy2026Q1
+  end=2024-07-31  9.325B  form=10-Q fy2026Q2
+  end=2024-10-31  9.444B  form=10-Q fy2026Q3
+  end=2025-04-30  9.829B  form=10-Q fy2027Q1
+  end=2025-07-31  10.236B  form=10-Q fy2027Q2
+  end=2025-10-31  10.259B  form=10-Q fy2026Q3
+  end=2026-04-30  11.133B  form=10-Q fy2027Q1
+  end=2026-07-31  11.345B  form=10-Q fy2027Q2
+
+== OpInc [Q] ==
+  end=2024-04-30  1.709B  form=10-Q fy2026Q1
+  end=2024-07-31  1.783B  form=10-Q fy2026Q2
+  end=2024-10-31  1.893B  form=10-Q fy2026Q3
+  end=2025-04-30  1.942B  form=10-Q fy2027Q1
+  end=2025-07-31  2.332B  form=10-Q fy2027Q2
+  end=2025-10-31  2.188B  form=10-Q fy2026Q3
+  end=2026-04-30  2.347B  form=10-Q fy2027Q1
+  end=2026-07-31  2.331B  form=10-Q fy2027Q2
+
+== OCF [Q] ==
+  end=2024-04-30  6.247B  form=10-Q fy2026Q1
+  end=2024-07-31  0.892B  form=10-Q fy2026Q2
+  end=2024-10-31  1.983B  form=10-Q fy2026Q3
+  end=2025-04-30  6.476B  form=10-Q fy2027Q1
+  end=2025-07-31  0.740B  form=10-Q fy2027Q2
+  end=2025-10-31  2.316B  form=10-Q fy2026Q3
+  end=2026-04-30  6.701B  form=10-Q fy2027Q1
+  end=2026-07-31  1.269B  form=10-Q fy2027Q2
+
+== DeferredRevCurr [instant] ==
+  2016-10-31  3.479B  form=10-Q
+  2017-01-31  5.543B  form=10-K
+  2017-04-30  5.043B  form=10-Q
+  2017-07-31  4.819B  form=10-Q
+  2017-10-31  4.392B  form=10-Q
+  2018-01-31  7.095B  form=10-K
+
+== ContractLiabCurr [instant] ==
+  2025-04-30  17.799B  form=10-Q
+  2025-07-31  16.555B  form=10-Q
+  2025-10-31  14.996B  form=10-Q
+  2026-01-31  24.317B  form=10-Q
+  2026-04-30  20.363B  form=10-Q
+  2026-07-31  18.787B  form=10-Q
+
+== Cash [instant] ==
+  2025-04-30  10.928B  form=10-Q
+  2025-07-31  10.365B  form=10-Q
+  2025-10-31  8.978B  form=10-Q
+  2026-01-31  7.327B  form=10-Q
+  2026-04-30  8.935B  form=10-Q
+  2026-07-31  8.310B  form=10-Q
+
+== Equity [instant] ==
+  2025-04-30  60.666B  form=10-Q
+  2025-07-31  61.328B  form=10-Q
+  2025-10-31  60.021B  form=10-Q
+  2026-01-31  59.142B  form=10-Q
+  2026-04-30  34.235B  form=10-Q
+  2026-07-31  38.378B  form=10-Q
+
+== LTDebt [instant] ==
+  2025-04-30  8.435B  form=10-Q
+  2025-07-31  8.436B  form=10-Q
+  2025-10-31  8.438B  form=10-Q
+  2026-01-31  10.439B  form=10-Q
+  2026-04-30  39.280B  form=10-Q
+  2026-07-31  39.288B  form=10-Q

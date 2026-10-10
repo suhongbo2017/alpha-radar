@@ -1,0 +1,8 @@
+ticker,analysis_date,forecast_version,scenario,metric,forecast_period,forecast_value,unit,confidence,thesis
+APH,2026-10-07,v1,Bull,EPS,2031,7.22,USD,Low,"AI 超级周期延续至 2030+；互连价值量持续提升；CommScope 整合成功"
+APH,2026-10-07,v1,Base,EPS,2031,5.37,USD,Medium,"AI CapEx 2028 后正常化至 10-15%；份额保持；利润率 27-28%"
+APH,2026-10-07,v1,Bear,EPS,2031,3.25,USD,Medium,"AI CapEx 2027 后消化；铜转光压低单位价值量；CommScope 拖累利润率"
+APH,2026-10-07,v1,Base,Revenue,2030,45000000000,USD,Medium,"AI datacom + CommScope 并表"
+ASX,2026-10-07,v1,Bull,FCF,2030,280000000000,TWD,Low,"LEAP 达 7B+；先进封装利润率提升；CapEx 周期结束"
+ASX,2026-10-07,v1,Base,FCF,2030,200000000000,TWD,Medium,"2028 产能贡献；CapEx 强度下降；FCF 释放"
+ASX,2026-10-07,v1,Bear,FCF,2030,120000000000,TWD,Medium,"AI 先进封装低于预期；TSMC 内部消化；EMS 拖累"

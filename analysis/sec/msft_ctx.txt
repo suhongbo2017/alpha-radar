@@ -1,0 +1,113 @@
+
+==========================================================================================
+KEYWORD: remaining performance obligation   hits=10
+
+--- ctx @178976 ---
+vering relevant online advertising to a global audience; and designing and selling devices. Our most significant expenses are related to compensating employees; supporting and investing in our cloud-based services, including datacenter operations; designing, manufacturing, marketing, and selling our other products and services; and income taxes. 
+ Highlights from fiscal year 2026 compared with fiscal year 2025 included: 
+ • Microsoft Cloud revenue increased 27% to $214.4 billion. 
+ • Commercial remaining performance obligation increased 84% to $678 billion. 
+ • Microsoft 365 Commercial cloud revenue increased 17%. 
+ • Microsoft 365 Consumer cloud revenue increased 28%. 
+ • LinkedIn revenue increased 11%. 
+ • Dynamics 365 revenue increased 18%. 
+ • Azure and other cloud services revenue increased 41%. 
+ • Windows OEM and Devices revenue decreased slightly. 
+ • XBOX content and services revenue decreased 5%. 
+ • Search advertising (formerly Search and news advertising) revenue excluding traffic acquisition costs increased 12%. 
+ Industry Trends and Opportunities 
+ Our industry is dynamic and highly competitive, with frequent changes in both technologies and business models. Each industry shift is an opportunity to conceive new products, new technologies, or new ideas that can further transform the industry and our business. At Microsoft, we push the boundaries of what is possible through a broad range of research and development activities that seek to identify and address the changing demands of customers and users, industry trends, and competitive forces. 
+ We have a long-term strategic partnership with OpenAI which was originally established in 2019. In October 2025 and April 2026, we extended this partnership and continue to build on our shared vision to advance artificial intelligence responsibly and make its benefits broadly accessible. Microsoft is a major invest
+
+--- ctx @186022 ---
+ Microsoft 365 Consumer subscribers was removed as a metric. 
+ Commercial 
+ Our commercial business primarily consists of Server products and cloud services, Microsoft 365 Commercial products and cloud services, the commercial portion of LinkedIn, Dynamics products and cloud services, and Enterprise and partner services. Our commercial metrics allow management and investors to assess the overall health of our commercial business and include leading indicators of future performance. 
+ Commercial remaining performance obligation 
+ Commercial portion of revenue allocated to remaining performance obligations, which includes unearned revenue and amounts that will be invoiced and recognized as revenue in future periods 
+ Microsoft Cloud revenue and revenue growth 
+ Revenue from Microsoft 365 Commercial cloud, Azure and other cloud services, the commercial portion of LinkedIn, and Dynamics 365 
+ Microsoft Cloud gross margin percentage 
+ Gross margin percentage for our Microsoft Cloud business 
+ Productivity and Business Processes and Intelligent Cloud 
+ Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. 
+ Microsoft 365 Commercial cloud revenue growth 
+ Revenue from Microsoft 365 Commercial subscriptions, comprising Microsoft 365 Commercial, Enterprise Mobility + Security, the cloud portion of Windows Commercial, the per-user portion of Power BI, Exchange, SharePoint, Microsoft Teams, Microsoft 365 Security and Compliance, and Microsoft 365 Copilot 
+ Microsoft 365 Commercial seat growth 
+ The number of Microsoft 365 Commercial seats at end of period where seats are paid users covered by a Microsoft 365 Commercial subscription 
+ Microsoft 365 Consumer cloud revenue growth 
+ Revenue from Microsoft 365 Consumer sub
+
+--- ctx @186100 ---
+r commercial business primarily consists of Server products and cloud services, Microsoft 365 Commercial products and cloud services, the commercial portion of LinkedIn, Dynamics products and cloud services, and Enterprise and partner services. Our commercial metrics allow management and investors to assess the overall health of our commercial business and include leading indicators of future performance. 
+ Commercial remaining performance obligation 
+ Commercial portion of revenue allocated to remaining performance obligations, which includes unearned revenue and amounts that will be invoiced and recognized as revenue in future periods 
+ Microsoft Cloud revenue and revenue growth 
+ Revenue from Microsoft 365 Commercial cloud, Azure and other cloud services, the commercial portion of LinkedIn, and Dynamics 365 
+ Microsoft Cloud gross margin percentage 
+ Gross margin percentage for our Microsoft Cloud business 
+ Productivity and Business Processes and Intelligent Cloud 
+ Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. 
+ Microsoft 365 Commercial cloud revenue growth 
+ Revenue from Microsoft 365 Commercial subscriptions, comprising Microsoft 365 Commercial, Enterprise Mobility + Security, the cloud portion of Windows Commercial, the per-user portion of Power BI, Exchange, SharePoint, Microsoft Teams, Microsoft 365 Security and Compliance, and Microsoft 365 Copilot 
+ Microsoft 365 Commercial seat growth 
+ The number of Microsoft 365 Commercial seats at end of period where seats are paid users covered by a Microsoft 365 Commercial subscription 
+ Microsoft 365 Consumer cloud revenue growth 
+ Revenue from Microsoft 365 Consumer subscriptions and other consumer services 
+ LinkedIn revenue growth 
+ Revenue fro
+
+--- ctx @219273 ---
+ld with a right of return, we may provide other credits or incentives, and in certain instances we estimate customer usage of our products and services, which are accounted for as variable consideration when determining the amount of revenue to recognize. Returns and credits are estimated at contract inception and updated at the end of each reporting period if additional information becomes available. Changes to our estimated variable consideration were not material for the periods presented. 
+ Remaining performance obligations represent the revenue we expect to recognize for our products and services for which control has not yet been transferred to customers. We estimate total consideration to be received at the outset of the agreement and throughout the term of the agreement. Estimating the total consideration and revenue that will be allocated to remaining performance obligation can involve significant judgments, including identifying and assessing variable consideration and potential renegotiation of commitments. We consider factors such as the nature of the terms and duration of the contract across our portfolio of contracts. 
+ Measurement and Impairment of Investment Securities 
+ Investments purchased by Microsoft are typically accounted for as available-for-sale debt securities, equity investments with readily determinable fair values, or equity investments without readily determinable fair values measured using either the equity method when required or at cost less impairments, if any, with adjustments for observable changes in price (referred to as the measurement alternative). Equity method investments may be recorded on a lag of up to three months when sufficient financial information is not available in a timely manner. For equity method investments recorded on a lag, we recognize the impact of intervening events that have a material impact on our consoli
+
+==========================================================================================
+KEYWORD: Azure   hits=28
+
+--- ctx @55510 ---
+that generate revenue from advertisers and marketers; and online and offline outlets for companies with lead generation and customer intelligence and insights. 
+ Dynamics competes with cloud-based and on-premises business solution providers. 
+ Intelligent Cloud 
+ Our Intelligent Cloud segment consists of our public, private, and hybrid server products and cloud services that power modern business and developers. This segment primarily comprises: 
+ • Server products and cloud services, including Azure and other cloud services, comprising cloud and AI consumption-based services, GitHub cloud services, Health and Life Sciences cloud services (formerly Nuance Healthcare cloud services), virtual desktop offerings, and other cloud services; and Server products, comprising SQL Server, Windows Server, Visual Studio, System Center, related Client Access Licenses (“CALs”), and other on-premises offerings. 
+ • Enterprise and partner services, including Enterprise Support Services, Industry Solutions, Microsoft Partner Network, and Learning Experience. 
+ 6 
+ PART I 
+ Item 1 
+ Server Products and Cloud Services 
+ Azure is a comprehensive set of cloud services that offer developers, IT professionals, and enterprises freedom to build, deploy, and manage applications on any platform or device. Customers can use Azure through our global network of datacenters for computing, networking, storage, mobile and web application services, AI, and Internet of Things. Azure enables customers to devote more resources to development and use of applications that benefit their organizations, rather than managing on-premises hardware and software. Azure revenue is mainly affected by infrastructure-as-a-service and platform-as-a-service consumption-based services. 
+ Azure AI offerings provide a competitive advantage as companies seek ways to optimize and scale their business with AI. We offer superco
+
+--- ctx @56128 ---
+Life Sciences cloud services (formerly Nuance Healthcare cloud services), virtual desktop offerings, and other cloud services; and Server products, comprising SQL Server, Windows Server, Visual Studio, System Center, related Client Access Licenses (“CALs”), and other on-premises offerings. 
+ • Enterprise and partner services, including Enterprise Support Services, Industry Solutions, Microsoft Partner Network, and Learning Experience. 
+ 6 
+ PART I 
+ Item 1 
+ Server Products and Cloud Services 
+ Azure is a comprehensive set of cloud services that offer developers, IT professionals, and enterprises freedom to build, deploy, and manage applications on any platform or device. Customers can use Azure through our global network of datacenters for computing, networking, storage, mobile and web application services, AI, and Internet of Things. Azure enables customers to devote more resources to development and use of applications that benefit their organizations, rather than managing on-premises hardware and software. Azure revenue is mainly affected by infrastructure-as-a-service and platform-as-a-service consumption-based services. 
+ Azure AI offerings provide a competitive advantage as companies seek ways to optimize and scale their business with AI. We offer supercomputing power for AI at scale to run large workloads, complemented by our rapidly expanding portfolio of AI cloud services (including the latest models) and hardware, which includes custom-built silicon and strong partnerships with chip manufacturers. Azure AI Foundry is a unified platform for developers to design, customize, and manage AI applications and agents. 
+ Our server products are designed to make IT professionals, developers, and their systems more productive and efficient. Server software is integrated server infrastructure and middleware designed to support software applications built on the Windows
+
+--- ctx @56327 ---
+o, System Center, related Client Access Licenses (“CALs”), and other on-premises offerings. 
+ • Enterprise and partner services, including Enterprise Support Services, Industry Solutions, Microsoft Partner Network, and Learning Experience. 
+ 6 
+ PART I 
+ Item 1 
+ Server Products and Cloud Services 
+ Azure is a comprehensive set of cloud services that offer developers, IT professionals, and enterprises freedom to build, deploy, and manage applications on any platform or device. Customers can use Azure through our global network of datacenters for computing, networking, storage, mobile and web application services, AI, and Internet of Things. Azure enables customers to devote more resources to development and use of applications that benefit their organizations, rather than managing on-premises hardware and software. Azure revenue is mainly affected by infrastructure-as-a-service and platform-as-a-service consumption-based services. 
+ Azure AI offerings provide a competitive advantage as companies seek ways to optimize and scale their business with AI. We offer supercomputing power for AI at scale to run large workloads, complemented by our rapidly expanding portfolio of AI cloud services (including the latest models) and hardware, which includes custom-built silicon and strong partnerships with chip manufacturers. Azure AI Foundry is a unified platform for developers to design, customize, and manage AI applications and agents. 
+ Our server products are designed to make IT professionals, developers, and their systems more productive and efficient. Server software is integrated server infrastructure and middleware designed to support software applications built on the Windows Server operating system. This includes the server platform, database, business intelligence, storage, management and operations, virtualization, service-oriented architecture platform, security, and
+
+--- ctx @56476 ---
+ Support Services, Industry Solutions, Microsoft Partner Network, and Learning Experience. 
+ 6 
+ PART I 
+ Item 1 
+ Server Products and Cloud Services 
+ Azure is a comprehensive set of cloud services that offer developers, IT professionals, and enterprises freedom to build, deploy, and manage applications on any platform or device. Customers can use Azure through our global network of datacenters for computing, networking, storage, mobile and web application services, AI, and Internet of Things. Azure enables customers to devote more resources to development and use of applications that benefit their organizations, rather than managing on-premises hardware and software. Azure revenue is mainly affected by infrastructure-as-a-service and platform-as-a-service consumption-based services. 
+ Azure AI offerings provide a competitive advantage as companies seek ways to optimize and scale their business with AI. We offer supercomputing power for AI at scale to run large workloads, complemented by our rapidly expanding portfolio of AI cloud services (including the latest models) and hardware, which includes custom-built silicon and strong partnerships with chip manufacturers. Azure AI Foundry is a unified platform for developers to design, customize, and manage AI applications and agents. 
+ Our server products are designed to make IT professionals, developers, and their systems more productive and efficient. Server software is integrated server infrastructure and middleware designed to support software applications built on the Windows Server operating system. This includes the server platform, database, business intelligence, storage, management and operations, virtualization, service-oriented architecture platform, security, and identity software. We also license standalone and software development lifecycle tools for software architects, developers, testers, and project man

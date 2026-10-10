@@ -1,0 +1,8 @@
+# 统一换行：仓库内与工作区都用 LF。
+# 理由：scripts/*.sh 若被转成 CRLF，在 git-bash 下会执行失败（shebang 行带 \r）。
+* text=auto eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.jsonl text eol=lf
+*.csv text eol=lf
