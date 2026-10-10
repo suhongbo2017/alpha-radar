@@ -663,25 +663,39 @@ Investment Accuracy   投资决策赚不赚钱？（买入价、目标价、实�
 >
 > 注：`FairValue` 类属于 Investment Accuracy 的检验对象，不进 Fundamental Accuracy。
 
-### 7.6 归因目前仍需手工（已知缺口）
+### 7.5 误差归因（[D-09] 已入代码）
 
-误差归因（9 类）目前只写在 `templates/Review_Template.md`，**尚未进入 `actuals.jsonl`**，
-因此跨公司的"归因分布"（我最常犯哪类错误）暂时无法自动汇总。
+归因不再只写在 markdown 里 —— 它进了 `actuals.jsonl`，可被自动汇总。
 
-> 这是已知缺口，列为下一批待修项。在此之前，复盘时必须**手工**在 Review 模板中填写归因，
-> 并在 `analysis/README.md` 的待办里保持可见。
+```bash
+# 录入实际值时直接给归因
+py scripts/alpha_ledger.py actual --ticker APH --metric Revenue --period FY2030 \
+    --value 43.1e9 --unit USD --attribution Demand
 
-### 7.5 财报后的标准动作
+# 事后补记（不覆盖 actual）
+py scripts/alpha_ledger.py attribute --ticker APH --metric Revenue \
+    --period FY2030 --attribution Margin --note "毛利率比预期低 2pp"
+```
+
+可选值：`Demand` / `MarketShare` / `Margin` / `CapEx` / `Management` / `M&A` / `Macro` / `FX` / `Valuation`
+（中文别名自动归一：`需求` → Demand、`毛利率` → Margin…）
+
+`report` 第 7 节给出**归因分布**，并直接标出"当前最大错误来源"。
+
+> **这是复盘引擎最高价值的输出**：它告诉你该修的是需求判断、利润率判断、还是估值判断。
+> 哪个归因占比最高，下一轮就把资源投到那里。
+
+### 7.6 财报后的标准动作
 
 ```text
+0. py scripts/alpha_ledger.py due            # 先看哪些预测到期了（[D-06]）
 1. 取实际数据（一手申报）
-2. 更新公司档案（Company Profile）
-3. 与旧预测比较 → 计算误差
-4. 归因（9 类选一）
-5. 判断 Thesis 状态
-6. 更新预测 → 新版本 v(n+1)，不覆盖旧版本
-7. 重新定价 → 更新价格带
-8. 给出当前动作
+2. alpha_ledger.py actual 记录实际值 + --attribution 归因
+3. alpha_ledger.py report 生成对照（自动 git 固化）
+4. 判断 Thesis 状态
+5. 更新预测 → 新版本 v(n+1)，不覆盖旧版本
+6. 重新定价 → 更新价格带，并记一条新 decision
+7. 在公司档案追加 "## Review" 段落（保留历史）
 ```
 
 ---
@@ -884,13 +898,20 @@ bash scripts/herdr_ci.sh --build A2   # 串行构建队列（人工批准项会�
 
 | ID | 门禁 | 检验什么 |
 |---|---|---|
-| G1 | 账本回归测试 | `test_ledger.sh` —— 39 项（P0-1/2/3 + P1-4/7 + P2-17 + 边界） |
+| G1 | 账本回归测试 | `test_ledger.sh` —— 63 项（P0-1/2/3 + P1-4/7 + P2-17 + 边界） |
 | G2 | skill 副本同步 | 项目文件与 `~/.pi/agent/skills/` 是否漂移 |
-| G3 | 真实数据完整性 | `data/*.jsonl` 可解析、条数不低于基线、无版本内数值冲突、无孤儿实际值 |
+| G3 | 真实数据完整性 | `data/*.jsonl` 可解析、条数不低于基线、无版本内数值冲突 |
 | G4 | 语法 / 导入 | `py_compile` |
 | G5 | **文档-CLI 漂移** | CLI 的子命令/选项是否都在 SKILL.md 中；文档提到的子命令是否真实存在 |
+| G6 | **账本已固化进 git** | 工作树存在、`data/*.jsonl` 已跟踪且与 HEAD 一致、条数不低于基线 |
 
 > **G5 不是附属品。** v1.0 出过一次事故：SKILL.md 写着"估值类不计分"，而 report 实际给 FairValue 打了 B 级 —— 文档和代码各说各话，没有任何机制能发现。G5 就是那个机制，它第一次跑就抓到了 3 处真实漂移。
+
+> **G6 是铁律 5 的技术保障。** [D-18] 之前，「旧预测永不覆盖」只是口头约定 ——
+> `predictions.jsonl` 可被任何文本编辑器静默改写。现在还加了写入即自动 commit（[A1]）：
+> 每次 `predict` / `actual` / `decision` 落盘后自动提交，提交信息形如
+> `ledger(prediction): APH Revenue 2030 Base`。
+> 测试环境不会触发（`ALPHA_RADAR_HOME` 指向临时目录时自动禁用）。
 
 **编排规则（不要违反）：**
 

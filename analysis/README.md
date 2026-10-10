@@ -83,8 +83,8 @@ data/review_report.md     （预测 vs 实际 + 误差归因 + 预测能力评�
 
 | ID | 任务 | 状态 |
 |---|---|---|
-| **A0** | `git init` + 首次提交（固化 15 条预测） | ⛔ **需人工批准**（D-18） |
-| A1 | 预测写入后自动 commit 钩子 | 依赖 A0 |
+| **A0** | `git init` + 首次提交（固化 15 条预测） | ✅ 完成（D-18） |
+| A1 | 预测写入后自动 commit 钩子 | ✅ 完成（`autocommit`） |
 | A2 | Decision Database | ✅ 完成（D-05） |
 | A3 | due 复盘提醒 | ✅ 完成（D-06） |
 | A4 | probability 概率加权 | ✅ 完成（D-08） |
@@ -96,16 +96,38 @@ data/review_report.md     （预测 vs 实际 + 误差归因 + 预测能力评�
 | A10 | Alpha Radar Lite | ✅ 完成（D-12） |
 
 ### 剩余缺口
-- [ ] **A0 / D-18** ⛔ `git init`（需批准）
 - [ ] **D-13** 组合横向视图（Radar Board）
 - [ ] **D-29** `stock-analysis` yfinance 429，需备选行情源
 - [ ] 港股 / A股 一手数据源（D-15 已降级为诚实描述）
+
+> 已无 ⛔ 待批准项。完整的 33 项缺陷登记（含实测证据与元教训）见 `DEFECTS.md`。
 
 ### 业务待办
 - [ ] 用 `templates/Company_Profile_Template.md` 为 APH 建 Alpha Radar 档案
 - [ ] 为 INTU / ITRI / NOW / MSFT / CRM 逐个跑 Alpha Radar 并登记预测
 - [ ] ASX 数据一手化（取 ASE 年报/法说会），重建预测版本 v2
 - [ ] 下一次财报季后执行 Review 流程
+
+---
+
+## 版本控制（D-18）
+
+```bash
+git log --oneline           # 账本固化历史
+git show HEAD:data/predictions.jsonl | wc -l    # 校验当前账本 vs HEAD
+```
+
+**写入即固化**：`predict` / `actual` / `decision` 落盘后自动 commit，
+提交信息形如 `ledger(prediction): APH Revenue 2030 Base`。
+关闭方式：`ALPHA_RADAR_AUTOCOMMIT=0`（批量导入时用）。
+测试环境（`ALPHA_RADAR_HOME` 指向临时目录）自动禁用 —— 否则 63 项测试会制造垃圾 commit。
+
+**append-only 的正确边界**：
+
+| | predictions | actuals |
+|---|---|---|
+| 性质 | 当时的判断 | 已发生的事实 |
+| 改写 | **禁止**，必须升版本 | 允许纠错，但需**独立提交留痕** |
 
 ---
 
@@ -132,5 +154,6 @@ py scripts/herdr_ci.py --build A2   # 串行构建队列
 | G3 | 真实数据完整性（预测 / 实际 / 归因 / 决策） |
 | G4 | 语法 / 导入 |
 | G5 | 文档-CLI 漂移（三个工具 + 报告 9 节） |
+| G6 | **账本已固化进 git**（写入即 commit，检验无未提交改动） |
 
 **编排铁律**：并行只用于只读门禁；构建必须串行（同一文件）；条件用哨兵 `__GATE_PASS__/__GATE_FAIL__`；pane 侧命令必须跨 shell 安全；先跑 canary；人工批准项永不自动执行。
