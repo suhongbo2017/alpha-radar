@@ -211,7 +211,25 @@ py scripts/verify_data.py --all --require-cross  # 全量（G7 门禁）
 
 ---
 
-## 已建档案（6 家）
+## 已建档案（19 家 = 6 家研究报告级 + 13 家持仓补齐）
+
+**报告级（有 Bottom-Up 研究支撑，情景为研究结论）**：APH / ITRI / INTU / NOW / MSFT / CRM
+
+**持仓补齐级（2026-10-12，规则化情景，低置信度）**：
+ASX / NVDA / GOOGL / RKLB / ORCL / OKLO / NFLX / KTOS / NVTS / QCOM / UMC / SPCX / SKHY
+
+> ⚠️ 后 13 家的 Bull/Base/Bear 由 `alpha_scenario.py` 的**规则**生成，
+> **不是行业研究结论**。规则只看「市值规模 + TTM 增速 + 杠杆 + 是否烧钱」。
+> 且四类公司上赔率输出**无效**：pre-revenue（OKLO/SPCX）、零增长现金牛（QCOM）、
+> 收入崩塌（NVTS）、ADR 市值不可靠（ASX/UMC）。
+> **这 13 家一律不登记预测** —— 规则没有表达行业观点，无法被证伪。
+>
+> 两家**根本无法建档**：**SPCX（SpaceX 未上市）**、**SKHY（SK hynix，SEC 只有发行费用数据，
+> 需韩国 DART）**。工具链的覆盖边界应扩充为「美股 SEC；港股/A股/韩国 未覆盖」。
+
+---
+
+## 参考：6 家报告级档案横向对照
 
 | 标的 | Fundamental | 生命周期 | ROIC vs WACC | 净杠杆 | 现价/1年分位 | 赔率(一致口径) | 5年CAGR | 动作 |
 |---|---:|---|---|---|---:|---:|---:|---|

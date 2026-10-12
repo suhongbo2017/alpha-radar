@@ -33,29 +33,39 @@ except Exception:
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SEC_DIR = os.path.join(ROOT, "analysis", "sec")
 
-REV_TAGS = ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues"]
+# [D-58] 同时支持 us-gaap 与 ifrs-full（外国私人发行人：ASX/UMC 等用 IFRS）
+TAXONOMIES = ["us-gaap", "ifrs-full", "dei"]   # 前者优先（dei 提供股数）
+
+REV_TAGS = ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues",
+            "Revenue", "RevenueFromContractsWithCustomers"]
 GP_TAGS = ["GrossProfit"]
-OP_TAGS = ["OperatingIncomeLoss"]
-NI_TAGS = ["NetIncomeLoss"]
-OCF_TAGS = ["NetCashProvidedByUsedInOperatingActivities"]
-CAPEX_TAGS = ["PaymentsToAcquirePropertyPlantAndEquipment"]
+COGS_TAGS = ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfSales"]
+OP_TAGS = ["OperatingIncomeLoss", "ProfitLossFromOperatingActivities"]
+NI_TAGS = ["NetIncomeLoss", "ProfitLoss", "ProfitLossAttributableToOwnersOfParent"]
+OCF_TAGS = ["NetCashProvidedByUsedInOperatingActivities",
+            "CashFlowsFromUsedInOperatingActivities"]
+CAPEX_TAGS = ["PaymentsToAcquirePropertyPlantAndEquipment",
+              "PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities",
+              "PaymentsToAcquireProductiveAssets"]      # KTOS 等用这个
 # [D-46] 资本化软件也属于 CapEx（对内自建软件的投资），不计入会低估 CapEx / 高估 FCF。
 # 实测：INTU PP&E 0.175B + 资本化软件 0.046B = 0.221B = Yahoo 完全一致
 CAPEX_ADD_TAGS = ["PaymentsToDevelopSoftware", "PaymentsForSoftware",
                   "PaymentsToAcquireSoftware"]
 DA_TAGS = ["DepreciationDepletionAndAmortization", "DepreciationAmortizationAndAccretionNet",
+           "DepreciationAndAmortisationExpense",
            # INTU 等用现金流量表里的摊销调整行
            "AdjustmentForAmortization"]
 # [D-53] MSFT 等不报汇总 D&A tag，需用组成部分之和
 DA_PARTS = ["Depreciation", "AmortizationOfIntangibleAssets",
             "FinanceLeaseRightOfUseAssetAmortization", "AmortizationOfDeferredCharges"]
-TAX_TAGS = ["IncomeTaxExpenseBenefit"]
-PRETAX_TAGS = ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+TAX_TAGS = ["IncomeTaxExpenseBenefit", "IncomeTaxExpenseContinuingOperations"]
+PRETAX_TAGS = ["ProfitLossBeforeTax",
+               "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
                "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"]
 # [D-46] 现金及现金等价物 —— 净债务必须扣除【短期投资】，否则会系统性高估净债务。
 # 实测：APH 短期投资 0.6897B → 净债务 14.08B(错) vs 13.39B(对)
 #       INTU 短期投资 2.495B → 净债务 2.96B(错) vs 0.47B(对)
-CASH_TAGS = ["CashAndCashEquivalentsAtCarryingValue"]
+CASH_TAGS = ["CashAndCashEquivalentsAtCarryingValue", "CashAndCashEquivalents"]
 CASH_LIKE_EXTRA = ["ShortTermInvestments", "MarketableSecuritiesCurrent",
                    "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
                    "OtherShortTermInvestments",
@@ -64,14 +74,20 @@ CASH_LIKE_EXTRA = ["ShortTermInvestments", "MarketableSecuritiesCurrent",
                    "DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLossCurrent"]
 STI_TAGS = CASH_LIKE_EXTRA
 
-EQ_TAGS = ["StockholdersEquity"]
+EQ_TAGS = ["StockholdersEquity", "Equity"]
 # 债务 tag 优先级：同日期时前面的优先；跨日期时由 latest() 取【最大日期】
 # 1/2 是显式口径（"含流动部分" / "长短合计"），3/4 是总分口径，5 含义模糊仅供参考
-DEBT_TAGS = ["LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
-             "DebtLongtermAndShorttermCombinedAmount",
-             "LongTermDebt",
-             "LongTermDebtNoncurrent",
-             "DebtInstrumentCarryingAmount"]
+# [D-58] 债务 tag 分两类 —— 口径不同，不能混为一谈：
+#   TOTAL：该 tag 本身就是【含流动部分的总债务】（us-gaap 惯例）
+#   PART ：该 tag 只是【分项】，必须求和（IFRS 惯例，LongtermBorrowings 不含流动部分）
+DEBT_TOTAL_TAGS = ["LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
+                   "DebtLongtermAndShorttermCombinedAmount",
+                   "LongTermDebt",
+                   "DebtInstrumentCarryingAmount",
+                   "Borrowings"]
+DEBT_PART_TAGS = ["ShorttermBorrowings", "CurrentPortionOfLongtermBorrowings",
+                  "LongtermBorrowings", "LongTermDebtNoncurrent"]
+DEBT_TAGS = DEBT_TOTAL_TAGS + DEBT_PART_TAGS   # 兼容旧引用
 # [D-54] **融资租赁负债属于有息债务**，必须计入总债务。
 # 实测：MSFT 用融资租赁建数据中心，金额 $66.59B。
 # 不计入会把一家净负债公司说成"净现金"（-36.55B → +30.04B）。
@@ -79,7 +95,17 @@ DEBT_TAGS = ["LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
 FINLEASE_COMBINED = ["FinanceLeaseLiability"]
 FINLEASE_PARTS = ["FinanceLeaseLiabilityNoncurrent", "FinanceLeaseLiabilityCurrent"]
 # 经营租赁单独列示，**不计入净债务**（为了与 EBITDA 口径一致），作为备忘项
-SHARE_TAGS = ["WeightedAverageNumberOfDilutedSharesOutstanding", "CommonStockSharesOutstanding"]
+SHARE_TAGS = ["WeightedAverageNumberOfDilutedSharesOutstanding",
+              "WeightedAverageNumberOfSharesOutstandingBasic",
+              "CommonStockSharesOutstanding", "EntityCommonStockSharesOutstanding"]
+
+
+def _minus1y(d):
+    """上一年同日（2/29 → 2/28）"""
+    try:
+        return d.replace(year=d.year - 1)
+    except ValueError:
+        return d.replace(year=d.year - 1, day=28)
 
 
 def days(a, b):
@@ -90,7 +116,13 @@ class Facts:
     def __init__(self, path):
         d = json.load(open(path, encoding="utf-8"))
         self.entity = d.get("entityName", "?")
-        self.tax = d.get("facts", {}).get("us-gaap", {})
+        # [D-58] 合并多分类标准（us-gaap 优先：同名 tag 取 us-gaap）
+        facts = d.get("facts", {})
+        self.tax = {}
+        for tax in reversed(TAXONOMIES):
+            self.tax.update(facts.get(tax, {}))
+        self.taxonomies = [t for t in TAXONOMIES if facts.get(t)]
+        self.currency = d.get("currency")
 
     def _items(self, tag):
         if tag not in self.tax:
@@ -108,14 +140,35 @@ class Facts:
                           [D-35] 不能取"最后一条"：同一 end 日期可能同时有
                           90 天（Q2）与 181 天（H1）两份，取错会让 TTM 偏小。
         """
+        # [D-63] **跨 tag 合并**，而不是"取第一个有数据的 tag"。
+        # 实测：NVTS 中途从 NetIncomeLoss 换到 ProfitLoss，
+        # 旧实现取到 NetIncomeLoss 就返回 → 2026 年的季度完全看不见，
+        # TTM 静默退回 FY2025。合并后同一日期由【优先级更高】的 tag 占位。
+        # [D-64] 陈旧 tag 防护：先把全部 tag 扫一遍，取最新日期；
+        # 最新日期落后 3 年以上的 tag **丢弃**。
+        # 实测：NFLX 的 GrossProfit 停在 2011 年，合并后把 TTM 毛利算成 1.64B（真值约 48%×48B）
+        all_dates = []
         for tag in tags:
-            rows = {}
+            for it in self._items(tag):
+                all_dates.append(it["end"])
+        newest = max(all_dates) if all_dates else None
+        rows, used = {}, []
+        for tag in tags:
+            _ds = [it["end"] for it in self._items(tag)]
+            if newest and _ds:
+                _lag = (dt.date.fromisoformat(newest) -
+                        dt.date.fromisoformat(max(_ds))).days
+                if _lag > 3 * 365:
+                    continue          # 陈旧 tag
+            got = False
             for it in self._items(tag):
                 has_dur = "start" in it
                 if kind == "instant":
                     if has_dur:
                         continue
-                    rows[it["end"]] = it["val"]
+                    if it["end"] not in rows:
+                        rows[it["end"]] = it["val"]
+                    got = True
                     continue
                 if not has_dur:
                     continue
@@ -123,17 +176,22 @@ class Facts:
                 if kind == "annual":
                     if not (330 <= n <= 400):
                         continue
-                    rows[it["end"]] = it["val"]
+                    if it["end"] not in rows:
+                        rows[it["end"]] = it["val"]
+                    got = True
                 elif kind == "ytd":
                     if not (60 <= n <= 400):
                         continue
                     prev = rows.get(it["end"])
                     if prev is None or n > prev[0]:
                         rows[it["end"]] = (n, it["val"])
-            if rows:
-                if kind == "ytd":
-                    rows = {k: v[1] for k, v in rows.items()}
-                return tag, [rows[k] for k in sorted(rows)], sorted(rows)
+                    got = True
+            if got:
+                used.append(tag)
+        if rows:
+            if kind == "ytd":
+                rows = {k: v[1] for k, v in rows.items()}
+            return used[0] if used else None, [rows[k] for k in sorted(rows)], sorted(rows)
         return None, [], []
 
     def _sum_maps(self, tags, add_tags, kind):
@@ -164,6 +222,16 @@ class Facts:
             return None
         if q_end is None:
             q_end = max(ym_)
+        # [D-65] q_end 也需"最近日期"回退：52/53 周财年的季末逐年漂移
+        # （NVDA: 2026-07-26 vs 2025-07-27），精确匹配会落空 → 去年同期返回 None
+        if q_end not in ym_:
+            _qd = dt.date.fromisoformat(q_end)
+            _near = [(abs((dt.date.fromisoformat(d_) - _qd).days), d_)
+                     for d_ in ym_ if abs((dt.date.fromisoformat(d_) - _qd).days) <= 14]
+            if _near:
+                q_end = min(_near)[1]
+            else:
+                return None
         if q_end in am_:
             return am_[q_end]            # 季末正好是财年末
         prior_fy = [(d_, v_) for d_, v_ in am_.items() if d_ < q_end]
@@ -174,11 +242,15 @@ class Facts:
         if cur is None:
             return None
         qd = dt.date.fromisoformat(q_end)
-        tgt = qd.replace(year=qd.year - 1).isoformat()
-        prior = ym_.get(tgt)
+        tgt = _minus1y(qd)
+        prior = ym_.get(tgt.isoformat())
         if prior is None:
-            cand = [v_ for d_, v_ in ym_.items() if d_[:5] == tgt[:5] and d_ < q_end]
-            prior = cand[-1] if cand else None
+            # [D-60] 52/53 周财年（NVDA 1月、QCOM 9月、KTOS 12月底）的同期日期
+            # 不落在同一月日（如 2026-06-28 vs 2025-06-29），必须按【最接近日期】找
+            near = [(abs((dt.date.fromisoformat(d_) - tgt).days), d_, v_)
+                    for d_, v_ in ym_.items()
+                    if d_ < q_end and abs((dt.date.fromisoformat(d_) - tgt).days) <= 14]
+            prior = min(near)[2] if near else None
         if prior is None:
             return None
         return fy + cur - prior
@@ -212,6 +284,22 @@ class Facts:
             rows[it["end"]] = it["val"]     # 同日期后出现者胜（经重述后的值）
         return rows
 
+    def debt_at(self, asof):
+        """[D-58] 某日的有息债务：优先「合计 tag」，否则「分项求和」
+        返回 (value, 说明)
+        """
+        for t in DEBT_TOTAL_TAGS:
+            rows = self.instant_rows(t)
+            if asof in rows:
+                return rows[asof], t
+        tot, used = 0.0, []
+        for t in DEBT_PART_TAGS:
+            rows = self.instant_rows(t)
+            if asof in rows:
+                tot += rows[asof]
+                used.append(t)
+        return (tot if used else 0.0), ("+".join(used) if used else None)
+
     def finlease_at(self, asof):
         """[D-54] 某日的融资租赁负债：优先合计 tag，否则流动+非流动求和"""
         for t in FINLEASE_COMBINED:
@@ -239,9 +327,24 @@ class Facts:
         共同源头都是：两边的解析路径不同。
         """
         cash_group = CASH_TAGS + CASH_LIKE_EXTRA
-        asof, bsv, bstag = self.latest_common({"cash": cash_group,
-                                               "equity": EQ_TAGS,
-                                               "debt": DEBT_TAGS})
+        # [D-62] 三项可用性统一定义：现金组有值 + 权益有值 + 债务（含融资租赁）> 0
+        # 不再"debt_at 失败就回退到另一条路径" —— 那会产生第二条解析路径（D-50 的教训）
+        cd, ed, dd = set(), set(), set()
+        for t_ in cash_group:
+            cd |= set(self.instant_rows(t_))
+        for t_ in EQ_TAGS:
+            ed |= set(self.instant_rows(t_))
+        for t_ in DEBT_TOTAL_TAGS + DEBT_PART_TAGS:
+            for d_ in self.instant_rows(t_):
+                if self.debt_at(d_)[0]:
+                    dd.add(d_)
+        common = cd & ed & dd
+        if not common:
+            return None, {}, {}
+        asof = max(common)
+        _, bsv, bstag = self.latest_common({"cash": cash_group,
+                                            "equity": EQ_TAGS,
+                                            "debt": DEBT_TAGS})
         if not asof:
             return None, {}, {}
         # cash 组：同日可能命中多个 tag（现金 + 短期投资）→ 必须【求和】
@@ -256,9 +359,10 @@ class Facts:
                 tot += v
                 seen.append(v)
                 used.append(t)
+        dval, dtags_used = self.debt_at(asof)
         vals = {"cash": tot if used else bsv.get("cash"),
                 "equity": bsv.get("equity"),
-                "debt": bsv.get("debt")}
+                "debt": dval}
         # [D-54] 总债务 = 有息债务 + 融资租赁负债
         fl, fl_tag = self.finlease_at(asof)
         if fl:
@@ -268,7 +372,7 @@ class Facts:
         ol_rows = self.instant_rows("OperatingLeaseLiability")
         vals["operating_lease"] = ol_rows.get(asof, 0.0)
         tags = {"cash": used, "equity": [bstag.get("equity")],
-                "debt": [bstag.get("debt"), fl_tag]}
+                "debt": [dtags_used, fl_tag]}
         return asof, vals, tags
 
     def latest(self, tags):
@@ -346,7 +450,7 @@ def main():
         print("✗ 找不到 %s —— 先跑: py scripts/alpha_fetch.py %s" % (path, a.ticker))
         return 1
     F = Facts(path)
-    print("实体: %s" % F.entity)
+    print("实体: %s　｜　分类标准: %s" % (F.entity, ", ".join(F.taxonomies)))
 
     out = {"ticker": a.ticker.upper(), "entity": F.entity}
 
@@ -383,6 +487,11 @@ def main():
     # ---- TTM
     ttm_rev = F.ttm(REV_TAGS)
     ttm_gp = F.ttm(GP_TAGS)
+    if ttm_gp is None or (ttm_rev and ttm_gp / ttm_rev < 0.05):
+        # [D-64] 毛利缺失或明显失真 → 用 Revenue − COGS 派生
+        _cogs = F.ttm(COGS_TAGS)
+        if _cogs and ttm_rev:
+            ttm_gp = ttm_rev - _cogs
     ttm_op = F.ttm(OP_TAGS)
     ttm_ni = F.ttm(NI_TAGS)
     ttm_ocf = F.ttm(OCF_TAGS)
@@ -445,7 +554,9 @@ def main():
         print("    └ 备忘：经营租赁 %s（**未计入净债务**，为与 EBITDA 口径一致）"
               % f(bsv2.get("operating_lease")))
     print("  Equity %s (%s)" % (f(eq), eq_d))
-    print("  Debt   %s (%s)" % (f(debt), debt_d))
+    _dt = (bstag2 or {}).get("debt")
+    print("  Debt   %s (%s)%s" % (f(debt), debt_d,
+                                 ("  [%s]" % _dt[0]) if isinstance(_dt, (list, tuple)) and _dt and _dt[0] else ""))
     net_debt = (debt - cash) if (debt is not None and cash is not None) else None
     ebitda = (ttm_op + ttm_da) if (ttm_op is not None and ttm_da is not None) else None
     print("  Net Debt      %s" % f(net_debt))
@@ -468,6 +579,37 @@ def main():
     print("  ROIC         %s" % f(roic, "%"))
 
     # ---- 增长率
+    # ---- 股数与市值（估值倍数要用）
+    sh, sh_d, sh_src = None, None, None
+    for _t in SHARE_TAGS:
+        for _u, _items in (F.tax.get(_t, {}).get("units", {}) or {}).items():
+            rows = {it["end"]: it["val"] for it in _items if "start" not in it}
+            if not rows:
+                rows = {it["end"]: it["val"] for it in _items
+                        if "start" in it and 80 <= days(it["start"], it["end"]) <= 100}
+            if rows:
+                k = max(rows)
+                if sh_d is None or k > sh_d:
+                    sh, sh_d, sh_src = rows[k], k, _t
+        if sh_src:
+            break
+    px = None
+    try:
+        _qp = os.path.join(ROOT, "data", "quotes", "%s.json" % a.ticker.upper())
+        if os.path.exists(_qp):
+            px = json.load(open(_qp, encoding="utf-8")).get("price")
+    except Exception:
+        pass
+    mc = (px * sh) if (px and sh) else None
+    print("\n股数与市值")
+    print("  股数        %s (%s)" % (("%.3fM" % (sh / 1e6)) if sh else "—", sh_d))
+    print("  现价        %s" % (("%.2f" % px) if px else "—（先跑 alpha_quote.py）"))
+    print("  市值        %s" % f(mc))
+    if mc and ttm_fcf:
+        print("  P/FCF       %.1fx   (FCF yield %.1f%%)" % (mc / ttm_fcf, ttm_fcf / mc * 100))
+    if mc and ttm_ni:
+        print("  P/E (TTM)   %.1fx" % (mc / ttm_ni))
+
     print("\n增长")
     for k in (3, 5):
         if len(rv) > k and rv[-1 - k]:
@@ -505,6 +647,7 @@ def main():
         "cash": cash, "equity": eq, "debt": debt, "net_debt": net_debt,
         "ebitda_ttm": ebitda,
         "net_debt_ebitda": (net_debt / ebitda) if (net_debt is not None and ebitda) else None,
+        "shares": sh, "shares_date": sh_d, "price": px, "market_cap": mc,
         "tax_rate": rate, "nopat": nopat, "invested_capital": ic, "roic_pct": roic,
         "annual": {"end": rd, "revenue": rv, "gross_profit": gp, "op_income": op,
                    "net_income": ni, "ocf": ocf, "capex": cx},

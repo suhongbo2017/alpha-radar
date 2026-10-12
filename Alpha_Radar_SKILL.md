@@ -103,6 +103,10 @@ py scripts/alpha_metrics.py APH --years 8
 py scripts/alpha_metrics.py APH --json
 py scripts/alpha_metrics.py APH --score-inputs   # 直接输出 alpha_score.py 的定量参数
 
+# [D-66] 规则化情景（无行业研究时的占位，明确标注为低置信度）
+py scripts/alpha_scenario.py NVDA
+py scripts/alpha_scenario.py NVDA --json
+
 # [D-13] 持仓与组合雷达
 py scripts/alpha_portfolio.py sync                 # 从券商 API 拉取持仓快照
 py scripts/alpha_portfolio.py sync --dry-run       # 只看字段，不写盘
@@ -530,6 +534,43 @@ py scripts/alpha_score.py lite --revenue-growth 18 --moat-trend up --valuation-p
 
 > **使用顺序**：先用 `lite` 过一遍观察名单，只对✅的跑完整 Alpha Radar；
 > 跑完用 `score` 得可复现的基本面分；最后用 `size` 把赔率转成仓位上限。
+
+### 5.4b 规则化情景 —— 何时用、何时必须声明无效（[D-66/D-67]）
+
+对**没有现成行业研究**的标的，手拍 Bull/Base/Bear 会引入主观性。`alpha_scenario.py` 用写死的规则生成：
+
+```text
+g_bull = clamp(TTM Revenue YoY × 0.9, 0, 规模上限)
+g_base = clamp(TTM Revenue YoY × 0.5, 0, 规模上限 × 0.6)
+g_bear = min(TTM Revenue YoY × 0.1, 0)
+
+规模上限（体量越大，可持续增速越低）：
+  <$10B → 25%   <$100B → 18%   <$1T → 12%   ≥$1T → 8%
+
+利润率系数：Bull ×1.10 / Base ×1.00 / Bear ×0.90
+倍数系数  ：Bull ×1.20 / Base ×1.00 / Bear × [0.70 − min(0.30, max(0,ND/EBITDA)×0.05) − (0.10 if FCF<0)]
+
+价值 = 当前市值 × (1+g)^5 × 利润率系数 × 倍数系数      概率 25/50/25
+```
+
+**已知的结构性缺陷（必须写进档案）：**
+
+> 规则只看「**市值规模 + TTM 增速 + 杠杆 + 是否烧钱**」，
+> **完全不看行业地位、竞争格局、技术路线或管理层。**
+> 实测：它会把 **NVDA 与 GOOGL 按同一增速上限（8%）处理** —— 这显然没有信息量。
+
+**四类公司上必须声明赔率输出无效：**
+
+| 类型 | 例子 | 为什么无效 |
+|---|---|---|
+| pre-revenue | OKLO、SPCX | 无收入 → 规则无输入 |
+| 零增长现金牛 | QCOM | 规则只看增长，不看股东回报 |
+| 收入崩塌中 | NVTS | 规则无法表达"基本面恶化" |
+| ADR 市值不可靠 | ASX、UMC | 普通股股数 × ADS 价格 ≠ 市值 |
+
+**纪律**：用规则情景的档案，**不登记预测** —— 规则没有表达任何行业观点，
+因而不具备"可被未来数据证伪"的资格，登记它会污染预测账本。
+动作一律 **Watch（需研究后再决策）**。
 
 ### 5.5 组合层 —— Radar Board（[D-13]）
 
@@ -1079,7 +1120,11 @@ D:/pi/select_stock/
 │   ├── alpha_metrics.py              # 一手指标计算（TTM/Margin/FCF/ROIC）
 │   ├── alpha_quote.py                # [D-29] 行情快照（yfinance 备选源）
 │   ├── verify_data.py                # [G7] 四层数据校验（含外部交叉）
-│   ├── alpha_portfolio.py            # [D-13] 持仓与组合雷达
+│   ├── alpha_portfolio.py            # [D-66] 规则化情景（无行业研究时的占位，明确标注为低置信度）
+py scripts/alpha_scenario.py NVDA
+py scripts/alpha_scenario.py NVDA --json
+
+# [D-13] 持仓与组合雷达
 │   ├── gates.py                      # 门禁运行器（跨 shell）
 │   ├── gates_data_integrity.py       # G3
 │   ├── gates_git_frozen.py           # G6 [D-18]

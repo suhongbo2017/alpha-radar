@@ -1,0 +1,107 @@
+#### SPACE EXPLORATION TECHNOLOGIES CORP.
+
+== Revenue [A] == (no data)
+
+== Revenue(contract) [A] == (no data)
+
+== GrossProfit [A] == (no data)
+
+== COGS [A] == (no data)
+
+== COGS2 [A] == (no data)
+
+== OpInc [A] == (no data)
+
+== NetIncome [A] == (no data)
+
+== R&D [A] == (no data)
+
+== S&M [A] == (no data)
+
+== SG&A [A] == (no data)
+
+== G&A [A] == (no data)
+
+== SBC [A] == (no data)
+
+== OCF [A] == (no data)
+
+== CapEx [A] == (no data)
+
+== D&A [A] == (no data)
+
+== AmortIntang [A] == (no data)
+
+== InterestExp [A] == (no data)
+
+== Tax [A] == (no data)
+
+== EPSdil [A] == (no data)
+
+== DilShares [A] == (no data)
+
+== Revenue [Q] == (no data)
+
+== Revenue(contract) [Q] ==
+   2025-06-30  4.0710B  10-Q
+   2026-06-30  7.8140B  10-Q
+
+== GrossProfit [Q] == (no data)
+
+== OpInc [Q] ==
+   2025-06-30  -0.9700B  10-Q
+   2026-06-30  -0.1430B  10-Q
+
+== NetIncome [Q] ==
+   2025-06-30  -1.0080B  10-Q
+   2026-06-30  -0.5410B  10-Q
+
+== OCF [Q] == (no data)
+
+== Cash [I] ==
+   2025-12-31  24.7470B  10-Q
+   2026-06-30  93.5220B  10-Q
+
+== MktSecCurr [I] ==
+   2025-12-31  0  10-Q
+   2026-06-30  6.4870B  10-Q
+
+== Equity [I] ==
+   2024-12-31  4.8630B  10-Q
+   2025-03-31  5.3190B  10-Q
+   2025-06-30  5.2170B  10-Q
+   2025-12-31  2.5730B  10-Q
+   2026-03-31  34.5330B  10-Q
+   2026-06-30  127.2240B  10-Q
+
+== LTDebt [I] == (no data)
+
+== DebtCurr [I] == (no data)
+
+== TotalLTDebt [I] ==
+   2025-12-31  21.6590B  10-Q
+   2026-06-30  38.2850B  10-Q
+
+== Inventory [I] ==
+   2025-12-31  2.4160B  10-Q
+   2026-06-30  2.7180B  10-Q
+
+== AR [I] ==
+   2025-12-31  1.5790B  10-Q
+   2026-06-30  3.5960B  10-Q
+
+== TotalAssets [I] ==
+   2025-12-31  92.0790B  10-Q
+   2026-06-30  192.7700B  10-Q
+
+== Goodwill [I] ==
+   2025-12-31  11.8090B  10-Q
+   2026-06-30  11.6450B  10-Q
+
+== ContractLiabCurr [I] ==
+   2025-12-31  6.1110B  10-Q
+   2026-06-30  7.9770B  10-Q
+
+== ContractLiabNonCurr [I] ==
+   2025-12-31  6.0050B  10-Q
+   2026-06-30  6.3090B  10-Q

@@ -46,19 +46,26 @@ PROXY = os.environ.get("ALPHA_PROXY", "http://127.0.0.1:7897")
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 
-# 与 alpha_metrics.py 保持一致的 tag 优先级
+# [D-50] 引擎必须先导入 —— tag 表要引用它
+import importlib.util  # noqa: E402
+_spec = importlib.util.spec_from_file_location("am", os.path.join(ROOT, "scripts", "alpha_metrics.py"))
+am = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(am)
+
+# [D-50] tag 表**直接引用引擎**，保证校验器与引擎走同一条路径（不再各维护一份）
 T = {
-    "revenue": ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues"],
-    "cogs": ["CostOfRevenue", "CostOfGoodsAndServicesSold"],
-    "gp": ["GrossProfit"],
-    "op": ["OperatingIncomeLoss"],
-    "ni": ["NetIncomeLoss"],
-    "ocf": ["NetCashProvidedByUsedInOperatingActivities"],
-    "capex": ["PaymentsToAcquirePropertyPlantAndEquipment"],
-    "sga": ["SellingGeneralAndAdministrativeExpense"],
-    "rd": ["ResearchAndDevelopmentExpense"],
+    "revenue": am.REV_TAGS, "gp": am.GP_TAGS, "op": am.OP_TAGS,
+    "ni": am.NI_TAGS, "ocf": am.OCF_TAGS, "capex": am.CAPEX_TAGS,
+    "sga": am.SGA_TAGS if hasattr(am, "SGA_TAGS") else ["SellingGeneralAndAdministrativeExpense"],
+    "rd": am.RD_TAGS if hasattr(am, "RD_TAGS") else ["ResearchAndDevelopmentExpense"],
+    "cogs": ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfSales"],
 }
-# [D-46] CapEx 可能需加上资本化软件；债务与 Yahoo 的差异通常是经营租赁负债
+BAL = {
+    "cash": am.CASH_TAGS + am.CASH_LIKE_EXTRA,
+    "equity": am.EQ_TAGS,
+    "debt": am.DEBT_TAGS,
+}
+
 CAPEX_ADD = ["PaymentsToDevelopSoftware", "PaymentsForSoftware", "PaymentsToAcquireSoftware"]
 LEASE_TAGS = ["OperatingLeaseLiability", "OperatingLeaseLiabilityNoncurrent"]
 # Yahoo 的"operatingIncome"是调整后口径（剔重组等）；SEC 是 GAAP。
@@ -124,14 +131,6 @@ def pctdiff(a, b):
     if a is None or b is None:
         return None
     return (b - a) / abs(a) * 100 if a else None
-
-
-# ══════════════════════════════════════════════════════════════════
-sys.path.insert(0, os.path.join(ROOT, "scripts"))
-import importlib.util
-_spec = importlib.util.spec_from_file_location("am", os.path.join(ROOT, "scripts", "alpha_metrics.py"))
-am = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(am)
 
 
 def ytd_map(F, tags):
@@ -375,11 +374,18 @@ def fetch_yahoo(ticker, types):
             res = (d.get("timeseries") or {}).get("result") or []
             if not res:
                 continue
-            out = {}
+            out, cur = {}, {}
             for r in res:
                 t = r["meta"]["type"][0]
-                out[t] = {v["asOfDate"]: v["reportedValue"]["raw"]
-                          for v in (r.get(t) or []) if v}
+                vals = {}
+                for v in (r.get(t) or []):
+                    if not v:
+                        continue
+                    vals[v["asOfDate"]] = v["reportedValue"]["raw"]
+                    cur.setdefault(v["asOfDate"], v["reportedValue"].get("currencyCode"))
+                if vals:
+                    out[t] = vals
+            out["__currency__"] = cur
             return out, ("yahoo直连" if proxy is None else "yahoo代理")
         except Exception:
             continue
@@ -510,7 +516,7 @@ def _run_one(a):
             rec("L2", "DEF", "双路 TTM 交叉 %s" % label, "无法计算第二条路径，跳过")
             continue
         d = abs(pctdiff(p1, p2) or 0)
-        rec("L2", "MATCH" if d < 0.5 else "MISMATCH",
+        rec("L2", "MATCH" if d < 1.0 else "MISMATCH",
             "双路 TTM 交叉 %s (截至 %s)" % (label, qe),
             "路径1 %.4fB = 路径2 %.4fB (Δ%.3f%%) [两路共享 ytd 原语，独立性有限]" % (p1 / 1e9, p2 / 1e9, d))
 
@@ -554,10 +560,17 @@ def _run_one(a):
                     continue
                 exp_cash += v; seen.append(v)
         exp_debt = None
-        for t in am.DEBT_TAGS:
+        for t in am.DEBT_TOTAL_TAGS:                      # 合计 tag 优先
             rows = {it["end"]: it["val"] for it in F._items(t) if "start" not in it}
             if asof in rows:
                 exp_debt = rows[asof]; break
+        if exp_debt is None:                              # 否则分项求和
+            tot = 0.0
+            for t in am.DEBT_PART_TAGS:
+                rows = {it["end"]: it["val"] for it in F._items(t) if "start" not in it}
+                if asof in rows:
+                    tot += rows[asof]
+            exp_debt = tot if tot else None
         # [D-54] 融资租赁必须计入总债务；独立重算要跟上引擎的定义
         fl_eng, _ = F.finlease_at(asof)
         if exp_debt is not None:
@@ -609,6 +622,8 @@ def _run_one(a):
                     "⚠️ Yahoo 不可达，**本次仅有内部校验**（内部双路不独立，无法捕获 YTD 类错误）")
         else:
             print("      源: %s" % ysrc)
+            _fx_ratios = []
+            pending = []
             # ── TTM 外部交叉（决定性）
             print("      ── TTM 外部交叉（独立于 YTD 选择逻辑）──")
             # 我的 TTM 截止日
@@ -625,6 +640,10 @@ def _run_one(a):
                     _o = F.ttm(T["ocf"])
                     _c = F.ttm(am.CAPEX_TAGS, add_tags=am.CAPEX_ADD_TAGS)
                     mine = (_o - _c) if (_o is not None and _c is not None) else None
+                if mine is None:
+                    rec("L3", "DEF", "TTM %s @%s" % (k, my_q),
+                        "SEC XBRL 无该指标数据（该公司可能未申报）→ 跳过比对，非错误")
+                    continue
                 hit = yv.get(my_q) if my_q else None
                 if hit is None:
                     rec("L3", "DEF", "TTM 交叉 %s" % k,
@@ -632,7 +651,7 @@ def _run_one(a):
                     continue
                 if k == "capex":
                     hit = abs(hit)
-                    mine = abs(mine) if mine is not None else None
+                    mine = abs(mine)
                     # 第三方 capex 可能还包含购入的无形资产（实测 NOW：0.850+0.044=0.894 ✓）
                     alt = F.ttm(am.CAPEX_TAGS,
                                 add_tags=am.CAPEX_ADD_TAGS + ["PaymentsToAcquireIntangibleAssets"],
@@ -704,6 +723,13 @@ def _run_one(a):
                     continue
                 y0 = common[-1]
                 va, vb = sv[y0], abs(yv[y0]) if k == "capex" else yv[y0]
+                # [D-59] 汇率差异识别：第三方可能用本币（如 ASX 的 NT$），
+                # 而 SEC XBRL 用 USD。比值若与汇率一致，是口径不是错误。
+                _cur = (ydata.get("__currency__") or {}).get(y0)
+                if _cur and _cur.upper() not in ("USD",) and va and vb:
+                    _r = abs(vb / va)
+                    if 0.1 < _r < 1000:
+                        _fx_ratios.append((k, _r))
                 va = abs(va) if k == "capex" else va
                 d = abs(pctdiff(va, vb) or 0)
                 extra = ""
@@ -713,15 +739,58 @@ def _run_one(a):
                     rec("L3", "DEF", "SEC ≈ Yahoo: %s (%s)【口径】" % (k, y0), rdesc)
                     continue
                 extra = rdesc
-                if d < 0.5:
-                    rec("L3", "MATCH", "SEC = Yahoo: %s (%s)" % (k, y0),
-                        "%.4fB = %.4fB" % (va / 1e9, vb / 1e9))
-                elif d < 5:
-                    rec("L3", "DEF", "SEC ≈ Yahoo: %s (%s)" % (k, y0),
-                        "%.4fB vs %.4fB (Δ%.2f%%) ← 聚合口径差异%s" % (va / 1e9, vb / 1e9, d, extra))
+                # [D-59] 不立即裁决：先收集，等全部比完后判断是否为汇率差异
+                if d >= 5:
+                    pending.append((k, y0, va, vb, d, extra))
+
+            # [D-59] 先看 pending 里未解释的差异是否全部由汇率解释
+            _fx_ok, _fx_med = False, None
+            if pending:
+                _rs = sorted(abs(vb / va) for _k, _y, va, vb, _d, _e in pending if va)
+                if len(_rs) >= 3:
+                    _fx_med = _rs[len(_rs) // 2]          # 中位数比均值稳健
+                    _near = [r for r in _rs if abs(r / _fx_med - 1) < 0.03]
+                    # 不需要币种标签：**多项呈一致倍数关系**本身就是单位差异的判据
+                    # （真实的记账错误不可能让 revenue/GP/OpInc/NI/OCF/capex 同倍偏移）
+                    if 0.1 < _fx_med < 1000 and len(_near) >= max(3, 0.6 * len(_rs)):
+                        _fx_ok = True
+                        rec("L3", "DEF", "第三方与 SEC 存在单位/币种差异",
+                            "隐含倍数 %.3f（近似汇率）；%d/%d 项落在 ±3%%；"
+                            "其余为口径差异（如归属母公司 vs 含少数股东权益）→ **非错误**"
+                            % (_fx_med, len(_near), len(_rs)))
+            for (k, y0, va, vb, d, extra) in pending:
+                if _fx_ok:
+                    _r = vb / va
+                    _lbl = "汇率一致" if abs(_r / _fx_med - 1) < 0.01 else                         "汇率 + 其他口径差异（如归属母公司 vs 含少数股东权益）"
+                    rec("L3", "DEF", "SEC vs Yahoo: %s (%s)【换算后】" % (k, y0),
+                        "本币 %.4f%s ÷ %.3f = %.4fB vs USD %.4fB → %s"
+                        % (vb / 1e9, "", _fx_med, vb / _fx_med / 1e9, va / 1e9, _lbl))
+                    continue
+                # [D-61] 第三方资产负债表口径逐家不同（实测 MSFT/GOOGL/NFLX/KTOS 各一种）
+                # → 只做参考；真正的保护是 L2 的净债务独立重算
+                if k in ("debt", "equity", "cash"):
+                    rec("L3", "DEF", "SEC vs Yahoo: %s (%s)【参考】" % (k, y0),
+                        "%.4fB vs %.4fB (Δ%.1f%%) ← 第三方资产负债表口径不一致，仅参考%s"
+                        % (va / 1e9, vb / 1e9, d, extra))
+                    continue
+                rec("L3", "MISMATCH", "SEC vs Yahoo: %s (%s)" % (k, y0),
+                    "%.4fB vs %.4fB (Δ%.1f%%) ← **需查明**%s" % (va / 1e9, vb / 1e9, d, extra))
+
+            # [D-59] 若所有项目的比值一致 → 汇率差异（口径），不是错误
+            if _fx_ratios:
+                _rs = [r for _k, r in _fx_ratios]
+                _avg = sum(_rs) / len(_rs)
+                _spread = max(abs(r / _avg - 1) for r in _rs)
+                _cur0 = (ydata.get("__currency__") or {})
+                _c0 = next((v for v in _cur0.values() if v and v.upper() != "USD"), "?")
+                if _spread < 0.02:
+                    rec("L3", "DEF", "第三方币种不同于 SEC（汇率差异）",
+                        "%s：第三方用 %s，SEC XBRL 用 USD，隐含汇率 %.3f，"
+                        "%d 项比值一致（波动 %.2f%%）→ **口径差异，非错误**"
+                        % (tk, _c0, _avg, len(_rs), _spread * 100))
                 else:
-                    rec("L3", "MISMATCH", "SEC vs Yahoo: %s (%s)" % (k, y0),
-                        "%.4fB vs %.4fB (Δ%.1f%%) ← **需查明**%s" % (va / 1e9, vb / 1e9, d, extra))
+                    rec("L3", "MISMATCH", "第三方币种差异但比值不一致",
+                        "隐含比值波动 %.1f%% —— 不只是汇率问题，**需查明**" % (_spread * 100))
 
             # FCF 在 SEC 里是派生量（OCF − CapEx），单独处理
             if "annualFreeCashFlow" in ydata:

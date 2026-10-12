@@ -1,0 +1,77 @@
+#### SK hynix Inc.
+
+== Revenue [A] == (no data)
+
+== Revenue(contract) [A] == (no data)
+
+== GrossProfit [A] == (no data)
+
+== COGS [A] == (no data)
+
+== COGS2 [A] == (no data)
+
+== OpInc [A] == (no data)
+
+== NetIncome [A] == (no data)
+
+== R&D [A] == (no data)
+
+== S&M [A] == (no data)
+
+== SG&A [A] == (no data)
+
+== G&A [A] == (no data)
+
+== SBC [A] == (no data)
+
+== OCF [A] == (no data)
+
+== CapEx [A] == (no data)
+
+== D&A [A] == (no data)
+
+== AmortIntang [A] == (no data)
+
+== InterestExp [A] == (no data)
+
+== Tax [A] == (no data)
+
+== EPSdil [A] == (no data)
+
+== DilShares [A] == (no data)
+
+== Revenue [Q] == (no data)
+
+== Revenue(contract) [Q] == (no data)
+
+== GrossProfit [Q] == (no data)
+
+== OpInc [Q] == (no data)
+
+== NetIncome [Q] == (no data)
+
+== OCF [Q] == (no data)
+
+== Cash [I] == (no data)
+
+== MktSecCurr [I] == (no data)
+
+== Equity [I] == (no data)
+
+== LTDebt [I] == (no data)
+
+== DebtCurr [I] == (no data)
+
+== TotalLTDebt [I] == (no data)
+
+== Inventory [I] == (no data)
+
+== AR [I] == (no data)
+
+== TotalAssets [I] == (no data)
+
+== Goodwill [I] == (no data)
+
+== ContractLiabCurr [I] == (no data)
+
+== ContractLiabNonCurr [I] == (no data)
