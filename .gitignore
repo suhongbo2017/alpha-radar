@@ -20,3 +20,6 @@ data/review_report.md
 # ── 券商凭据（绝不入库）────────────────────────────────
 data/.futu_auth
 data/positions_raw.json
+
+# ── 个人持仓数据（⚠️ 公开仓库不得包含）──────────────────
+data/positions.json

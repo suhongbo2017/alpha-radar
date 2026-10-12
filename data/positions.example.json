@@ -1,0 +1,28 @@
+{
+ "source": "example",
+ "fetched_at": "2026-10-12",
+ "quote_date": "2026-10-09",
+ "currency": "USD",
+ "totals": {
+  "market_value": "<值>",
+  "cost_basis": "<值>",
+  "unrealized_pnl": "<值>",
+  "realized_pnl": "<值>",
+  "unrealized_pct": "<值>",
+  "held_count": "<值>"
+ },
+ "positions": [
+  {
+   "code": "<值>",
+   "name": "<值>",
+   "qty": "<股数>",
+   "avg_cost": "<成本>",
+   "last": "<值>",
+   "market_value": "<值>",
+   "unrealized_pnl": "<值>",
+   "unrealized_pct": "<值>",
+   "realized_pnl": "<值>"
+  }
+ ],
+ "_note": "这是 schema 示例。真实持仓在 data/positions.json（已 gitignore）。"
+}
