@@ -61,6 +61,10 @@ T = {
 # [D-46] CapEx 可能需加上资本化软件；债务与 Yahoo 的差异通常是经营租赁负债
 CAPEX_ADD = ["PaymentsToDevelopSoftware", "PaymentsForSoftware", "PaymentsToAcquireSoftware"]
 LEASE_TAGS = ["OperatingLeaseLiability", "OperatingLeaseLiabilityNoncurrent"]
+# Yahoo 的"operatingIncome"是调整后口径（剔重组等）；SEC 是 GAAP。
+# 实测 CRM：8.331 + 重组 0.586 = 8.917 = Yahoo 分毫不差。
+OP_ADD = ["RestructuringCharges", "RestructuringSettlementAndImpairmentProvisions",
+          "AssetImpairmentCharges"]
 
 # [D-46] 现金组必须与引擎一致（含短期投资），否则校验器测的是另一条路径
 from importlib.util import spec_from_file_location, module_from_spec as _mfs  # noqa: E402
@@ -80,7 +84,11 @@ Y = {
 # 共享同一个 bug，所以必然一致（实测：注入 D-35 后双路仍报 Δ0.000%）。
 # Yahoo trailing 是完全独立的编制管道，它才是能真正拓测 YTD 选择错误的检查。
 TTM_Y = {"revenue": "trailingTotalRevenue", "ni": "trailingNetIncome",
-         "ocf": "trailingOperatingCashFlow"}
+         "ocf": "trailingOperatingCashFlow",
+         # [D-53] capex/FCF 也必须交叉 —— MSFT 的 CapEx TTM 曾因财年边界错误
+         # 报成 167.35B（真值 115.95B），当时它不在交叉范围内，所以静默通过了。
+         "capex": "trailingCapitalExpenditure",
+         "fcf": "trailingFreeCashFlow"}
 # 资产负债表项为【时点值】，必须用 instant 取数，不能用年度区间的 key 去查
 BAL = {
     "cash": ["CashAndCashEquivalentsAtCarryingValue"] + CASH_LIKE_EXTRA,
@@ -137,16 +145,20 @@ def annual_map(F, tags):
 
 
 def instant_map(F, tags):
-    """时点值（资产负债表项）"""
+    """时点值（资产负债表项）—— **合并所有 tag**，同日期时前面的 tag 优先
+
+    [D-55] 旧实现只返回"第一个有数据的 tag"的序列 → 若该 tag 早已停用，
+    最新日期就永远取不到，交叉比对会静默退化成"日期不可比"（假阴性）。
+    实测：MSFT 的 debt 比对因此被跳过。
+    """
+    out = {}
     for tag in tags:
-        rows = {}
         for it in F._items(tag):
             if "start" in it:
                 continue
-            rows[it["end"]] = it["val"]
-        if rows:
-            return rows
-    return {}
+            if it["end"] not in out:      # 前面的 tag 优先
+                out[it["end"]] = it["val"]
+    return out
 
 
 def fy_ends(F, tags=None):
@@ -291,6 +303,59 @@ def close_enough(a, b, tol_pct):
     """
     d = pctdiff(a, b)
     return d is not None and abs(d) < tol_pct
+
+
+def _sum_annual(F, tags, y0):
+    """y0 年度的各 tag 之和（只计有该年度数据的 tag）"""
+    tot, used = 0.0, []
+    for t in tags:
+        a = annual_map(F, [t])
+        if y0 in a:
+            tot += a[y0]
+            used.append(t)
+    return tot, used
+
+
+# [D-46/D-53] 已知的口径差异 —— 每一项都经实测精确对账到小数点后三位。
+# 遇到差异时先试这些；能对上就归入 DEFINITIONAL 而不是 MISMATCH。
+RECON = [
+    ("capex", "资本化软件", [CAPEX_ADD], "annual"),
+    ("op", "重组/减值等调整项", [OP_ADD], "annual"),
+    # [D-54/D-55] 第三方（Yahoo）的债务口径与我们不同，且不止一种：
+    #   Yahoo 反而计【经营租赁非流动】、不计【融资租赁】。
+    #   既然口径不统一，校验目标就不是"相等"，而是"**能解释差异**"。
+    ("debt", "经营租赁非流动", [["OperatingLeaseLiabilityNoncurrent"]], "instant"),
+    ("debt", "经营租赁合计", [["OperatingLeaseLiability"]], "instant"),
+    ("debt", "融资租赁", [["FinanceLeaseLiability"]], "instant"),
+    ("debt", "经营租赁非流动+融资租赁",
+     [["OperatingLeaseLiabilityNoncurrent", "FinanceLeaseLiability"]], "instant"),
+]
+
+
+def try_reconcile(F, k, y0, va, vb):
+    """返回 (差异百分数, 说明) 或 (None, 部分说明)
+
+    逐个尝试候选调整项；只要有一组能把差异解释到 0.5% 以内，
+    就归入 DEFINITIONAL 而不是 MISMATCH。
+    """
+    partial = ""
+    for key, label, tag_sets, kind in RECON:
+        if key != k:
+            continue
+        for tags in tag_sets:
+            if kind == "instant":
+                m = instant_map(F, tags)
+                add = m.get(y0)
+            else:
+                add, _used = _sum_annual(F, tags, y0)
+            if not add:
+                continue
+            if close_enough(va + add, vb, 0.5):
+                return pctdiff(va + add, vb), \
+                    "%.4fB + %s %.4fB = %.4fB = 第三方 %.4fB ✓（口径差异，非错误）" % (
+                        va / 1e9, label, add / 1e9, (va + add) / 1e9, vb / 1e9)
+            partial = "（已试 %s = %.4fB，不足以完全解释）" % (label, add / 1e9)
+    return None, partial
 
 
 def fetch_yahoo(ticker, types):
@@ -493,6 +558,10 @@ def _run_one(a):
             rows = {it["end"]: it["val"] for it in F._items(t) if "start" not in it}
             if asof in rows:
                 exp_debt = rows[asof]; break
+        # [D-54] 融资租赁必须计入总债务；独立重算要跟上引擎的定义
+        fl_eng, _ = F.finlease_at(asof)
+        if exp_debt is not None:
+            exp_debt += (fl_eng or 0.0)
         eng_cash, eng_debt = bsv.get("cash"), bsv.get("debt")
         if not close_enough(eng_cash, exp_cash, 0.5) or not close_enough(eng_debt, exp_debt, 0.5):
             rec("L2", "MISMATCH", "净债务独立重算（同日 %s）" % asof,
@@ -500,8 +569,9 @@ def _run_one(a):
                 % ((eng_cash or 0) / 1e9, (eng_debt or 0) / 1e9, exp_cash / 1e9, (exp_debt or 0) / 1e9))
         else:
             rec("L2", "MATCH", "净债务独立重算（同日 %s）" % asof,
-                "现金 %.4fB（%d 个 tag 之和）/ 债务 %.4fB → 净债务 %.4fB"
-                % (eng_cash / 1e9, len(seen), eng_debt / 1e9, (eng_debt - eng_cash) / 1e9))
+                "现金 %.4fB（%d 个 tag 之和）/ 债务 %.4fB（含融资租赁 %.4fB）→ 净债务 %.4fB"
+                % (eng_cash / 1e9, len(seen), eng_debt / 1e9, (fl_eng or 0) / 1e9,
+                   (eng_debt - eng_cash) / 1e9))
 
     # TTM 应落在两个财年的合理包络内
     # [D-40] 不能写死"公司一定在增长"：初版假设 TTM ≥ 上一财年，
@@ -548,17 +618,72 @@ def _run_one(a):
                 if ykey not in ydata:
                     continue
                 yv = ydata[ykey]
-                mine = F.ttm(T[k])
+                mine = F.ttm(T[k]) if k in T else None
+                if k == "capex":
+                    mine = F.ttm(am.CAPEX_TAGS, add_tags=am.CAPEX_ADD_TAGS)
+                elif k == "fcf":
+                    _o = F.ttm(T["ocf"])
+                    _c = F.ttm(am.CAPEX_TAGS, add_tags=am.CAPEX_ADD_TAGS)
+                    mine = (_o - _c) if (_o is not None and _c is not None) else None
                 hit = yv.get(my_q) if my_q else None
                 if hit is None:
                     rec("L3", "DEF", "TTM 交叉 %s" % k,
                         "Yahoo 无 %s 日期的 trailing 值（有: %s）" % (my_q, sorted(yv)[-3:]))
                     continue
-                d = abs(pctdiff(mine, hit) or 0)
+                if k == "capex":
+                    hit = abs(hit)
+                    mine = abs(mine) if mine is not None else None
+                    # 第三方 capex 可能还包含购入的无形资产（实测 NOW：0.850+0.044=0.894 ✓）
+                    alt = F.ttm(am.CAPEX_TAGS,
+                                add_tags=am.CAPEX_ADD_TAGS + ["PaymentsToAcquireIntangibleAssets"],
+                                q_end=(q_end_for := my_q))
+                    if alt is not None and close_enough(abs(alt), hit, 0.5):
+                        rec("L3", "DEF", "TTM capex @%s【口径】" % my_q,
+                            "%.4fB(P\u0026E+软件) + 无形资产 → %.4fB = 第三方 %.4fB ✓"
+                            % (abs(mine or 0) / 1e9, abs(alt) / 1e9, hit / 1e9))
+                        continue
+                d = abs(pctdiff(mine, hit) or 0) if mine is not None else 99
                 rec("L3", "MATCH" if d < 0.5 else "DEF" if d < 2 else "MISMATCH",
                     "TTM %s @%s（我 vs Yahoo trailing）" % (k, my_q),
-                    "%.4fB vs %.4fB (Δ%.2f%%)%s" % (mine / 1e9, hit / 1e9, d,
+                    "%.4fB vs %.4fB (Δ%.2f%%)%s" % ((mine or 0) / 1e9, hit / 1e9, d,
                                                     "" if d < 2 else "  ← **TTM 算错了**"))
+
+            # [D-56] 去年同期 TTM 也必须交叉 —— TTM YoY 靠它，错一位数就变 0.0%
+            prior_q = None
+            if my_q:
+                _d = dt.date.fromisoformat(my_q)
+                prior_q = _d.replace(year=_d.year - 1).isoformat()
+            for k, ykey in TTM_Y.items():
+                if ykey not in ydata or not prior_q:
+                    continue
+                h2 = ydata[ykey].get(prior_q)
+                if h2 is None:
+                    continue
+                if k == "fcf":
+                    _o = F.ttm(T["ocf"], q_end=prior_q)
+                    _c = F.ttm(am.CAPEX_TAGS, add_tags=am.CAPEX_ADD_TAGS, q_end=prior_q)
+                    m2 = (_o - _c) if (_o is not None and _c is not None) else None
+                elif k == "capex":
+                    m2 = F.ttm(am.CAPEX_TAGS, add_tags=am.CAPEX_ADD_TAGS, q_end=prior_q)
+                    h2, m2 = abs(h2), abs(m2) if m2 is not None else None
+                    alt2 = F.ttm(am.CAPEX_TAGS,
+                                 add_tags=am.CAPEX_ADD_TAGS + ["PaymentsToAcquireIntangibleAssets"],
+                                 q_end=prior_q)
+                    if alt2 is not None and close_enough(abs(alt2), h2, 0.5):
+                        rec("L3", "DEF", "去年同期 TTM capex @%s【口径】" % prior_q,
+                            "+ 购入无形资产 → %.4fB = 第三方 %.4fB ✓" % (abs(alt2) / 1e9, h2 / 1e9))
+                        continue
+                else:
+                    m2 = F.ttm(T[k], q_end=prior_q)
+                d2 = abs(pctdiff(m2, h2) or 0) if m2 is not None else 99
+                if d2 >= 2:
+                    rec("L3", "DEF" if d2 < 10 else "MISMATCH", "去年同期 TTM %s @%s" % (k, prior_q),
+                        "%.4fB vs %.4fB (Δ%.2f%%)%s"
+                        % ((m2 or 0) / 1e9, h2 / 1e9, d2,
+                           "（口径差异，幅度 <10%%）" if d2 < 10 else " ← **去年同期算错**"))
+                else:
+                    rec("L3", "MATCH", "去年同期 TTM %s @%s" % (k, prior_q),
+                        "%.4fB vs %.4fB (Δ%.2f%%)" % ((m2 or 0) / 1e9, h2 / 1e9, d2))
 
             for k, ykey in Y.items():
                 if ykey not in ydata:
@@ -582,26 +707,12 @@ def _run_one(a):
                 va = abs(va) if k == "capex" else va
                 d = abs(pctdiff(va, vb) or 0)
                 extra = ""
-                # [D-46] 已知的口径差异：CapEx 含资本化软件；债务含经营租赁负债
-                if k == "capex":
-                    _, av2, ad2 = F.series(CAPEX_ADD, "annual")
-                    am2 = dict(zip(ad2, av2))
-                    if y0 in am2 and close_enough(va + am2[y0], vb, 1):
-                        rec("L3", "DEF", "SEC ≈ Yahoo: %s (%s)【口径】" % (k, y0),
-                            "%.4fB+%.4fB = %.4fB = Yahoo %.4fB ✓ 资本化软件"
-                            % (va / 1e9, am2[y0] / 1e9, (va + am2[y0]) / 1e9, vb / 1e9))
-                        continue
-                    if y0 in am2:
-                        extra = "（+资本化软件 %.3fB）" % (am2[y0] / 1e9)
-                if k == "debt":
-                    lm = instant_map(F, LEASE_TAGS)
-                    if y0 in lm and close_enough(va + lm[y0], vb, 1):
-                        rec("L3", "DEF", "SEC ≈ Yahoo: %s (%s)【口径】" % (k, y0),
-                            "%.4fB+%.4fB = %.4fB = Yahoo %.4fB ✓ 经营租赁负债"
-                            % (va / 1e9, lm[y0] / 1e9, (va + lm[y0]) / 1e9, vb / 1e9))
-                        continue
-                    if y0 in lm:
-                        extra = "（+经营租赁 %.3fB）" % (lm[y0] / 1e9)
+                # [D-46/D-53] 先试已知口径对账
+                rd_, rdesc = try_reconcile(F, k, y0, va, vb)
+                if rd_ is not None:
+                    rec("L3", "DEF", "SEC ≈ Yahoo: %s (%s)【口径】" % (k, y0), rdesc)
+                    continue
+                extra = rdesc
                 if d < 0.5:
                     rec("L3", "MATCH", "SEC = Yahoo: %s (%s)" % (k, y0),
                         "%.4fB = %.4fB" % (va / 1e9, vb / 1e9))

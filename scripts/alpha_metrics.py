@@ -46,6 +46,9 @@ CAPEX_ADD_TAGS = ["PaymentsToDevelopSoftware", "PaymentsForSoftware",
 DA_TAGS = ["DepreciationDepletionAndAmortization", "DepreciationAmortizationAndAccretionNet",
            # INTU 等用现金流量表里的摊销调整行
            "AdjustmentForAmortization"]
+# [D-53] MSFT 等不报汇总 D&A tag，需用组成部分之和
+DA_PARTS = ["Depreciation", "AmortizationOfIntangibleAssets",
+            "FinanceLeaseRightOfUseAssetAmortization", "AmortizationOfDeferredCharges"]
 TAX_TAGS = ["IncomeTaxExpenseBenefit"]
 PRETAX_TAGS = ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
                "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"]
@@ -69,6 +72,13 @@ DEBT_TAGS = ["LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
              "LongTermDebt",
              "LongTermDebtNoncurrent",
              "DebtInstrumentCarryingAmount"]
+# [D-54] **融资租赁负债属于有息债务**，必须计入总债务。
+# 实测：MSFT 用融资租赁建数据中心，金额 $66.59B。
+# 不计入会把一家净负债公司说成"净现金"（-36.55B → +30.04B）。
+# 注意：FinanceLeaseLiability 已含流动+非流动，优先用它，避免重复计。
+FINLEASE_COMBINED = ["FinanceLeaseLiability"]
+FINLEASE_PARTS = ["FinanceLeaseLiabilityNoncurrent", "FinanceLeaseLiabilityCurrent"]
+# 经营租赁单独列示，**不计入净债务**（为了与 EBITDA 口径一致），作为备忘项
 SHARE_TAGS = ["WeightedAverageNumberOfDilutedSharesOutstanding", "CommonStockSharesOutstanding"]
 
 
@@ -126,33 +136,59 @@ class Facts:
                 return tag, [rows[k] for k in sorted(rows)], sorted(rows)
         return None, [], []
 
-    def ttm(self, tags, q_end=None):
-        """TTM = 该季末之前的最近年度 + 本年迄今 - 去年同期
-        q_end=None 时取最新季度。
+    def _sum_maps(self, tags, add_tags, kind):
+        """主 tag 序列 + 附加 tag 序列（求和），按日期对齐"""
+        _, bv, bd = self.series(tags, kind)
+        m = dict(zip(bd, bv))
+        if add_tags:
+            _, av, ad = self.series(add_tags, kind)
+            for d_, v_ in zip(ad, av):
+                if d_ in m:
+                    m[d_] += v_
+        return m
+
+    def ttm(self, tags, add_tags=None, q_end=None):
+        """[D-53] TTM = 基准年度 + 本年迄今 − 去年同期
+
+        关键的边界规则（旧实现错在这里）：
+          · 若季末**恰好等于**某财年末 E  →  TTM 就是该财年值，
+            此时基准年度必须是 **E 的上一年**，不能是 E 本身。
+          · 否则基准年度 = E 之前最近的已结束财年。
+
+        实测教训：MSFT 季末 = 财年末 2026-06-30，
+        旧逻辑算成 115.95 + 115.95 − 64.55 = 167.35B（CapEx）—— 当年被重复计一次。
         """
-        _, av, ad = self.series(tags, "annual")
-        _, yv, yd = self.series(tags, "ytd")
-        if not av or not yv:
+        am_ = self._sum_maps(tags, add_tags, "annual")
+        ym_ = self._sum_maps(tags, add_tags, "ytd")
+        if not am_ or not ym_:
             return None
         if q_end is None:
-            q_end = yd[-1]
-        # 该季末之前最近的年度
-        prior_fy = [(d_, v_) for d_, v_ in zip(ad, av) if d_ < q_end]
+            q_end = max(ym_)
+        if q_end in am_:
+            return am_[q_end]            # 季末正好是财年末
+        prior_fy = [(d_, v_) for d_, v_ in am_.items() if d_ < q_end]
         if not prior_fy:
             return None
-        fy_end, fy = prior_fy[-1]
-        cur = dict(zip(yd, yv)).get(q_end)
+        fy_end, fy = max(prior_fy)
+        cur = ym_.get(q_end)
         if cur is None:
             return None
         qd = dt.date.fromisoformat(q_end)
         tgt = qd.replace(year=qd.year - 1).isoformat()
-        prior = dict(zip(yd, yv)).get(tgt)
+        prior = ym_.get(tgt)
         if prior is None:
-            cand = [v_ for d_, v_ in zip(yd, yv) if d_[:5] == tgt[:5]]
+            cand = [v_ for d_, v_ in ym_.items() if d_[:5] == tgt[:5] and d_ < q_end]
             prior = cand[-1] if cand else None
         if prior is None:
             return None
         return fy + cur - prior
+
+    def ttm_or_parts(self, primary, parts):
+        """先用汇总 tag；无数据则用组成部分之和（如 MSFT 的 D&A）"""
+        v = self.ttm(primary)
+        if v is not None:
+            return v
+        return self.ttm(parts[:1], add_tags=parts[1:]) if parts else None
 
     def series_sum(self, base_tags, add_tags, kind="annual"):
         """[D-46] 主 tag + 附加 tag 求和（如 CapEx = PP&E + 资本化软件）
@@ -175,6 +211,20 @@ class Facts:
                 continue
             rows[it["end"]] = it["val"]     # 同日期后出现者胜（经重述后的值）
         return rows
+
+    def finlease_at(self, asof):
+        """[D-54] 某日的融资租赁负债：优先合计 tag，否则流动+非流动求和"""
+        for t in FINLEASE_COMBINED:
+            rows = self.instant_rows(t)
+            if asof in rows:
+                return rows[asof], t
+        tot, used = 0.0, []
+        for t in FINLEASE_PARTS:
+            rows = self.instant_rows(t)
+            if asof in rows:
+                tot += rows[asof]
+                used.append(t)
+        return (tot if used else 0.0), (",".join(used) if used else None)
 
     def balance_sheet(self):
         """[D-46/D-50] 资产负债表解析 —— **引擎与校验器共用的唯一路径**
@@ -209,7 +259,16 @@ class Facts:
         vals = {"cash": tot if used else bsv.get("cash"),
                 "equity": bsv.get("equity"),
                 "debt": bsv.get("debt")}
-        tags = {"cash": used, "equity": [bstag.get("equity")], "debt": [bstag.get("debt")]}
+        # [D-54] 总债务 = 有息债务 + 融资租赁负债
+        fl, fl_tag = self.finlease_at(asof)
+        if fl:
+            vals["debt_bearing"] = vals["debt"]
+            vals["debt"] = (vals["debt"] or 0) + fl
+        vals["finance_lease"] = fl
+        ol_rows = self.instant_rows("OperatingLeaseLiability")
+        vals["operating_lease"] = ol_rows.get(asof, 0.0)
+        tags = {"cash": used, "equity": [bstag.get("equity")],
+                "debt": [bstag.get("debt"), fl_tag]}
         return asof, vals, tags
 
     def latest(self, tags):
@@ -327,27 +386,8 @@ def main():
     ttm_op = F.ttm(OP_TAGS)
     ttm_ni = F.ttm(NI_TAGS)
     ttm_ocf = F.ttm(OCF_TAGS)
-    ttm_cx = F.ttm(CAPEX_TAGS)
-    _cxa, _ = F.series_sum(CAPEX_TAGS, CAPEX_ADD_TAGS, "annual")
-    _cxb, _ = F.series_sum(CAPEX_TAGS, CAPEX_ADD_TAGS, "ytd")
-    if _cxa and _cxb:
-        # 重新按 TTM 口径算：直接用 sum 后的年度/累计序列
-        class _Tmp: pass
-        tmp = _Tmp(); tmp.tax = F.tax; tmp.entity = F.entity
-        import types
-        g = types.MethodType(F.series_sum.__func__, tmp)
-        # 用同一 TT​M 公式：FY + YTD_cur − YTD_prior
-        _ad = dict(zip(F.series(CAPEX_TAGS, "annual")[2], _cxa))
-        _yd = dict(zip(F.series(CAPEX_TAGS, "ytd")[2], _cxb))
-        if _ad and _yd:
-            _fy_d = [d for d in _ad if d <= sorted(_yd)[-1]]
-            if _fy_d:
-                _q = sorted(_yd)[-1]
-                import datetime as _dt
-                _t = _dt.date.fromisoformat(_q).replace(year=_dt.date.fromisoformat(_q).year-1).isoformat()
-                if _q in _yd and _t in _yd:
-                    ttm_cx = _ad[max(_fy_d)] + _yd[_q] - _yd[_t]
-    ttm_da = F.ttm(DA_TAGS)
+    ttm_cx = F.ttm(CAPEX_TAGS, add_tags=CAPEX_ADD_TAGS)
+    ttm_da = F.ttm_or_parts(DA_TAGS, DA_PARTS)
     ttm_fcf = (ttm_ocf - ttm_cx) if (ttm_ocf is not None and ttm_cx is not None) else None
 
     _, cash, cash_d = F.latest(CASH_TAGS)
@@ -398,6 +438,12 @@ def main():
     if bstag2.get("cash"):
         print("  [现金组 tag: %s]" % ", ".join(bstag2["cash"]))
     print("  Cash+短期投资 %s (%s)" % (f(cash), cash_d))
+    if bsv2.get("finance_lease"):
+        print("    └ 其中债务 = 有息 %s + **融资租赁 %s**（[D-54]）"
+              % (f(bsv2.get("debt_bearing")), f(bsv2.get("finance_lease"))))
+    if bsv2.get("operating_lease"):
+        print("    └ 备忘：经营租赁 %s（**未计入净债务**，为与 EBITDA 口径一致）"
+              % f(bsv2.get("operating_lease")))
     print("  Equity %s (%s)" % (f(eq), eq_d))
     print("  Debt   %s (%s)" % (f(debt), debt_d))
     net_debt = (debt - cash) if (debt is not None and cash is not None) else None
@@ -435,11 +481,11 @@ def main():
     if q_end != "?":
         qd = dt.date.fromisoformat(q_end)
         prior_q_end = qd.replace(year=qd.year - 1).isoformat()
-    ttm_rev_prior = F.ttm(REV_TAGS, prior_q_end) if prior_q_end else None
+    ttm_rev_prior = F.ttm(REV_TAGS, q_end=prior_q_end) if prior_q_end else None
     ttm_fcf_prior = None
     if prior_q_end:
-        o = F.ttm(OCF_TAGS, prior_q_end)
-        c = F.ttm(CAPEX_TAGS, prior_q_end)
+        o = F.ttm(OCF_TAGS, q_end=prior_q_end)
+        c = F.ttm(CAPEX_TAGS, add_tags=CAPEX_ADD_TAGS, q_end=prior_q_end)
         ttm_fcf_prior = (o - c) if (o is not None and c is not None) else None
     rev_g = (ttm_rev / ttm_rev_prior - 1) * 100 if (ttm_rev and ttm_rev_prior) else None
     fcf_g = (ttm_fcf / ttm_fcf_prior - 1) * 100 if (ttm_fcf and ttm_fcf_prior) else None
