@@ -17,3 +17,6 @@ data/review_report.md
 *.bak
 .DS_Store
 .vscode/
+# ── 券商凭据（绝不入库）────────────────────────────────
+data/.futu_auth
+data/positions_raw.json

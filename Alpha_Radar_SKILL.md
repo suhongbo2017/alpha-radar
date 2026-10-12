@@ -103,6 +103,31 @@ py scripts/alpha_metrics.py APH --years 8
 py scripts/alpha_metrics.py APH --json
 py scripts/alpha_metrics.py APH --score-inputs   # 直接输出 alpha_score.py 的定量参数
 
+# [D-13] 持仓与组合雷达
+py scripts/alpha_portfolio.py sync                 # 从券商 API 拉取持仓快照
+py scripts/alpha_portfolio.py sync --dry-run       # 只看字段，不写盘
+py scripts/alpha_portfolio.py sync --user U --password P
+py scripts/alpha_portfolio.py buy  --ticker MSFT --shares 10 --price 500 --date 2026-03-01
+py scripts/alpha_portfolio.py sell --ticker MSFT --shares 4  --price 560 --date 2026-09-01
+py scripts/alpha_portfolio.py cash --amount 25000
+py scripts/alpha_portfolio.py holdings             # 当前持仓
+py scripts/alpha_portfolio.py board                # 组合雷达（分析 + 持仓 + 一致性 + 集中度）
+py scripts/alpha_portfolio.py check                # 只列持仓与分析的冲突
+py scripts/alpha_portfolio.py analysis --ticker APH --score 84.6 --odds 0.92 --action Watch --price 87.24
+```
+
+**`alpha_portfolio.py` 选项速查：**
+
+| 子命令 | 关键选项 |
+|---|---|
+| `sync` | `--url` `--user` `--password` `--proxy` `--dry-run` `--as-of` |
+| `analysis` | `--ticker` `--score` `--lifecycle` `--moat` `--roic` `--wacc` `--net-debt-ebitda` `--odds` `--weighted` `--bear` `--action` `--price` `--valuation-pct` `--dossier` `--date` |
+| `buy` / `sell` | `--ticker` `--shares` `--price` `--date` `--fee` `--currency` `--note` |
+| `cash` | `--amount` |
+| `holdings` / `board` / `check` | 无选项 |
+
+```bash
+# 行情快照（示例用法）
 # 行情快照（[D-29] yfinance 的备选源；本机直连 Yahoo 不可达，需本地代理）
 py scripts/alpha_quote.py APH
 py scripts/alpha_quote.py APH --json
@@ -505,6 +530,41 @@ py scripts/alpha_score.py lite --revenue-growth 18 --moat-trend up --valuation-p
 
 > **使用顺序**：先用 `lite` 过一遍观察名单，只对✅的跑完整 Alpha Radar；
 > 跑完用 `score` 得可复现的基本面分；最后用 `size` 把赔率转成仓位上限。
+
+### 5.5 组合层 —— Radar Board（[D-13]）
+
+单公司分析的局限：它回答不了「**我持有的这些，和我自己的分析结论一致吗**」。
+
+```bash
+py scripts/alpha_portfolio.py board   # 组合雷达
+py scripts/alpha_portfolio.py check   # 只列冲突
+```
+
+**一致性判定**（持仓 × 分析结论）：
+
+| 标记 | 含义 |
+|---|---|
+| 🔴 | **持有中，但赔率 <1 且分析为 Watch/Trim/Exit** —— 持仓与自己的分析矛盾 |
+| ✅ | 持有中，分析为 Buy/Starter 且赔率 ≥1 |
+| 🟡 | 持有中，分析与持仓方向不一致（非硬冲突） |
+| 💡 | **未持有，但赔率 ≥1 且分析为 Starter/Buy** —— 达标却空仓 |
+| ⚪ | 未持有，赔率 <1 |
+| ❓ | 无分析档案 |
+
+> **🔴 项必须显式处理，二选一：**
+> **a) 调仓** —— 记录 `sell`；**b) 修订分析** —— 用新证据重跑 Alpha Radar，
+> 并用 `analysis` 命令登记新结论（不覆盖旧记录）。
+> **不能两头都算数** —— 这是铁律 4（价格变化与基本面变化分开）在组合层的落地。
+
+**集中度**：输出 Top1/Top3/Top5 与 **HHI**。
+> ⚠️ **HHI 只衡量权重分散度，不衡量相关性。** 若多个持仓是同一主题（如 AI/半导体），
+> 实际风险远高于 HHI 所示。所以集中度必须与**主题**一起看，不能只看 HHI。
+
+**持仓数据来源优先级**：券商快照（`sync` 写入 `data/positions.json`）> 手工交易流（`data/transactions.jsonl`）。
+> API 给的是**当前持仓状态**（含 avg_cost / realized_pnl），不是交易流水 ——
+> 按「买入交易」导入会捏造不存在的历史，且重复导入会重复计。
+
+**凭据管理**：`FUTU_API_USER` / `FUTU_API_PASS` 环境变量，或 `data/.futu_auth`（已在 `.gitignore`）。**一律不入库。**
 
 ---
 
@@ -1019,6 +1079,7 @@ D:/pi/select_stock/
 │   ├── alpha_metrics.py              # 一手指标计算（TTM/Margin/FCF/ROIC）
 │   ├── alpha_quote.py                # [D-29] 行情快照（yfinance 备选源）
 │   ├── verify_data.py                # [G7] 四层数据校验（含外部交叉）
+│   ├── alpha_portfolio.py            # [D-13] 持仓与组合雷达
 │   ├── gates.py                      # 门禁运行器（跨 shell）
 │   ├── gates_data_integrity.py       # G3
 │   ├── gates_git_frozen.py           # G6 [D-18]
@@ -1031,6 +1092,9 @@ D:/pi/select_stock/
 │   ├── predictions.jsonl
 │   ├── actuals.jsonl
 │   ├── decisions.jsonl               # [D-05] 决策库
+│   ├── analyses.jsonl                # [D-13] 分析结论（机器可读）
+│   ├── positions.json                # [D-13] 券商持仓快照
+│   ├── transactions.jsonl            # [D-13] 手工交易流（快照缺失时用）
 │   ├── prediction_ledger.csv         # export 产物
 │   └── review_report.md              # report --save 产物
 ├── analysis/

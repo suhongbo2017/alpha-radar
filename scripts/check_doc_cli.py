@@ -33,6 +33,7 @@ TOOLS = [
     ("scripts/alpha_metrics.py", "alpha_metrics.py"),
     ("scripts/alpha_quote.py", "alpha_quote.py"),
     ("scripts/verify_data.py", "verify_data.py"),
+    ("scripts/alpha_portfolio.py", "alpha_portfolio.py"),
 ]
 
 # 内部/次要选项，不强制出现在文档里
