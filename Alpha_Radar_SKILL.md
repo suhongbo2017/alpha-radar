@@ -103,6 +103,12 @@ py scripts/alpha_metrics.py APH --years 8
 py scripts/alpha_metrics.py APH --json
 py scripts/alpha_metrics.py APH --score-inputs   # 直接输出 alpha_score.py 的定量参数
 
+# [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
+py scripts/build_site.py                     # 默认：不含持仓（可公开）
+py scripts/build_site.py --include-holdings  # 🔴 含持仓，不要公开
+py scripts/build_site.py --with-gates        # 同时嵌入最近一次门禁结果
+py scripts/build_site.py --out site/index.html
+
 # [D-68] 一致预期（分析师预测）—— 研究级情景的必要输入
 py scripts/alpha_quote.py NVDA --estimates
 py scripts/alpha_quote.py NVDA --estimates --json
@@ -593,6 +599,32 @@ g_bear = min(TTM Revenue YoY × 0.1, 0)
 >
 > 但反过来也成立：**研究级把结论押在一致预期上，而一致预期可能系统性偏高。**
 > 所以研究级档案必须写明"对一致预期的折扣假设"，并把它列为最大单点风险。
+
+### 5.4d 静态站点 —— 只读呈现（[D-70]）
+
+产出 `site/index.html`：**单文件、零外部依赖、可离线打开、可直接上 GitHub Pages**。
+
+| 页签 | 内容 |
+|---|---|
+| 组合雷达 | 19 家分析结论（可搜索）+ KPI（报告级/研究级/规则级、赔率 ≥1 数） |
+| 公司档案 | 19 份档案卡片，**按等级过滤** + 全文搜索 + 点开阅读 |
+| 预测账本 | 93 条预测，可排序筛选 |
+| 决策记录 | 7 条决策 |
+| 缺陷登记册 | DEFECTS.md 全文 |
+| 方法论 | 九条铁律 + 三类档案等级 + 七道门禁 + 四层校验 |
+
+**三条设计纪律（重要）：**
+
+1. **只读**。站点**不提供任何写操作** —— 写必须走 `alpha_portfolio.py` / `alpha_ledger.py`，
+   因为那些命令带 append-only、自动 git 固化、单位/版本校验三层纪律。
+   **一个"方便"的界面能把这些纪律打穿。**
+2. **不生成"分析"**。站点只呈现已写好的档案，**不调用 `alpha_scenario.py` 产生新"报告"**。
+   规则级结果明确标注等级，不与研究级混淆。
+3. **默认不含持仓**。`data/positions.json` 默认**不读**；`--include-holdings` 才包含，
+   且页面顶部会打红标。构建时还有一道断言：公开版若含持仓字段则**中止构建**。
+
+> **由 [G8] 门禁守护**：每次跑门禁都会重新构建站点并断言"无持仓/敏感字段"。
+> 仓库是公开的 —— 这条门禁防的是"不小心把账户明细推到 Pages 上"。
 
 ### 5.5 组合层 —— Radar Board（[D-13]）
 
@@ -1142,7 +1174,13 @@ D:/pi/select_stock/
 │   ├── alpha_metrics.py              # 一手指标计算（TTM/Margin/FCF/ROIC）
 │   ├── alpha_quote.py                # [D-29] 行情快照（yfinance 备选源）
 │   ├── verify_data.py                # [G7] 四层数据校验（含外部交叉）
-│   ├── alpha_portfolio.py            # [D-68] 一致预期（分析师预测）—— 研究级情景的必要输入
+│   ├── alpha_portfolio.py            # [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
+py scripts/build_site.py                     # 默认：不含持仓（可公开）
+py scripts/build_site.py --include-holdings  # 🔴 含持仓，不要公开
+py scripts/build_site.py --with-gates        # 同时嵌入最近一次门禁结果
+py scripts/build_site.py --out site/index.html
+
+# [D-68] 一致预期（分析师预测）—— 研究级情景的必要输入
 py scripts/alpha_quote.py NVDA --estimates
 py scripts/alpha_quote.py NVDA --estimates --json
 #   流程：fc.yahoo.com 取 cookie → /v1/test/getcrumb 取 crumb → 带两者请求
@@ -1176,6 +1214,7 @@ py scripts/alpha_scenario.py NVDA --json
 │   ├── <TICKER>_AlphaRadar.md        # 公司档案（历史追加）
 │   ├── <TICKER>_BottomUp_Research.md # 行业级研究
 │   └── sec/                          # 一手数据与提取脚本
+├── site/index.html                   # [D-70] 静态站点（只读快照）
 ├── DEFECTS.md                        # 缺陷登记册
 └── notes/                            # 讨论、原始素材
 ```
