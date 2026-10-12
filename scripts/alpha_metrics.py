@@ -39,11 +39,28 @@ OP_TAGS = ["OperatingIncomeLoss"]
 NI_TAGS = ["NetIncomeLoss"]
 OCF_TAGS = ["NetCashProvidedByUsedInOperatingActivities"]
 CAPEX_TAGS = ["PaymentsToAcquirePropertyPlantAndEquipment"]
-DA_TAGS = ["DepreciationDepletionAndAmortization", "DepreciationAmortizationAndAccretionNet"]
+# [D-46] 资本化软件也属于 CapEx（对内自建软件的投资），不计入会低估 CapEx / 高估 FCF。
+# 实测：INTU PP&E 0.175B + 资本化软件 0.046B = 0.221B = Yahoo 完全一致
+CAPEX_ADD_TAGS = ["PaymentsToDevelopSoftware", "PaymentsForSoftware",
+                  "PaymentsToAcquireSoftware"]
+DA_TAGS = ["DepreciationDepletionAndAmortization", "DepreciationAmortizationAndAccretionNet",
+           # INTU 等用现金流量表里的摊销调整行
+           "AdjustmentForAmortization"]
 TAX_TAGS = ["IncomeTaxExpenseBenefit"]
 PRETAX_TAGS = ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
                "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"]
+# [D-46] 现金及现金等价物 —— 净债务必须扣除【短期投资】，否则会系统性高估净债务。
+# 实测：APH 短期投资 0.6897B → 净债务 14.08B(错) vs 13.39B(对)
+#       INTU 短期投资 2.495B → 净债务 2.96B(错) vs 0.47B(对)
 CASH_TAGS = ["CashAndCashEquivalentsAtCarryingValue"]
+CASH_LIKE_EXTRA = ["ShortTermInvestments", "MarketableSecuritiesCurrent",
+                   "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
+                   "OtherShortTermInvestments",
+                   # 2026+ 新 XBRL tag（INTU 等使用）
+                   "DebtSecuritiesAvailableForSaleExcludingAccruedInterestCurrent",
+                   "DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLossCurrent"]
+STI_TAGS = CASH_LIKE_EXTRA
+
 EQ_TAGS = ["StockholdersEquity"]
 # 债务 tag 优先级：同日期时前面的优先；跨日期时由 latest() 取【最大日期】
 # 1/2 是显式口径（"含流动部分" / "长短合计"），3/4 是总分口径，5 含义模糊仅供参考
@@ -137,6 +154,20 @@ class Facts:
             return None
         return fy + cur - prior
 
+    def series_sum(self, base_tags, add_tags, kind="annual"):
+        """[D-46] 主 tag + 附加 tag 求和（如 CapEx = PP&E + 资本化软件）
+        仅在附加 tag 有同期数据时相加；无则退化为主 tag。"""
+        _, bv, bd = self.series(base_tags, kind)
+        if not bv:
+            return [], []
+        out = {d_: v_ for d_, v_ in zip(bd, bv)}
+        _, av, ad = self.series(add_tags, kind)
+        for d_, v_ in zip(ad, av):
+            if d_ in out:
+                out[d_] += v_
+        ds = sorted(out)
+        return [out[d] for d in ds], ds
+
     def instant_rows(self, tag):
         rows = {}
         for it in self._items(tag):
@@ -144,6 +175,42 @@ class Facts:
                 continue
             rows[it["end"]] = it["val"]     # 同日期后出现者胜（经重述后的值）
         return rows
+
+    def balance_sheet(self):
+        """[D-46/D-50] 资产负债表解析 —— **引擎与校验器共用的唯一路径**
+
+        返回 (asof, {"cash":.., "equity":.., "debt":..}, {group: tag})
+
+        为什么必须抽成函数：
+        校验器曾三次"测了引擎从没走过的路径"而出现假绿：
+          1. 只查数据可用性，不查引擎输出
+          2. 用自己的 tag 列表
+          3. 调 latest() 而引擎用 latest_common() + 求和
+        共同源头都是：两边的解析路径不同。
+        """
+        cash_group = CASH_TAGS + CASH_LIKE_EXTRA
+        asof, bsv, bstag = self.latest_common({"cash": cash_group,
+                                               "equity": EQ_TAGS,
+                                               "debt": DEBT_TAGS})
+        if not asof:
+            return None, {}, {}
+        # cash 组：同日可能命中多个 tag（现金 + 短期投资）→ 必须【求和】
+        # 但不能重复计同一个数字的多个别名（如 AFS 公允价值 vs 摊余成本）
+        tot, seen, used = 0.0, [], []
+        for t in cash_group:
+            rows = self.instant_rows(t)
+            if asof in rows:
+                v = rows[asof]
+                if any(abs(v - x) < 1 for x in seen):
+                    continue
+                tot += v
+                seen.append(v)
+                used.append(t)
+        vals = {"cash": tot if used else bsv.get("cash"),
+                "equity": bsv.get("equity"),
+                "debt": bsv.get("debt")}
+        tags = {"cash": used, "equity": [bstag.get("equity")], "debt": [bstag.get("debt")]}
+        return asof, vals, tags
 
     def latest(self, tags):
         """[D-42] 在所有 tags 中取【最大日期】，同日期时按 tags 顺序优先。
@@ -250,6 +317,9 @@ def main():
     _, ni, _ = F.series(NI_TAGS, "annual")
     _, ocf, _ = F.series(OCF_TAGS, "annual")
     _, cx, _ = F.series(CAPEX_TAGS, "annual")
+    cx_add, _ = F.series_sum(CAPEX_TAGS, CAPEX_ADD_TAGS, "annual")
+    if cx_add:
+        cx = cx_add
 
     # ---- TTM
     ttm_rev = F.ttm(REV_TAGS)
@@ -258,6 +328,25 @@ def main():
     ttm_ni = F.ttm(NI_TAGS)
     ttm_ocf = F.ttm(OCF_TAGS)
     ttm_cx = F.ttm(CAPEX_TAGS)
+    _cxa, _ = F.series_sum(CAPEX_TAGS, CAPEX_ADD_TAGS, "annual")
+    _cxb, _ = F.series_sum(CAPEX_TAGS, CAPEX_ADD_TAGS, "ytd")
+    if _cxa and _cxb:
+        # 重新按 TTM 口径算：直接用 sum 后的年度/累计序列
+        class _Tmp: pass
+        tmp = _Tmp(); tmp.tax = F.tax; tmp.entity = F.entity
+        import types
+        g = types.MethodType(F.series_sum.__func__, tmp)
+        # 用同一 TT​M 公式：FY + YTD_cur − YTD_prior
+        _ad = dict(zip(F.series(CAPEX_TAGS, "annual")[2], _cxa))
+        _yd = dict(zip(F.series(CAPEX_TAGS, "ytd")[2], _cxb))
+        if _ad and _yd:
+            _fy_d = [d for d in _ad if d <= sorted(_yd)[-1]]
+            if _fy_d:
+                _q = sorted(_yd)[-1]
+                import datetime as _dt
+                _t = _dt.date.fromisoformat(_q).replace(year=_dt.date.fromisoformat(_q).year-1).isoformat()
+                if _q in _yd and _t in _yd:
+                    ttm_cx = _ad[max(_fy_d)] + _yd[_q] - _yd[_t]
     ttm_da = F.ttm(DA_TAGS)
     ttm_fcf = (ttm_ocf - ttm_cx) if (ttm_ocf is not None and ttm_cx is not None) else None
 
@@ -265,9 +354,24 @@ def main():
     _, eq, eq_d = F.latest(EQ_TAGS)
     _, debt, debt_d = F.latest(DEBT_TAGS)
     # [D-42] 资产负债表三项必须同日，否则净债务/投入资本是混合口径的假数
-    bs_date, bsv, bstag = F.latest_common({"cash": CASH_TAGS, "equity": EQ_TAGS, "debt": DEBT_TAGS})
+    # [D-42] 资产负债表三项必须同日，否则净债务/投入资本是混合口径的假数
+    # [D-46] 现金组 = 现金及等价物 + 短期投资（两者都具流动性）
+    CASH_GROUP = CASH_TAGS + CASH_LIKE_EXTRA
+    bs_date, bsv, bstag = F.latest_common({"cash": CASH_GROUP, "equity": EQ_TAGS, "debt": DEBT_TAGS})
     if bs_date:
-        cash, eq, debt = bsv["cash"], bsv["equity"], bsv["debt"]
+        # cash 组可能命中多个 tag（现金 与 短期投资 分别在不同 tag），必须【求和】
+        # 同日可能同时命中多个 tag（现金 与 短期投资 各一个）—— 必须求和，
+        # 但不能重复计同一个 tag 的多个别名（如 AFS 公允价值与摊余成本）
+        tot_cash, used, seen_val = 0.0, [], []
+        for t in CASH_GROUP:
+            rows = F.instant_rows(t)
+            if bs_date in rows:
+                v = rows[bs_date]
+                if any(abs(v - x) < 1 for x in seen_val):
+                    continue          # 同一数字的另一个别名，不重复计
+                tot_cash += v; used.append(t); seen_val.append(v)
+        cash = tot_cash if used else bsv["cash"]
+        eq, debt = bsv["equity"], bsv["debt"]
         cash_d = eq_d = debt_d = bs_date
 
     q_end = "?"
@@ -288,7 +392,12 @@ def main():
 
     # ---- 资产负债表（最新，且三项同日）
     print("\n资产负债表（最新，三项已对齐到同一日期）")
-    print("  Cash   %s (%s)" % (f(cash), cash_d))
+    bs_date, bsv2, bstag2 = F.balance_sheet()
+    cash, eq, debt = bsv2.get("cash"), bsv2.get("equity"), bsv2.get("debt")
+    cash_d = eq_d = debt_d = bs_date
+    if bstag2.get("cash"):
+        print("  [现金组 tag: %s]" % ", ".join(bstag2["cash"]))
+    print("  Cash+短期投资 %s (%s)" % (f(cash), cash_d))
     print("  Equity %s (%s)" % (f(eq), eq_d))
     print("  Debt   %s (%s)" % (f(debt), debt_d))
     net_debt = (debt - cash) if (debt is not None and cash is not None) else None

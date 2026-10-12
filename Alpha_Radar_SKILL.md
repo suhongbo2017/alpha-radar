@@ -126,7 +126,10 @@ py scripts/alpha_score.py <子命令>
 > 这是为了避开「Q4 无独立季报」的问题。三个容易踩的坑（已修为 D-34/D-35/D-42）：
 > ① 各 tag 的起始年份不同，**必须按日期对齐，不能用下标索引平行数组**；
 > ② 同一结束日可能同时有 90 天（Q2）与 181 天（H1）两份，**必须取最长时长**；
-> ③ 资产负债表三项（现金/权益/债务）**必须对齐到同一日期**，否则净债务是混合口径的假数。
+> ③ 资产负债表三项（现金/权益/债务）**必须对齐到同一日期**，否则净债务是混合口径的假数；
+> ④ **净债务必须扣除短期投资**（现金 + 短期投资）。否则会系统性高估 ——
+>    实测 APH 高估 0.69B（14.08 vs 13.39）、INTU 高估 2.50B（2.96 vs 0.47）。
+> ⑤ **财年归属必须按财年**（INTU/FY 7 月结束）；单调性检查只对**收入**成立，NI/OCF 可为负。
 
 ### 2.1 多层数据校验（[G7] 强制）
 
@@ -158,10 +161,13 @@ py scripts/alpha_score.py <子命令>
 1. **交叉校验的有效性上限 = 两条路径的独立性。**
    内部的"双路 TTM"两条路径都调用同一个 `ytd` 原语 → 共享 bug → 必然一致。
    实测：注入 D-35 后内部双路仍报 Δ0.000%。**只有外部源（Yahoo trailing）能抓到它。**
-2. **必须检验引擎的输出，而不是数据的可用性。**
-   初版校验只检查"各 tag 有没有同日数据" → 抓不到引擎输出的日期混用。
-   更进一步：校验器用自己的 tag 列表去测，测的是**引擎从没走过的路径**（假绿）。
-   正确做法：tag 列表与引擎一致，但**同日重算自己独立做**。
+2. **校验器与被校验对象必须共用"路径"，只在"数值"上独立。**
+   这里**踩了三次**同一个坑：① 只查数据可用性不查引擎输出；② 用自己的 tag 列表；
+   ③ 调 `latest()` 而引擎用 `latest_common()` + 求和。三次都是假绿。
+   最终做法：抽出 `Facts.balance_sheet()` 作为唯一路径，校验器只独立重算数值。
+3. **每建一份新档案，必须重跑全部旧档案的校验**（`--all`）。
+   实测：净债务口径错误**同时污染了两份档案**，而第一份已提交。
+   单份校验只能证明"这一份自洽"，证明不了"所有档案口径一致"。
 
 ### 与已有 skill 的分工
 - `investment-bottom-up-research`：**行业与产业链研究**（世界规律 → 产业链 → 瓶颈 → 护城河）
@@ -470,7 +476,7 @@ py scripts/alpha_score.py size --odds 3.9 --confidence Medium \
     --max-weight 25 --current-weight 12
 
 # [D-12] 快速筛查（三项输入，15 分钟筛掉 90%）
-py scripts/alpha_score.py lite --revenue-growth 18 --moat-trend up --valuation-pct 45
+py scripts/alpha_score.py lite --revenue-growth 18 --moat-trend up --valuation-pct 45 \n    --roic 22.9 --fcf-margin 39.7
 ```
 
 **`score` 的十项输入**（与 §3.11 权重表一一对应）：
@@ -480,8 +486,14 @@ py scripts/alpha_score.py lite --revenue-growth 18 --moat-trend up --valuation-p
 
 **`size` 的选项**：`--odds` `--confidence` `--max-weight` `--current-weight`。
 
-**`lite` 的选项**：`--revenue-growth` `--moat-trend`（up/flat/down）`--valuation-pct`。
-输出四种结论：✅ 升级到完整分析 / 👀 只进观察名单 / ⏸ 不投入 / ❌ 放弃。
+**`lite` 的选项**：`--revenue-growth` `--moat-trend`（up/flat/down）`--valuation-pct`，
+以及两个**可选质量修正** `--roic` `--fcf-margin`（[D-52]）。
+输出五种结论：✅ 升级到完整分析 / 🔍 值得跑全流程 / 👀 只进观察名单 / ⏸ 不投入 / ❌ 放弃。
+
+> **[D-52] 为什么需要质量修正**：INTU 的 91% 评分项拉满（81% 毛利、22.9% ROIC、39.7% FCF 利润率），
+> 却因收入增长 13.9% < 15% 的"加速"阈值被 Lite 判为"不投入深度研究"。
+> 现在：ROIC ≥20% 且 FCF Margin ≥25% 时，增长阈值从 15% 降至 **10%**。
+> **Lite 是粗筛，不是结论** —— 若与完整分析矛盾，以完整分析为准。
 
 > **使用顺序**：先用 `lite` 过一遍观察名单，只对✅的跑完整 Alpha Radar；
 > 跑完用 `score` 得可复现的基本面分；最后用 `size` 把赔率转成仓位上限。

@@ -58,6 +58,15 @@ T = {
     "sga": ["SellingGeneralAndAdministrativeExpense"],
     "rd": ["ResearchAndDevelopmentExpense"],
 }
+# [D-46] CapEx 可能需加上资本化软件；债务与 Yahoo 的差异通常是经营租赁负债
+CAPEX_ADD = ["PaymentsToDevelopSoftware", "PaymentsForSoftware", "PaymentsToAcquireSoftware"]
+LEASE_TAGS = ["OperatingLeaseLiability", "OperatingLeaseLiabilityNoncurrent"]
+
+# [D-46] 现金组必须与引擎一致（含短期投资），否则校验器测的是另一条路径
+from importlib.util import spec_from_file_location, module_from_spec as _mfs  # noqa: E402
+_s = spec_from_file_location("_amconst", os.path.join(ROOT, "scripts", "alpha_metrics.py"))
+_amc = _mfs(_s); _s.loader.exec_module(_amc)
+CASH_LIKE_EXTRA = _amc.CASH_LIKE_EXTRA
 # Yahoo 字段名
 Y = {
     "revenue": "annualTotalRevenue", "gp": "annualGrossProfit", "op": "annualOperatingIncome",
@@ -74,7 +83,7 @@ TTM_Y = {"revenue": "trailingTotalRevenue", "ni": "trailingNetIncome",
          "ocf": "trailingOperatingCashFlow"}
 # 资产负债表项为【时点值】，必须用 instant 取数，不能用年度区间的 key 去查
 BAL = {
-    "cash": ["CashAndCashEquivalentsAtCarryingValue"],
+    "cash": ["CashAndCashEquivalentsAtCarryingValue"] + CASH_LIKE_EXTRA,
     "equity": ["StockholdersEquity"],
     "debt": ["LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
              "DebtLongtermAndShorttermCombinedAmount",
@@ -140,46 +149,148 @@ def instant_map(F, tags):
     return {}
 
 
-def discrete_quarters(F, tags, fy_year):
-    """某财年内的离散季度值（YTD 差分）。末季若无 YTD 记录则返回至最后一条为止。"""
-    ym = ytd_map(F, tags)
-    ends = sorted([d for d in ym if d.startswith(str(fy_year))])
-    out, prev = [], None
-    for d in ends:
-        out.append((d, ym[d] - (prev if prev is not None else 0)))
-        prev = ym[d]
+def fy_ends(F, tags=None):
+    """财年结束日列表（升序）。[D-44] 非自然年财年（如 INTU 7月结束）必需。"""
+    _, _, ad = F.series(tags or T["revenue"], "annual")
+    return sorted(ad)
+
+
+def fy_of(date, fyes):
+    """date 属于哪个财年：结束日 ≥ date 且相距 ≤ 400 天的最小财年
+    [D-44/D-47] 不能只用 `date <= e`：若财年列表有缺口（如早期用不同 revenue tag），
+    远古日期会被映射到很晚的财年 → 同一桶里混了不同年份 → 34 处假"异常下降"。
+    """
+    d = dt.date.fromisoformat(date)
+    for e in fyes:
+        ed = dt.date.fromisoformat(e)
+        if d <= ed and (ed - d).days <= 400:
+            return e
+    return None
+
+
+def ytd_records(F, tags):
+    """每个结束日的【最长时长】记录 → {end: (dur, start, val)}"""
+    for tag in tags:
+        rows = {}
+        for it in F._items(tag):
+            if "start" not in it:
+                continue
+            n = (dt.date.fromisoformat(it["end"]) - dt.date.fromisoformat(it["start"])).days
+            if not (60 <= n <= 400):
+                continue
+            if it["end"] not in rows or n > rows[it["end"]][0]:
+                rows[it["end"]] = (n, it["start"], it["val"])
+        if rows:
+            return rows
+    return {}
+
+
+def _minus1y(d):
+    """返回 d 的上一年同日（2/29 → 2/28）"""
+    try:
+        return d.replace(year=d.year - 1)
+    except ValueError:
+        return d.replace(year=d.year - 1, day=28)
+
+
+def fy_candidates(F, tags=None):
+    """候选财年末 —— 已结束的 + 向后续推的。
+    [D-48] 必须包含【尚未结束】的本财年，否则当年 YTD 记录归属不到任何财年，
+    会被静默丢掉（表现为 ttm_path2 算不出 4 个季度）。
+    """
+    ends = fy_ends(F, tags)
+    if not ends:
+        return ends
+    cands = set(ends)
+    base = dt.date.fromisoformat(ends[-1])
+    for i in range(1, 6):
+        try:
+            cands.add(base.replace(year=base.year + i).isoformat())
+        except ValueError:
+            cands.add(base.replace(year=base.year + i, day=28).isoformat())
+    return sorted(cands)
+
+
+def ytd_sequences(F, tags):
+    """按【财年】分组的 YTD 序列  {fy_end: [(date, ytd), ...]}
+
+    [D-44/D-47/D-48] 三个精确性要求，缺一不可：
+      1. 按财年而非自然年分组（INTU 7 月结账）
+      2. **记录的起点必须就是本财年的起点**（±15 天）——
+         否则会把跨年度的 trailing 值当成本财年累计
+      3. 候选财年末必须向后续推，覆盖**尚未结束**的本财年
+    """
+    recs = ytd_records(F, tags)
+    fyes = fy_candidates(F, tags)
+    out = {}
+    for d_ in sorted(recs):
+        n, st, v = recs[d_]
+        dd = dt.date.fromisoformat(d_)
+        stt = dt.date.fromisoformat(st)
+        for e in fyes:
+            ed = dt.date.fromisoformat(e)
+            if dd <= ed and (ed - dd).days <= 400:
+                fy_start = _minus1y(ed) + dt.timedelta(days=1)
+                if abs((stt - fy_start).days) <= 15:
+                    out.setdefault(e, []).append((d_, v))
+                break
+    for e in out:
+        out[e].sort()
     return out
 
 
 def ttm_path2(F, tags):
-    """第二条独立路径：最近 4 个离散季度之和（Q4 = FY − 9M）"""
+    """第二条路径：最近 4 个离散季度之和（Q4 = FY − 9M）—— 按【财年】计算"""
     amap = annual_map(F, tags)
     ym = ytd_map(F, tags)
     if not ym or not amap:
         return None, None
     q_end = sorted(ym)[-1]
-    yr = int(q_end[:4])
-    qs = discrete_quarters(F, tags, yr)
+    seqs = ytd_sequences(F, tags)
+    fy = fy_of(q_end, fy_candidates(F, tags))
+    if not fy:
+        return None, None
+    cur = seqs.get(fy, [])
+    # 当前财年内已披露的离散季度
+    qs, prev = [], 0.0
+    for d_, v_ in cur:
+        if d_ > q_end:
+            break
+        qs.append((d_, v_ - prev))
+        prev = v_
     if not qs or qs[-1][0] != q_end:
         return None, None
     need = 4 - len(qs)
     prior = []
     if need > 0:
-        py_ = yr - 1
-        pq = discrete_quarters(F, tags, py_)
-        fy_prev_end = "%d-12-31" % py_
-        # 补上 Q4（若去年同期无 Q4 的 YTD 记录）
-        if fy_prev_end in amap and (not pq or pq[-1][0] != fy_prev_end):
-            nine_m = pq[-1][1] if pq else 0
-            ytd9 = ym.get(pq[-1][0], 0) if pq else 0
-            prior = pq + [(fy_prev_end, amap[fy_prev_end] - ytd9)]
-        else:
-            prior = pq
+        fyes = fy_candidates(F, tags)
+        i = fyes.index(fy)
+        if i == 0:
+            return None, None
+        pf = fyes[i - 1]
+        pseq = seqs.get(pf, [])
+        if not pseq:
+            return None, None
+        for j, (d_, v_) in enumerate(pseq):
+            pv = pseq[j - 1][1] if j else 0.0
+            prior.append((d_, v_ - pv))
+        # 补 Q4（= 财年 − 9M）
+        if amap.get(pf) is not None and (not prior or prior[-1][0] != pf):
+            ytd9 = pseq[-1][1]
+            prior.append((pf, amap[pf] - ytd9))
         prior = prior[-need:]
     if len(qs) + len(prior) < 4:
         return None, None
     total = sum(v for _, v in qs) + sum(v for _, v in prior)
     return total, q_end
+
+
+def close_enough(a, b, tol_pct):
+    """[D-47] 不能写 `pctdiff(...) or 99` —— pctdiff 返回 0.0 时是 falsy，
+    `0.0 or 99` 会得到 99，从而静默地关闭检查（完全相等的两个值反而判为失败）。
+    """
+    d = pctdiff(a, b)
+    return d is not None and abs(d) < tol_pct
 
 
 def fetch_yahoo(ticker, types):
@@ -268,7 +379,16 @@ def _run_one(a):
     op = annual_map(F, T["op"])
     sga = annual_map(F, T["sga"])
     rd = annual_map(F, T["rd"])
-    years = sorted(set(rev) & set(gp))[-3:]
+    # [D-45] 不能静默什么都不做：若关键 tag 缺失，必须明确报出"无法校验"
+    missing = [k for k, v in (("Revenue", rev), ("OpInc", op)) if not v]
+    if not gp:
+        missing.append("GrossProfit（该公司不单列毛利）")
+    if missing:
+        rec("L1", "DEF", "会计恒等式可执行性",
+            "缺少 %s → 相关恒等式**无法校验**（不等于通过）" % ", ".join(missing))
+    years = sorted(set(rev) & set(gp))[-3:] if gp else []
+    if not years and rev and op:
+        years = sorted(set(rev) & set(op))[-3:]
     for y in years:
         if y in cogs and y in gp:
             calc = rev[y] - cogs[y]
@@ -292,17 +412,30 @@ def _run_one(a):
     # ─────────────────────────── L2 时间一致性
     print("\n[L2] 时间一致性（内部一致性）")
 
-    # YTD 单调性
-    bad = 0
-    for tag_key in ("revenue", "ni", "ocf"):
-        ym_ = ytd_map(F, T[tag_key])
-        for yr in sorted({d[:4] for d in ym_})[-4:]:
-            seq = [ym_[d] for d in sorted(d for d in ym_ if d.startswith(yr))]
+    # YTD 单调性 —— [D-44/D-47] 按财年；[D-49] 只对【收入】成立
+    # 累计经营现金流/NI 完全可能 Q1 为负、年末转正，**本来就不单调** ——
+    # 把一个收入特有的性质套到所有流量上会产生大量假警报。
+    bad = []
+    for tag_key in ("revenue",):
+        for fy, seq in ytd_sequences(F, T[tag_key]).items():
             for i in range(1, len(seq)):
-                if seq[i] < seq[i - 1] * 0.9:      # 累计口径不应显著下降
-                    bad += 1
-    rec("L2", "MATCH" if bad == 0 else "MISMATCH", "YTD 累计序列单调性",
-        "无异常下降" if bad == 0 else "%d 处异常下降（可能是季度而非累计口径）" % bad)
+                if seq[i][1] < seq[i - 1][1] * 0.9:
+                    bad.append("%s %s" % (fy, seq[i][0]))
+    rec("L2", "MATCH" if not bad else "MISMATCH", "YTD 累计序列单调性（收入）",
+        "无异常下降" if not bad else "%d 处异常下降: %s" % (len(bad), ", ".join(bad[:3])))
+    # NI / OCF 只做"累计值不应超出财年总额的合理倍数"的宽松检查
+    loose = []
+    for tag_key in ("ni", "ocf"):
+        amap_ = annual_map(F, T[tag_key])
+        for fy, seq in ytd_sequences(F, T[tag_key]).items():
+            if fy not in amap_ or not seq:
+                continue
+            tot = amap_[fy]
+            for d_, v_ in seq:
+                if abs(tot) > 1e7 and abs(v_) > abs(tot) * 3:
+                    loose.append("%s@%s" % (tag_key, d_))
+    rec("L2", "MATCH" if not loose else "DEF", "NI/OCF 累计量级宽松检查",
+        "无越界" if not loose else "%d 处偏离（可能跨境/一次性项）: %s" % (len(loose), ", ".join(loose[:3])))
 
     # 双路 TTM 交叉 —— 注意：这不是独立检查（两路共享 ytd 原语）
     for tag_key, label in (("revenue", "Revenue"), ("ni", "NetIncome"), ("ocf", "OCF")):
@@ -339,44 +472,36 @@ def _run_one(a):
     rec("L2", "MATCH" if not miss else "MISMATCH", "YTD 取最长时长断言",
         "每个结束日均取到最长时长记录" if not miss else "; ".join(miss[:3]))
 
-    # [D-42] 净债务同日性 —— 必须检验【引擎实际用的路径】
-    # 两次踩坑：
-    #   1) 一开始只检查"各 tag 有没有同日数据"→ 检不出引擎输出的日期混用
-    #   2) 改了之后用自己的 tag 列表 → 测的是引擎从没走过的路径（假绿）
-    # 所以：tag 列表必须与引擎一致（用 am.*），但【同日重算】自己独立做。
-    ENG_BAL = {"cash": am.CASH_TAGS, "equity": am.EQ_TAGS, "debt": am.DEBT_TAGS}
-
-    def _map(tags):
-        for t in tags:
-            if t in F.tax:
-                rows = {it["end"]: it["val"] for it in F._items(t) if "start" not in it}
-                if rows:
-                    return rows
-        return {}
-
-    cmap, dmap = _map(ENG_BAL["cash"]), _map(ENG_BAL["debt"])
-    allmaps = [_map(ENG_BAL[g]) for g in ("cash", "equity", "debt")]
-    common = set(allmaps[0])
-    for m_ in allmaps[1:]:
-        common &= set(m_)
-    # 注意 latest() 返回 (tag, value, date)
-    _, eng_cash, eng_cash_d = F.latest(ENG_BAL["cash"])
-    _, eng_debt, eng_debt_d = F.latest(ENG_BAL["debt"])
-    if eng_cash_d != eng_debt_d:
-        rec("L2", "MISMATCH", "净债务同日性（引擎输出）",
-            "引擎用的现金=%s 但债务=%s ← **净债务/ROIC 是混合口径的假数（D-42）**"
-            % (eng_cash_d, eng_debt_d))
-    elif common:
-        j = max(common)
-        exp_net = dmap[j] - cmap[j]
-        got_net = (eng_debt or 0) - (eng_cash or 0)
-        d = abs(pctdiff(exp_net, got_net) or 0)
-        rec("L2", "MATCH" if d < 0.5 else "MISMATCH",
-            "净债务独立重算（同日 %s）" % j,
-            "引擎 %.4fB vs 独立重算 %.4fB (Δ%.2f%%)"
-            % (got_net / 1e9, exp_net / 1e9, d))
+    # [D-42/D-46/D-50] 净债务校验 —— 同一条路径 + 独立重算数值
+    # 三次踩同一个坑（测了引擎没走的路径），根源都是两边解析路径不同。
+    # 现在：引擎与校验器共用 F.balance_sheet()，只把【数值】独立重算。
+    asof, bsv, bstag = F.balance_sheet()
+    if not asof:
+        rec("L2", "DEF", "资产负债表解析", "无法确定共同日期")
     else:
-        rec("L2", "DEF", "净债务同日性", "现金/权益/债务 无共同日期，跳过")
+        # 独立重算：该日期上所有现金类 tag 之和（逐条重算，不用引擎的求和结果）
+        exp_cash, seen = 0.0, []
+        for t in am.CASH_TAGS + am.CASH_LIKE_EXTRA:
+            rows = {it["end"]: it["val"] for it in F._items(t) if "start" not in it}
+            if asof in rows:
+                v = rows[asof]
+                if any(abs(v - x) < 1 for x in seen):
+                    continue
+                exp_cash += v; seen.append(v)
+        exp_debt = None
+        for t in am.DEBT_TAGS:
+            rows = {it["end"]: it["val"] for it in F._items(t) if "start" not in it}
+            if asof in rows:
+                exp_debt = rows[asof]; break
+        eng_cash, eng_debt = bsv.get("cash"), bsv.get("debt")
+        if not close_enough(eng_cash, exp_cash, 0.5) or not close_enough(eng_debt, exp_debt, 0.5):
+            rec("L2", "MISMATCH", "净债务独立重算（同日 %s）" % asof,
+                "引擎 现金%.4fB/债务%.4fB vs 独立 现金%.4fB/债务%.4fB"
+                % ((eng_cash or 0) / 1e9, (eng_debt or 0) / 1e9, exp_cash / 1e9, (exp_debt or 0) / 1e9))
+        else:
+            rec("L2", "MATCH", "净债务独立重算（同日 %s）" % asof,
+                "现金 %.4fB（%d 个 tag 之和）/ 债务 %.4fB → 净债务 %.4fB"
+                % (eng_cash / 1e9, len(seen), eng_debt / 1e9, (eng_debt - eng_cash) / 1e9))
 
     # TTM 应落在两个财年的合理包络内
     # [D-40] 不能写死"公司一定在增长"：初版假设 TTM ≥ 上一财年，
@@ -456,15 +581,36 @@ def _run_one(a):
                 va, vb = sv[y0], abs(yv[y0]) if k == "capex" else yv[y0]
                 va = abs(va) if k == "capex" else va
                 d = abs(pctdiff(va, vb) or 0)
+                extra = ""
+                # [D-46] 已知的口径差异：CapEx 含资本化软件；债务含经营租赁负债
+                if k == "capex":
+                    _, av2, ad2 = F.series(CAPEX_ADD, "annual")
+                    am2 = dict(zip(ad2, av2))
+                    if y0 in am2 and close_enough(va + am2[y0], vb, 1):
+                        rec("L3", "DEF", "SEC ≈ Yahoo: %s (%s)【口径】" % (k, y0),
+                            "%.4fB+%.4fB = %.4fB = Yahoo %.4fB ✓ 资本化软件"
+                            % (va / 1e9, am2[y0] / 1e9, (va + am2[y0]) / 1e9, vb / 1e9))
+                        continue
+                    if y0 in am2:
+                        extra = "（+资本化软件 %.3fB）" % (am2[y0] / 1e9)
+                if k == "debt":
+                    lm = instant_map(F, LEASE_TAGS)
+                    if y0 in lm and close_enough(va + lm[y0], vb, 1):
+                        rec("L3", "DEF", "SEC ≈ Yahoo: %s (%s)【口径】" % (k, y0),
+                            "%.4fB+%.4fB = %.4fB = Yahoo %.4fB ✓ 经营租赁负债"
+                            % (va / 1e9, lm[y0] / 1e9, (va + lm[y0]) / 1e9, vb / 1e9))
+                        continue
+                    if y0 in lm:
+                        extra = "（+经营租赁 %.3fB）" % (lm[y0] / 1e9)
                 if d < 0.5:
                     rec("L3", "MATCH", "SEC = Yahoo: %s (%s)" % (k, y0),
                         "%.4fB = %.4fB" % (va / 1e9, vb / 1e9))
                 elif d < 5:
                     rec("L3", "DEF", "SEC ≈ Yahoo: %s (%s)" % (k, y0),
-                        "%.4fB vs %.4fB (Δ%.2f%%) ← 聚合口径差异" % (va / 1e9, vb / 1e9, d))
+                        "%.4fB vs %.4fB (Δ%.2f%%) ← 聚合口径差异%s" % (va / 1e9, vb / 1e9, d, extra))
                 else:
                     rec("L3", "MISMATCH", "SEC vs Yahoo: %s (%s)" % (k, y0),
-                        "%.4fB vs %.4fB (Δ%.1f%%) ← **需查明**" % (va / 1e9, vb / 1e9, d))
+                        "%.4fB vs %.4fB (Δ%.1f%%) ← **需查明**%s" % (va / 1e9, vb / 1e9, d, extra))
 
             # FCF 在 SEC 里是派生量（OCF − CapEx），单独处理
             if "annualFreeCashFlow" in ydata:

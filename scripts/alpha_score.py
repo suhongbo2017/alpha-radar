@@ -183,7 +183,12 @@ def cmd_size(a):
 # ══════════════════════════════════════════════════════════════════
 def cmd_lite(a):
     rg, mt, vp = a.revenue_growth, a.moat_trend, a.valuation_pct
-    grow = "↑ 加速" if rg >= 15 else "→ 稳定" if rg >= 5 else "↓ 放缓"
+    # [D-52] 不能只用单一收入阈值定"加速"：高毛利/高 ROIC/高 FCF 利润率的公司
+    # 增长 14% 已经很优秀，而低毛利硬件企业增长 14% 可能只是持平周期。
+    # 可选提供 --roic / --fcf-margin 做质量修正；不提供则退回原阈值。
+    quality = (a.roic is not None and a.roic >= 20) and (a.fcf_margin is not None and a.fcf_margin >= 25)
+    hi, md = (10.0, 4.0) if quality else (15.0, 5.0)
+    grow = "↑ 加速" if rg >= hi else "→ 稳定" if rg >= md else "↓ 放缓"
     moat = {"up": "↑ 加强", "flat": "→ 稳定", "down": "↓ 削弱"}.get(mt, "?")
     val = ("🟢 低位" if vp <= 40 else "🟡 中位" if vp <= 70 else "🔴 高位")
 
@@ -192,6 +197,9 @@ def cmd_lite(a):
     print("  Revenue Growth  %.4g%%   →  基本面  %s" % (rg, grow))
     print("  Moat Trend      %-6s  →  护城河  %s" % (mt, moat))
     print("  Valuation       第 %.0f 分位  →  估值  %s" % (vp, val))
+    if quality:
+        print("  质量修正        ROIC %.1f%% / FCF Margin %.1f%% → 增长阈值降至 %.0f%%"
+              % (a.roic, a.fcf_margin, hi))
     print("-" * 62)
 
     ok_g, ok_m = grow.startswith("↑"), moat.startswith("↑")
@@ -202,11 +210,15 @@ def cmd_lite(a):
         print("  结论: ❌ **放弃** —— 基本面与护城河同时恶化，跌多少都不买")
     elif not ok_v and ok_g and ok_m:
         print("  结论: 👀 **只进观察名单** —— 公司好但价格太高（典型: APH 型）")
+    elif ok_v and ok_m and not ok_g:
+        print("  结论: 🔍 **值得跑全流程** —— 估值低 + 护城河在加强；")
+        print("        增长不快但要区分是\"成熟稳态\"还是\"真的在衰退\"（典型: INTU 型）")
     else:
         print("  结论: ⏸ **不投入深度研究** —— 至少一项不满足，把时间给别人")
 
-    print("\n  三项的规则: 基本面↑ + 护城河↑ + 估值不在高位 → 才值得跑全流程。")
-    print("  三项中任何一项为↓都要先解释清楚，否则不进入下一档。")
+    print("\n  三项规则: 基本面↑ + 护城河↑ + 估值不在高位 → 跑全流程。")
+    print("  *Lite 是粗筛，不是结论。* 若已做过完整分析而 Lite 与之矛盾，**以完整分析为准**——")
+    print("  并回头检查 Lite 的阈值是否适用于该商业模式。")
     return 0
 
 
@@ -236,6 +248,9 @@ def main():
                    choices=["up", "flat", "down"])
     q.add_argument("--valuation-pct", dest="valuation_pct", type=float, required=True,
                    help="当前估值在自身历史区间的百分位 0-100")
+    q.add_argument("--roic", type=float, default=None, help="[D-52] 可选质量修正")
+    q.add_argument("--fcf-margin", dest="fcf_margin", type=float, default=None,
+                   help="[D-52] 可选质量修正")
     q.set_defaults(func=cmd_lite)
 
     a = p.parse_args()
