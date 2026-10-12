@@ -103,6 +103,13 @@ py scripts/alpha_metrics.py APH --years 8
 py scripts/alpha_metrics.py APH --json
 py scripts/alpha_metrics.py APH --score-inputs   # 直接输出 alpha_score.py 的定量参数
 
+# [D-68] 一致预期（分析师预测）—— 研究级情景的必要输入
+py scripts/alpha_quote.py NVDA --estimates
+py scripts/alpha_quote.py NVDA --estimates --json
+#   流程：fc.yahoo.com 取 cookie → /v1/test/getcrumb 取 crumb → 带两者请求
+#   返回：目标价(均值/区间/家数)、评级、前瞻 PE、各期 EPS/收入一致预期
+#   实测与原始报告完全吻合（ITRI $129.56 / INTU $405.60 / NOW $146.73）→ 数据源可信
+
 # [D-66] 规则化情景（无行业研究时的占位，明确标注为低置信度）
 py scripts/alpha_scenario.py NVDA
 py scripts/alpha_scenario.py NVDA --json
@@ -137,6 +144,7 @@ py scripts/alpha_quote.py APH
 py scripts/alpha_quote.py APH --json
 py scripts/alpha_quote.py APH --offline         # 只用缓存
 py scripts/alpha_quote.py APH --proxy http://127.0.0.1:7897
+py scripts/alpha_quote.py APH --estimates
 
 # 行情 / 估值 / 财务快照（注意：依赖 yfinance，可能 429 限流，见 D-29）
 py "C:/Users/Administrator/.pi/agent/skills/stock-analysis/scripts/stock_info.py" <TICKER>
@@ -571,6 +579,20 @@ g_bear = min(TTM Revenue YoY × 0.1, 0)
 **纪律**：用规则情景的档案，**不登记预测** —— 规则没有表达任何行业观点，
 因而不具备"可被未来数据证伪"的资格，登记它会污染预测账本。
 动作一律 **Watch（需研究后再决策）**。
+
+### 5.4c 两类档案的等级区分（[D-66] vs 研究级）
+
+| 等级 | 情景来源 | 能否登记预测 | 动作 |
+|---|---|---|---|
+| **研究级** | 以**一致预期为锚** + 显式折扣假设（或行业研究报告） | ✅ 可以 | Hold / Buy / Trim |
+| **规则级** | `alpha_scenario.py` 机械规则 | ❌ **不可以** | Watch |
+
+> **实测差异可达 4 倍**：ORCL 规则级赔率 0.65:1（CAGR 6.8%），研究级 2.71:1（CAGR 19.5%）。
+> 规则级把 ORCL 当"高杠杆成熟公司"惩罚；研究级看到"一致预期认为收入会翻 1.83 倍"。
+> **这个差异就是"为什么必须做研究级分析"的最好论据。**
+>
+> 但反过来也成立：**研究级把结论押在一致预期上，而一致预期可能系统性偏高。**
+> 所以研究级档案必须写明"对一致预期的折扣假设"，并把它列为最大单点风险。
 
 ### 5.5 组合层 —— Radar Board（[D-13]）
 
@@ -1120,7 +1142,14 @@ D:/pi/select_stock/
 │   ├── alpha_metrics.py              # 一手指标计算（TTM/Margin/FCF/ROIC）
 │   ├── alpha_quote.py                # [D-29] 行情快照（yfinance 备选源）
 │   ├── verify_data.py                # [G7] 四层数据校验（含外部交叉）
-│   ├── alpha_portfolio.py            # [D-66] 规则化情景（无行业研究时的占位，明确标注为低置信度）
+│   ├── alpha_portfolio.py            # [D-68] 一致预期（分析师预测）—— 研究级情景的必要输入
+py scripts/alpha_quote.py NVDA --estimates
+py scripts/alpha_quote.py NVDA --estimates --json
+#   流程：fc.yahoo.com 取 cookie → /v1/test/getcrumb 取 crumb → 带两者请求
+#   返回：目标价(均值/区间/家数)、评级、前瞻 PE、各期 EPS/收入一致预期
+#   实测与原始报告完全吻合（ITRI $129.56 / INTU $405.60 / NOW $146.73）→ 数据源可信
+
+# [D-66] 规则化情景（无行业研究时的占位，明确标注为低置信度）
 py scripts/alpha_scenario.py NVDA
 py scripts/alpha_scenario.py NVDA --json
 

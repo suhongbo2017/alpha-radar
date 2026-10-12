@@ -1,0 +1,56 @@
+{
+ "ticker": "UMC",
+ "target_mean": "19.12",
+ "target_high": "33.76",
+ "target_low": "10.80",
+ "target_median": "15.95",
+ "n_analysts": "4",
+ "recommendation": "hold",
+ "current_price": "22.96",
+ "revenue_growth": "17.00%",
+ "gross_margin": "30.60%",
+ "operating_margin": "21.71%",
+ "return_on_equity": "21.33%",
+ "total_debt": "63.45B",
+ "total_cash": "147.39B",
+ "forward_pe": "26.15",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": 0.12274,
+   "eps_low": 0.034,
+   "eps_high": 0.21147,
+   "rev_avg": 75707390080,
+   "n": 2
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": 0.12012,
+   "eps_low": 0.037,
+   "eps_high": 0.20324,
+   "rev_avg": 78658040110,
+   "n": 2
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-12-31",
+   "eps_avg": 0.9184,
+   "eps_low": 0.7,
+   "eps_high": 1.13681,
+   "rev_avg": 283187315600,
+   "n": 2
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-12-31",
+   "eps_avg": 0.87816,
+   "eps_low": 0.823,
+   "eps_high": 0.93331,
+   "rev_avg": 348372939480,
+   "n": 2
+  }
+ ]
+}

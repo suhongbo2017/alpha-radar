@@ -1,0 +1,56 @@
+{
+ "ticker": "QCOM",
+ "target_mean": "194.13",
+ "target_high": "400.00",
+ "target_low": "100.00",
+ "target_median": "175.00",
+ "n_analysts": "30",
+ "recommendation": "hold",
+ "current_price": "175.50",
+ "revenue_growth": "-4.00%",
+ "gross_margin": "54.23%",
+ "operating_margin": "18.53%",
+ "return_on_equity": "33.75%",
+ "total_debt": "15.27B",
+ "total_cash": "8.3B",
+ "forward_pe": "17.21",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": 2.15685,
+   "eps_low": 2.09,
+   "eps_high": 2.24,
+   "rev_avg": 10138218290,
+   "n": 26
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": 2.29722,
+   "eps_low": 2.0,
+   "eps_high": 2.95,
+   "rev_avg": 10584807730,
+   "n": 26
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-09-30",
+   "eps_avg": 10.48422,
+   "eps_low": 9.25,
+   "eps_high": 10.61,
+   "rev_avg": 42876184110,
+   "n": 31
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-09-30",
+   "eps_avg": 10.19665,
+   "eps_low": 8.83,
+   "eps_high": 12.24,
+   "rev_avg": 44910753120,
+   "n": 34
+  }
+ ]
+}

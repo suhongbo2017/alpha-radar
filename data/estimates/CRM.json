@@ -1,0 +1,56 @@
+{
+ "ticker": "CRM",
+ "target_mean": "283.36",
+ "target_high": "475.00",
+ "target_low": "160.00",
+ "target_median": "282.50",
+ "n_analysts": "54",
+ "recommendation": "buy",
+ "current_price": "229.13",
+ "revenue_growth": "10.80%",
+ "gross_margin": "77.28%",
+ "operating_margin": "21.38%",
+ "return_on_equity": "19.38%",
+ "total_debt": "42.38B",
+ "total_cash": "11.4B",
+ "forward_pe": "14.30",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-10-31",
+   "eps_avg": 3.4463,
+   "eps_low": 3.39,
+   "eps_high": 3.85,
+   "rev_avg": 11462684880,
+   "n": 42
+  },
+  {
+   "period": "+1q",
+   "endDate": "2027-01-31",
+   "eps_avg": 3.5562,
+   "eps_low": 3.45,
+   "eps_high": 4.01,
+   "rev_avg": 12345658300,
+   "n": 41
+  },
+  {
+   "period": "0y",
+   "endDate": "2027-01-31",
+   "eps_avg": 16.75426,
+   "eps_low": 16.67,
+   "eps_high": 17.6,
+   "rev_avg": 46296649200,
+   "n": 52
+  },
+  {
+   "period": "+1y",
+   "endDate": "2028-01-31",
+   "eps_avg": 16.0207,
+   "eps_low": 14.6632,
+   "eps_high": 18.12,
+   "rev_avg": 50794665790,
+   "n": 53
+  }
+ ]
+}

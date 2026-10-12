@@ -1,0 +1,56 @@
+{
+ "ticker": "ASX",
+ "target_mean": "51.00",
+ "target_high": "51.00",
+ "target_low": "51.00",
+ "target_median": "51.00",
+ "n_analysts": "1",
+ "recommendation": "none",
+ "current_price": "46.43",
+ "revenue_growth": "26.70%",
+ "gross_margin": "19.49%",
+ "operating_margin": "11.06%",
+ "return_on_equity": "17.01%",
+ "total_debt": "295.79B",
+ "total_cash": "105.64B",
+ "forward_pe": "23.77",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": 0.30253,
+   "eps_low": 0.30253,
+   "eps_high": 0.30253,
+   "rev_avg": 233360868920,
+   "n": 1
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": 0.34036,
+   "eps_low": 0.34036,
+   "eps_high": 0.34036,
+   "rev_avg": 245439401840,
+   "n": 1
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-12-31",
+   "eps_avg": 1.1457,
+   "eps_low": 1.1457,
+   "eps_high": 1.1457,
+   "rev_avg": 839625451670,
+   "n": 1
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-12-31",
+   "eps_avg": 1.95321,
+   "eps_low": 1.95321,
+   "eps_high": 1.95321,
+   "rev_avg": 1046070086820,
+   "n": 1
+  }
+ ]
+}

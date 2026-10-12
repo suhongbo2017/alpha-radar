@@ -1,0 +1,56 @@
+{
+ "ticker": "MSFT",
+ "target_mean": "587.63",
+ "target_high": "870.00",
+ "target_low": "440.00",
+ "target_median": "586.00",
+ "n_analysts": "53",
+ "recommendation": "strong_buy",
+ "current_price": "535.07",
+ "revenue_growth": "17.70%",
+ "gross_margin": "67.94%",
+ "operating_margin": "45.11%",
+ "return_on_equity": "34.04%",
+ "total_debt": "128.81B",
+ "total_cash": "76.84B",
+ "forward_pe": "22.60",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": 4.72336,
+   "eps_low": 4.43,
+   "eps_high": 4.83363,
+   "rev_avg": 90685460400,
+   "n": 27
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": 4.82904,
+   "eps_low": 4.72,
+   "eps_high": 5.02,
+   "rev_avg": 95590065640,
+   "n": 27
+  },
+  {
+   "period": "0y",
+   "endDate": "2027-06-30",
+   "eps_avg": 19.76867,
+   "eps_low": 19.21,
+   "eps_high": 20.7,
+   "rev_avg": 391270566280,
+   "n": 34
+  },
+  {
+   "period": "+1y",
+   "endDate": "2028-06-30",
+   "eps_avg": 23.67732,
+   "eps_low": 22.08,
+   "eps_high": 26.0,
+   "rev_avg": 467954702520,
+   "n": 33
+  }
+ ]
+}

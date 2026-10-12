@@ -1,0 +1,56 @@
+{
+ "ticker": "KTOS",
+ "target_mean": "100.04",
+ "target_high": "150.00",
+ "target_low": "55.00",
+ "target_median": "100.00",
+ "n_analysts": "23",
+ "recommendation": "strong_buy",
+ "current_price": "42.36",
+ "revenue_growth": "30.50%",
+ "gross_margin": "23.00%",
+ "operating_margin": "-0.17%",
+ "return_on_equity": "1.15%",
+ "total_debt": "193.6M",
+ "total_cash": "1.44B",
+ "forward_pe": "37.96",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": 0.20014,
+   "eps_low": 0.14,
+   "eps_high": 0.23068,
+   "rev_avg": 469817060,
+   "n": 17
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": 0.24276,
+   "eps_low": 0.18,
+   "eps_high": 0.27,
+   "rev_avg": 496504390,
+   "n": 17
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-12-31",
+   "eps_avg": 0.81524,
+   "eps_low": 0.71,
+   "eps_high": 0.9,
+   "rev_avg": 1795520670,
+   "n": 20
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-12-31",
+   "eps_avg": 1.1159,
+   "eps_low": 0.81,
+   "eps_high": 1.7,
+   "rev_avg": 2222717580,
+   "n": 21
+  }
+ ]
+}

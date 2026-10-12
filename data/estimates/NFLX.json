@@ -1,0 +1,56 @@
+{
+ "ticker": "NFLX",
+ "target_mean": "92.55",
+ "target_high": "135.00",
+ "target_low": "57.00",
+ "target_median": "90.00",
+ "n_analysts": "45",
+ "recommendation": "buy",
+ "current_price": "70.30",
+ "revenue_growth": "13.40%",
+ "gross_margin": "49.12%",
+ "operating_margin": "33.38%",
+ "return_on_equity": "49.54%",
+ "total_debt": "16.65B",
+ "total_cash": "9.13B",
+ "forward_pe": "18.47",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": 0.82268,
+   "eps_low": 0.79,
+   "eps_high": 0.87,
+   "rev_avg": 12878488590,
+   "n": 35
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": 0.72752,
+   "eps_low": 0.67,
+   "eps_high": 0.82,
+   "rev_avg": 13528767980,
+   "n": 33
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-12-31",
+   "eps_avg": 3.5833,
+   "eps_low": 3.51,
+   "eps_high": 3.69,
+   "rev_avg": 51218425150,
+   "n": 41
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-12-31",
+   "eps_avg": 3.80133,
+   "eps_low": 3.48,
+   "eps_high": 4.09,
+   "rev_avg": 56946716100,
+   "n": 45
+  }
+ ]
+}

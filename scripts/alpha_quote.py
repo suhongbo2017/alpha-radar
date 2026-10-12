@@ -105,13 +105,114 @@ def get_quote(ticker, proxy, offline=False):
     return out, src
 
 
+# ══════════════════════════════════════════════════════════════════
+#  [D-68] 一致预期（分析师预测）—— Yahoo quoteSummary 需要 crumb
+#  流程：fc.yahoo.com 取 cookie → /v1/test/getcrumb 取 crumb → 带两者请求
+#  这是研究级情景的必要输入（规则情景缺的就是这块）
+# ══════════════════════════════════════════════════════════════════
+def fetch_estimates(ticker, proxy=DEFAULT_PROXY):
+    import tempfile
+    ck = os.path.join(tempfile.gettempdir(), "yh_ck_%s.txt" % ticker.upper())
+    UA2 = UA
+    def curl(args):
+        cmd = ["curl", "-s", "--max-time", "30", "-A", UA2]
+        if proxy:
+            cmd += ["-x", proxy]
+        cmd += args
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        return r.stdout
+    curl(["-c", ck, "https://fc.yahoo.com", "-o", os.devnull])
+    crumb = curl(["-b", ck, "https://query1.finance.yahoo.com/v1/test/getcrumb"]).strip()
+    if not crumb or "<" in crumb:
+        return None
+    url = ("https://query1.finance.yahoo.com/v10/finance/quoteSummary/%s"
+           "?modules=earningsTrend,financialData,defaultKeyStatistics&crumb=%s"
+           % (ticker.upper(), crumb))
+    body = curl(["-b", ck, url])
+    try:
+        d = json.loads(body)
+        r = (d.get("quoteSummary") or {}).get("result")
+        return r[0] if r else None
+    except Exception:
+        return None
+
+
+def cmd_estimates(a):
+    r = fetch_estimates(a.ticker, a.proxy)
+    if not r:
+        print("✗ 无法取得一致预期（crumb 失效或该公司无覆盖）")
+        return 1
+    fd = r.get("financialData", {}) or {}
+    ks = r.get("defaultKeyStatistics", {}) or {}
+
+    def g(d_, k):
+        v = d_.get(k)
+        if isinstance(v, dict):
+            return v.get("fmt") or v.get("raw")
+        return v
+
+    out = {"ticker": a.ticker.upper(),
+           "target_mean": g(fd, "targetMeanPrice"), "target_high": g(fd, "targetHighPrice"),
+           "target_low": g(fd, "targetLowPrice"), "target_median": g(fd, "targetMedianPrice"),
+           "n_analysts": g(fd, "numberOfAnalystOpinions"),
+           "recommendation": g(fd, "recommendationKey"),
+           "current_price": g(fd, "currentPrice"),
+           "revenue_growth": g(fd, "revenueGrowth"),
+           "gross_margin": g(fd, "grossMargins"),
+           "operating_margin": g(fd, "operatingMargins"),
+           "return_on_equity": g(fd, "returnOnEquity"),
+           "total_debt": g(fd, "totalDebt"), "total_cash": g(fd, "totalCash"),
+           "forward_pe": g(ks, "forwardPE"), "trailing_pe": None,
+           "trend": []}
+    for t in (r.get("earningsTrend", {}) or {}).get("trend", []) or []:
+        ee = (t.get("earningsEstimate") or {})
+        re_ = (t.get("revenueEstimate") or {})
+        out["trend"].append({
+            "period": t.get("period"), "endDate": t.get("endDate"),
+            "eps_avg": (ee.get("avg") or {}).get("raw"),
+            "eps_low": (ee.get("low") or {}).get("raw"),
+            "eps_high": (ee.get("high") or {}).get("raw"),
+            "rev_avg": (re_.get("avg") or {}).get("raw"),
+            "n": (ee.get("numberOfAnalysts") if isinstance(ee.get("numberOfAnalysts"), int)
+                          else (ee.get("numberOfAnalysts") or {}).get("raw"))
+             or (re_.get("numberOfAnalysts") if isinstance(re_.get("numberOfAnalysts"), int)
+                 else (re_.get("numberOfAnalysts") or {}).get("raw")),
+        })
+    if a.json:
+        print(json.dumps(out, ensure_ascii=False, indent=1))
+        return 0
+    print("%s 一致预期" % out["ticker"])
+    print("  目标价      %s（区间 %s – %s，%s 位分析师，%s）"
+          % (out["target_mean"], out["target_low"], out["target_high"],
+             out["n_analysts"], out["recommendation"]))
+    cp = out["current_price"]
+    try:
+        print("  现价        %s → 上行 %+.1f%%" % (cp, (out["target_mean"] / cp - 1) * 100))
+    except Exception:
+        pass
+    print("  前瞻 PE     %s　｜　预期收入增速 %s" % (out["forward_pe"], out["revenue_growth"]))
+    print("  %-8s %-12s %-14s %-14s %s" % ("期间", "截止", "EPS 均值", "收入均值", "家数"))
+    for t in out["trend"]:
+        print("  %-8s %-12s %-14s %-14s %s" % (
+            t["period"], t["endDate"],
+            ("%.2f" % t["eps_avg"]) if t["eps_avg"] else "—",
+            ("%.1fB" % (t["rev_avg"] / 1e9)) if t["rev_avg"] else "—", t["n"]))
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description="行情快照（yfinance 备选源）")
     ap.add_argument("ticker")
     ap.add_argument("--proxy", default=DEFAULT_PROXY)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--offline", action="store_true")
+    ap.add_argument("--estimates", action="store_true",
+                    help="[D-68] 取分析师一致预期（目标价 / EPS / 收入预测）")
     a = ap.parse_args()
+
+    if a.estimates:
+        return cmd_estimates(a)
 
     q, src = get_quote(a.ticker, a.proxy, a.offline)
     if not q:

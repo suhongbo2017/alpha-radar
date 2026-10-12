@@ -586,6 +586,27 @@ def _run_one(a):
                 % (eng_cash / 1e9, len(seen), eng_debt / 1e9, (fl_eng or 0) / 1e9,
                    (eng_debt - eng_cash) / 1e9))
 
+    # [D-69] 一次性项侦测：净利润的 TTM/FY 比值若显著偏离收入的比值 → 有非经营项
+    # 实测 GOOGL：NI 比值 1.85 vs 收入比值 1.21（偏离 53%）→
+    #   根因 EquitySecuritiesFvNiGainLoss（权益证券公允价值变动）计入净利润。
+    #   **会计正确但不是经营收益** → 用它算 P/E 会严重低估估值。
+    # 反例 NVDA：NI 比值 1.61 vs 收入比值 1.40（偏离 15%）→ 只是高增长，不报。
+    _fy_rev = annual_map(F, T["revenue"])
+    _tt_rev = F.ttm(T["revenue"])
+    _fy_ni = annual_map(F, T["ni"])
+    _tt_ni = F.ttm(T["ni"])
+    if _fy_rev and _tt_rev and _fy_ni and _tt_ni:
+        _ly = max(_fy_rev)
+        if _ly in _fy_ni and _fy_ni[_ly] and _fy_rev[_ly]:
+            _rr = _tt_rev / _fy_rev[_ly]
+            _nr = _tt_ni / _fy_ni[_ly]
+            if _rr > 0 and _nr > 0 and abs(_nr / _rr - 1) > 0.30:
+                rec("L2", "DEF", "一次性项侦测（净利润 vs 收入）",
+                    "NI 的 TTM/FY 比值 %.2f 偏离收入比值 %.2f 达 %+.0f%% → "
+                    "**净利含非经营性项**（如权益证券公允价值变动）。"
+                    "估值必须改用**经营性口径**（OpInc/NOPAT），不可用净利润算 P/E"
+                    % (_nr, _rr, (_nr / _rr - 1) * 100))
+
     # TTM 应落在两个财年的合理包络内
     # [D-40] 不能写死"公司一定在增长"：初版假设 TTM ≥ 上一财年，
     #        结果 ITRI（收入下滑）被判为硬错误 —— 假警报。

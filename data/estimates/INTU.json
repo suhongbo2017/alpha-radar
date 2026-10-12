@@ -1,0 +1,56 @@
+{
+ "ticker": "INTU",
+ "target_mean": "405.60",
+ "target_high": "732.00",
+ "target_low": "290.00",
+ "target_median": "400.00",
+ "n_analysts": "31",
+ "recommendation": "buy",
+ "current_price": "302.75",
+ "revenue_growth": "13.70%",
+ "gross_margin": "80.98%",
+ "operating_margin": "17.64%",
+ "return_on_equity": "23.60%",
+ "total_debt": "8.42B",
+ "total_cash": "7.2B",
+ "forward_pe": "11.18",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-10-31",
+   "eps_avg": 2.63936,
+   "eps_low": 2.42,
+   "eps_high": 4.13,
+   "rev_avg": 4306921550,
+   "n": 26
+  },
+  {
+   "period": "+1q",
+   "endDate": "2027-01-31",
+   "eps_avg": 3.97829,
+   "eps_low": 3.41,
+   "eps_high": 5.59,
+   "rev_avg": 5111385350,
+   "n": 26
+  },
+  {
+   "period": "0y",
+   "endDate": "2027-07-31",
+   "eps_avg": 23.9439,
+   "eps_low": 21.82521,
+   "eps_high": 29.21,
+   "rev_avg": 23408079220,
+   "n": 32
+  },
+  {
+   "period": "+1y",
+   "endDate": "2028-07-31",
+   "eps_avg": 27.07543,
+   "eps_low": 21.32,
+   "eps_high": 32.92,
+   "rev_avg": 25569516990,
+   "n": 31
+  }
+ ]
+}

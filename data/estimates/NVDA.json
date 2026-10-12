@@ -1,0 +1,56 @@
+{
+ "ticker": "NVDA",
+ "target_mean": "328.72",
+ "target_high": "515.00",
+ "target_low": "180.00",
+ "target_median": "315.00",
+ "n_analysts": "59",
+ "recommendation": "strong_buy",
+ "current_price": "229.28",
+ "revenue_growth": "105.90%",
+ "gross_margin": "74.67%",
+ "operating_margin": "66.24%",
+ "return_on_equity": "117.21%",
+ "total_debt": "38.86B",
+ "total_cash": "62.47B",
+ "forward_pe": "14.41",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-10-31",
+   "eps_avg": 2.47325,
+   "eps_low": 2.34,
+   "eps_high": 2.7,
+   "rev_avg": 108976837760,
+   "n": 44
+  },
+  {
+   "period": "+1q",
+   "endDate": "2027-01-31",
+   "eps_avg": 2.74622,
+   "eps_low": 2.56,
+   "eps_high": 3.117,
+   "rev_avg": 124482697730,
+   "n": 42
+  },
+  {
+   "period": "0y",
+   "endDate": "2027-01-31",
+   "eps_avg": 9.31242,
+   "eps_low": 9.01,
+   "eps_high": 10.1,
+   "rev_avg": 411653409840,
+   "n": 51
+  },
+  {
+   "period": "+1y",
+   "endDate": "2028-01-31",
+   "eps_avg": 15.9146,
+   "eps_low": 12.84835,
+   "eps_high": 18.746,
+   "rev_avg": 692206372650,
+   "n": 52
+  }
+ ]
+}

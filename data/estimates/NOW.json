@@ -1,0 +1,56 @@
+{
+ "ticker": "NOW",
+ "target_mean": "146.73",
+ "target_high": "248.00",
+ "target_low": "72.00",
+ "target_median": "150.00",
+ "n_analysts": "46",
+ "recommendation": "strong_buy",
+ "current_price": "140.86",
+ "revenue_growth": "24.00%",
+ "gross_margin": "74.77%",
+ "operating_margin": "4.06%",
+ "return_on_equity": "14.24%",
+ "total_debt": "8.45B",
+ "total_cash": "4.66B",
+ "forward_pe": "28.14",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": 1.02553,
+   "eps_low": 0.91,
+   "eps_high": 1.17,
+   "rev_avg": 4095770420,
+   "n": 39
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": 1.17044,
+   "eps_low": 1.03,
+   "eps_high": 1.32,
+   "rev_avg": 4360948750,
+   "n": 38
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-12-31",
+   "eps_avg": 4.06673,
+   "eps_low": 3.84,
+   "eps_high": 4.36,
+   "rev_avg": 16217785880,
+   "n": 44
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-12-31",
+   "eps_avg": 5.00551,
+   "eps_low": 4.35,
+   "eps_high": 5.57,
+   "rev_avg": 19264107260,
+   "n": 44
+  }
+ ]
+}

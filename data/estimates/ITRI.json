@@ -1,0 +1,56 @@
+{
+ "ticker": "ITRI",
+ "target_mean": "129.56",
+ "target_high": "150.00",
+ "target_low": "115.00",
+ "target_median": "130.00",
+ "n_analysts": "9",
+ "recommendation": "buy",
+ "current_price": "85.58",
+ "revenue_growth": "-7.20%",
+ "gross_margin": "39.87%",
+ "operating_margin": "13.46%",
+ "return_on_equity": "16.89%",
+ "total_debt": "1.6B",
+ "total_cash": "745.23M",
+ "forward_pe": "12.23",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": 1.55944,
+   "eps_low": 1.53,
+   "eps_high": 1.6,
+   "rev_avg": 595528890,
+   "n": 8
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": 1.78467,
+   "eps_low": 1.73,
+   "eps_high": 1.83,
+   "rev_avg": 642753330,
+   "n": 8
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-12-31",
+   "eps_avg": 6.41503,
+   "eps_low": 6.37,
+   "eps_high": 6.49,
+   "rev_avg": 2388120370,
+   "n": 9
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-12-31",
+   "eps_avg": 6.99504,
+   "eps_low": 6.45,
+   "eps_high": 8.1,
+   "rev_avg": 2553173750,
+   "n": 9
+  }
+ ]
+}

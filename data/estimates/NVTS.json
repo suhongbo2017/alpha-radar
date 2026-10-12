@@ -1,0 +1,56 @@
+{
+ "ticker": "NVTS",
+ "target_mean": "14.07",
+ "target_high": "21.00",
+ "target_low": "8.00",
+ "target_median": "13.00",
+ "n_analysts": "8",
+ "recommendation": "hold",
+ "current_price": "10.78",
+ "revenue_growth": "-27.30%",
+ "gross_margin": "38.12%",
+ "operating_margin": "-254.97%",
+ "return_on_equity": "-52.60%",
+ "total_debt": "5.14M",
+ "total_cash": "557.41M",
+ "forward_pe": "-85.54",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": -0.03714,
+   "eps_low": -0.04,
+   "eps_high": -0.03,
+   "rev_avg": 13500000,
+   "n": 7
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": -0.03429,
+   "eps_low": -0.04,
+   "eps_high": -0.02,
+   "rev_avg": 15100000,
+   "n": 7
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-12-31",
+   "eps_avg": -0.15,
+   "eps_low": -0.17,
+   "eps_high": -0.13,
+   "rev_avg": 47692980,
+   "n": 7
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-12-31",
+   "eps_avg": -0.12602,
+   "eps_low": -0.16,
+   "eps_high": -0.08,
+   "rev_avg": 74250450,
+   "n": 8
+  }
+ ]
+}

@@ -1,0 +1,56 @@
+{
+ "ticker": "ORCL",
+ "target_mean": "237.97",
+ "target_high": "400.00",
+ "target_low": "110.00",
+ "target_median": "240.00",
+ "n_analysts": "41",
+ "recommendation": "buy",
+ "current_price": "141.40",
+ "revenue_growth": "29.60%",
+ "gross_margin": "63.96%",
+ "operating_margin": "35.63%",
+ "return_on_equity": "41.19%",
+ "total_debt": "169.14B",
+ "total_cash": "37.08B",
+ "forward_pe": "12.86",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-11-30",
+   "eps_avg": 1.8933,
+   "eps_low": 1.81,
+   "eps_high": 2.04,
+   "rev_avg": 21326824180,
+   "n": 33
+  },
+  {
+   "period": "+1q",
+   "endDate": "2027-02-28",
+   "eps_avg": 2.02263,
+   "eps_low": 1.89,
+   "eps_high": 2.12,
+   "rev_avg": 23379640860,
+   "n": 32
+  },
+  {
+   "period": "0y",
+   "endDate": "2027-05-31",
+   "eps_avg": 8.14059,
+   "eps_low": 8.07,
+   "eps_high": 8.37,
+   "rev_avg": 90423040660,
+   "n": 37
+  },
+  {
+   "period": "+1y",
+   "endDate": "2028-05-31",
+   "eps_avg": 10.99899,
+   "eps_low": 9.0,
+   "eps_high": 13.3,
+   "rev_avg": 131710990809,
+   "n": 39
+  }
+ ]
+}

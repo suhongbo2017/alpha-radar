@@ -1,0 +1,56 @@
+{
+ "ticker": "RKLB",
+ "target_mean": "106.57",
+ "target_high": "150.00",
+ "target_low": "64.00",
+ "target_median": "107.00",
+ "n_analysts": "21",
+ "recommendation": "buy",
+ "current_price": "68.21",
+ "revenue_growth": "62.00%",
+ "gross_margin": "37.26%",
+ "operating_margin": "-24.57%",
+ "return_on_equity": "-7.91%",
+ "total_debt": "133.69M",
+ "total_cash": "2.3B",
+ "forward_pe": "1,158.46",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": -0.06464,
+   "eps_low": -0.08,
+   "eps_high": -0.05,
+   "rev_avg": 257635710,
+   "n": 11
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": -0.04682,
+   "eps_low": -0.07,
+   "eps_high": -0.01,
+   "rev_avg": 268754880,
+   "n": 11
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-12-31",
+   "eps_avg": -0.26817,
+   "eps_low": -0.3,
+   "eps_high": -0.21,
+   "rev_avg": 961244280,
+   "n": 12
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-12-31",
+   "eps_avg": -0.06557,
+   "eps_low": -0.21,
+   "eps_high": 0.02,
+   "rev_avg": 1357731980,
+   "n": 14
+  }
+ ]
+}

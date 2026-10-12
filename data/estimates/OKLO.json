@@ -1,0 +1,56 @@
+{
+ "ticker": "OKLO",
+ "target_mean": "75.78",
+ "target_high": "130.00",
+ "target_low": "14.00",
+ "target_median": "74.50",
+ "n_analysts": "20",
+ "recommendation": "buy",
+ "current_price": "34.70",
+ "revenue_growth": null,
+ "gross_margin": "40.41%",
+ "operating_margin": "-6,048.76%",
+ "return_on_equity": "-7.70%",
+ "total_debt": "4.15M",
+ "total_cash": "2.47B",
+ "forward_pe": "-32.21",
+ "trailing_pe": null,
+ "trend": [
+  {
+   "period": "0q",
+   "endDate": "2026-09-30",
+   "eps_avg": -0.25126,
+   "eps_low": -0.37,
+   "eps_high": -0.17,
+   "rev_avg": 993170,
+   "n": 13
+  },
+  {
+   "period": "+1q",
+   "endDate": "2026-12-31",
+   "eps_avg": -0.26208,
+   "eps_low": -0.38,
+   "eps_high": -0.17,
+   "rev_avg": 1160380,
+   "n": 13
+  },
+  {
+   "period": "0y",
+   "endDate": "2026-12-31",
+   "eps_avg": -0.95326,
+   "eps_low": -1.23,
+   "eps_high": -0.65,
+   "rev_avg": 2739040,
+   "n": 17
+  },
+  {
+   "period": "+1y",
+   "endDate": "2027-12-31",
+   "eps_avg": -1.05659,
+   "eps_low": -1.55,
+   "eps_high": -0.2,
+   "rev_avg": 8900760,
+   "n": 18
+  }
+ ]
+}
