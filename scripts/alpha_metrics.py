@@ -45,8 +45,13 @@ PRETAX_TAGS = ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinary
                "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"]
 CASH_TAGS = ["CashAndCashEquivalentsAtCarryingValue"]
 EQ_TAGS = ["StockholdersEquity"]
-DEBT_TAGS = ["LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities", "LongTermDebt",
-             "LongTermDebtNoncurrent"]
+# 债务 tag 优先级：同日期时前面的优先；跨日期时由 latest() 取【最大日期】
+# 1/2 是显式口径（"含流动部分" / "长短合计"），3/4 是总分口径，5 含义模糊仅供参考
+DEBT_TAGS = ["LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
+             "DebtLongtermAndShorttermCombinedAmount",
+             "LongTermDebt",
+             "LongTermDebtNoncurrent",
+             "DebtInstrumentCarryingAmount"]
 SHARE_TAGS = ["WeightedAverageNumberOfDilutedSharesOutstanding", "CommonStockSharesOutstanding"]
 
 
@@ -132,17 +137,52 @@ class Facts:
             return None
         return fy + cur - prior
 
+    def instant_rows(self, tag):
+        rows = {}
+        for it in self._items(tag):
+            if "start" in it:
+                continue
+            rows[it["end"]] = it["val"]     # 同日期后出现者胜（经重述后的值）
+        return rows
+
     def latest(self, tags):
-        for tag in tags:
-            rows = {}
-            for it in self._items(tag):
-                if "start" in it:
-                    continue
-                rows[it["end"]] = it["val"]
-            if rows:
-                k = sorted(rows)[-1]
-                return tag, rows[k], k
+        """[D-42] 在所有 tags 中取【最大日期】，同日期时按 tags 顺序优先。
+
+        旧实现的问题：取"第一个有数据的 tag 的最后日期"。
+        ITRI 实例：主 tag 只报到 2025-12-31，而
+        DebtLongtermAndShorttermCombinedAmount 有 2026-06-30 的数据 → 结果停在旧日期，
+        与 2026-06-30 的现金混算，净债务因此错误。
+        """
+        per_tag = {t: self.instant_rows(t) for t in tags}
+        dates = [d for rows in per_tag.values() for d in rows]
+        if not dates:
+            return None, None, None
+        best = max(dates)
+        for t in tags:
+            if best in per_tag[t]:
+                return t, per_tag[t][best], best
         return None, None, None
+
+    def latest_common(self, groups):
+        """所有分组都必须有值的【最近共同日期】—— 用于保证资产负债表同日
+        groups: {"cash": [...tags], "debt": [...], "equity": [...]}
+        返回 (asof, {group: value}, {group: tag}) 或 (None, {}, {})
+        """
+        per = {}
+        for g, tags in groups.items():
+            per[g] = {}
+            for t in tags:
+                for d_, v_ in self.instant_rows(t).items():
+                    per[g].setdefault(d_, (t, v_))
+        if not per:
+            return None, {}, {}
+        common = set.intersection(*[set(v) for v in per.values()]) if per else set()
+        if not common:
+            return None, {}, {}
+        best = max(common)
+        vals = {g: per[g][best][1] for g in per}
+        tags = {g: per[g][best][0] for g in per}
+        return best, vals, tags
 
 
 def pct(a, b):
@@ -224,6 +264,11 @@ def main():
     _, cash, cash_d = F.latest(CASH_TAGS)
     _, eq, eq_d = F.latest(EQ_TAGS)
     _, debt, debt_d = F.latest(DEBT_TAGS)
+    # [D-42] 资产负债表三项必须同日，否则净债务/投入资本是混合口径的假数
+    bs_date, bsv, bstag = F.latest_common({"cash": CASH_TAGS, "equity": EQ_TAGS, "debt": DEBT_TAGS})
+    if bs_date:
+        cash, eq, debt = bsv["cash"], bsv["equity"], bsv["debt"]
+        cash_d = eq_d = debt_d = bs_date
 
     q_end = "?"
     _, _, yd = F.series(REV_TAGS, "ytd")
@@ -241,8 +286,8 @@ def main():
     print("  FCF Margin       %s" % f(pct(ttm_fcf, ttm_rev), "%"))
     print("  Cash Conversion  %s" % f(pct(ttm_fcf, ttm_ni), "%"))
 
-    # ---- 资产负债表（最新）
-    print("\n资产负债表（最新）")
+    # ---- 资产负债表（最新，且三项同日）
+    print("\n资产负债表（最新，三项已对齐到同一日期）")
     print("  Cash   %s (%s)" % (f(cash), cash_d))
     print("  Equity %s (%s)" % (f(eq), eq_d))
     print("  Debt   %s (%s)" % (f(debt), debt_d))

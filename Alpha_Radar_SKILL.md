@@ -89,6 +89,11 @@ py scripts/alpha_fetch.py APH --force          # 忽略缓存重新下载
 py scripts/alpha_fetch.py APH --no-extract     # 只下载
 py scripts/alpha_fetch.py APH --submissions    # 顺带取近期申报清单
 
+# 多层数据校验（**写档案前的强制前置**）
+py scripts/verify_data.py ITRI --require-cross
+py scripts/verify_data.py --all              # 校验全部已下载公司
+py scripts/verify_data.py APH --no-cross      # 离线（仅内部校验）
+
 # 预滞后的手动逃逸口
 py analysis/sec/extract2.py <companyfacts.json>
 
@@ -118,9 +123,45 @@ py scripts/alpha_score.py <子命令>
 `<ticker>.txt` 只是提取视图。**写作前必须与 10-K/10-Q 原文交叉验证**，不要把提取结果直接当结论。
 
 > **`alpha_metrics.py` 的 TTM 算法**：`最近年度 + 本年迄今 − 去年同期`。
-> 这是为了避开「Q4 无独立季报」的问题。两个容易踩的坑（已修为 D-34/D-35）：
+> 这是为了避开「Q4 无独立季报」的问题。三个容易踩的坑（已修为 D-34/D-35/D-42）：
 > ① 各 tag 的起始年份不同，**必须按日期对齐，不能用下标索引平行数组**；
-> ② 同一结束日可能同时有 90 天（Q2）与 181 天（H1）两份，**必须取最长时长**。
+> ② 同一结束日可能同时有 90 天（Q2）与 181 天（H1）两份，**必须取最长时长**；
+> ③ 资产负债表三项（现金/权益/债务）**必须对齐到同一日期**，否则净债务是混合口径的假数。
+
+### 2.1 多层数据校验（[G7] 强制）
+
+> **错误的数据导致错误的结果。** 凡是要写进档案的财务数字，
+> 必须先过 `verify_data.py`，**且不得有 ❌ 硬错误**。
+
+四层校验：
+
+| 层 | 检查什么 | 抓过什么 |
+|---|---|---|
+| **L1 会计恒等式** | Revenue − COGS = GrossProfit；GrossProfit > OpInc | 转写/取数错 |
+| **L2 时间一致性** | YTD 单调性；YTD 取最长时长断言；**净债务同日性与独立重算**；TTM 量级包络 | D-35、D-42 |
+| **L3 交叉来源** | **SEC vs Yahoo 同一日期逐项比对**；TTM 与 Yahoo trailing 比对 | D-35（内部双路抓不到） |
+| **L4 量纲合理性** | 正负号、区间、有限数 | — |
+
+**三种结论，不是两种：**
+
+| 标记 | 含义 | 处理 |
+|---|---|---|
+| ✅ MATCH | 紧容差内 | — |
+| ⚠️ DEFINITIONAL | 口径差异 / **日期不可比** | 提示，需人工判断；不算错 |
+| ❌ MISMATCH | 超容差 | **查明前不得写档案**，退出码 1 |
+
+> **为什么必须有 ⚠️ 这一级**：只分对/错会产生大量假警报，
+> 而假警报会训练人忽略校验器 —— 那比没有校验器更糟。
+
+**两条铁的教训（均已实测验证）：**
+
+1. **交叉校验的有效性上限 = 两条路径的独立性。**
+   内部的"双路 TTM"两条路径都调用同一个 `ytd` 原语 → 共享 bug → 必然一致。
+   实测：注入 D-35 后内部双路仍报 Δ0.000%。**只有外部源（Yahoo trailing）能抓到它。**
+2. **必须检验引擎的输出，而不是数据的可用性。**
+   初版校验只检查"各 tag 有没有同日数据" → 抓不到引擎输出的日期混用。
+   更进一步：校验器用自己的 tag 列表去测，测的是**引擎从没走过的路径**（假绿）。
+   正确做法：tag 列表与引擎一致，但**同日重算自己独立做**。
 
 ### 与已有 skill 的分工
 - `investment-bottom-up-research`：**行业与产业链研究**（世界规律 → 产业链 → 瓶颈 → 护城河）
@@ -921,6 +962,7 @@ bash scripts/herdr_ci.sh --build A2   # 串行构建队列（人工批准项会�
 | G4 | 语法 / 导入 | `py_compile` |
 | G5 | **文档-CLI 漂移** | CLI 的子命令/选项是否都在 SKILL.md 中；文档提到的子命令是否真实存在 |
 | G6 | **账本已固化进 git** | 工作树存在、`data/*.jsonl` 已跟踪且与 HEAD 一致、条数不低于基线 |
+| G7 | **一手数据多层校验** | `verify_data.py --all --require-cross`：四层校验无 ❌ 硬错误 |
 
 > **G5 不是附属品。** v1.0 出过一次事故：SKILL.md 写着"估值类不计分"，而 report 实际给 FairValue 打了 B 级 —— 文档和代码各说各话，没有任何机制能发现。G5 就是那个机制，它第一次跑就抓到了 3 处真实漂移。
 
@@ -956,6 +998,7 @@ D:/pi/select_stock/
 │   ├── alpha_fetch.py                # [D-14] SEC 自动取数
 │   ├── alpha_metrics.py              # 一手指标计算（TTM/Margin/FCF/ROIC）
 │   ├── alpha_quote.py                # [D-29] 行情快照（yfinance 备选源）
+│   ├── verify_data.py                # [G7] 四层数据校验（含外部交叉）
 │   ├── gates.py                      # 门禁运行器（跨 shell）
 │   ├── gates_data_integrity.py       # G3
 │   ├── gates_git_frozen.py           # G6 [D-18]
@@ -994,11 +1037,14 @@ D:/pi/select_stock/
 | **`probability` 未参与评分** | 已存但只在第 2 节展示，不影响 Base 计分口径（这是故意的，见 [D-01]） |
 
 已用门禁/工具覆盖的（不再是缺口）：
+- ✅ **数据错误无多重校验** → **G7** `verify_data.py`（四层，含外部交叉）
+- ✅ **append-only 无技术保障** → G6 + 写入即 commit（[D-18]）
 - ✅ **文档-CLI 漂移** → G5 (`scripts/check_doc_cli.py`)
 - ✅ **账本完整性无体检** → G3 (`scripts/gates_data_integrity.py`)
-- ✅ **回归无保障** → G1 (`scripts/test_ledger.sh`, 39 项)
+- ✅ **回归无保障** → G1 (`scripts/test_ledger.sh`, 63 项)
 - ✅ **Fundamental Score 不可复现** → `alpha_score.py score`（[D-10]）
 - ✅ **仓位与赔率脱钩** → `alpha_score.py size`（[D-11]）
+- ✅ **赔率定义不统一** → §5.3b 已写死（[D-43]）
 - ✅ **无快速筛查档** → `alpha_score.py lite`（[D-12]）
 - ✅ **无数据获取自动化** → `alpha_fetch.py`（[D-14]）
 

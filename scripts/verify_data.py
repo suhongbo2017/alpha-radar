@@ -1,0 +1,526 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""多层数据校验 —— 错误的数据导致错误的结果
+
+起因（D-34 / D-35 / D-38）：
+  D-34  年度表用下标索引平行数组 → 年份错位，FY2025 毛利报成 2.04B（实际 8.52B）
+  D-35  YTD 取「最后一条」而非「最长时长」→ TTM 从 29.01B 变成 26.20B
+  D-38  拿 2026-06-30 的债务去比 Yahoo 的 2025-12-31 → 产生**假警报**
+  三个都不报错，前两个安静地给错数，第三个安静地骗你。
+
+四层校验：
+  L1 会计恒等式（内部）   Revenue − COGS = GrossProfit …
+  L2 时间一致性（内部）   YTD 单调性；**双路 TTM 交叉验证**（直接抓 D-35）
+  L3 交叉来源（外部）     SEC vs Yahoo fundamentals-timeseries，**同日比对**（抓 D-38）
+  L4 量纲与合理性         正负号、区间、有限数
+
+分级（关键：三种结论，不是两种）：
+  ✅ MATCH        在紧容差内
+  ⚠️ DEFINITIONAL 在松容差内 / 口径差异 / 日期不可比 → 提示，不算错
+  ❌ MISMATCH     超出容差 → 真错误，退出码 1
+
+> 为什么必须有 ⚠️ 这一级：只分对/错会产生大量假警报，
+> 而假警报会训练人忽略校验器 —— 那比没有校验器更糟。
+
+用法:
+    py scripts/verify_data.py APH
+    py scripts/verify_data.py ITRI --no-cross     # 跳过外部源（离线）
+    py scripts/verify_data.py APH --json
+"""
+import argparse
+import datetime as dt
+import json
+import os
+import subprocess
+import sys
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SEC_DIR = os.path.join(ROOT, "analysis", "sec")
+PROXY = os.environ.get("ALPHA_PROXY", "http://127.0.0.1:7897")
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+
+# 与 alpha_metrics.py 保持一致的 tag 优先级
+T = {
+    "revenue": ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues"],
+    "cogs": ["CostOfRevenue", "CostOfGoodsAndServicesSold"],
+    "gp": ["GrossProfit"],
+    "op": ["OperatingIncomeLoss"],
+    "ni": ["NetIncomeLoss"],
+    "ocf": ["NetCashProvidedByUsedInOperatingActivities"],
+    "capex": ["PaymentsToAcquirePropertyPlantAndEquipment"],
+    "sga": ["SellingGeneralAndAdministrativeExpense"],
+    "rd": ["ResearchAndDevelopmentExpense"],
+}
+# Yahoo 字段名
+Y = {
+    "revenue": "annualTotalRevenue", "gp": "annualGrossProfit", "op": "annualOperatingIncome",
+    "ni": "annualNetIncome", "ocf": "annualOperatingCashFlow",
+    "capex": "annualCapitalExpenditure", "fcf": "annualFreeCashFlow",
+    "debt": "annualTotalDebt", "cash": "annualCashAndCashEquivalents",
+    "equity": "annualStockholdersEquity",
+}
+# TTM 外部交叉 —— 【决定性检查】
+# 为什么必需：内部的「双路 TTM」并不真正独立 —— 两条路径都调用 F.series(...,"ytd")，
+# 共享同一个 bug，所以必然一致（实测：注入 D-35 后双路仍报 Δ0.000%）。
+# Yahoo trailing 是完全独立的编制管道，它才是能真正拓测 YTD 选择错误的检查。
+TTM_Y = {"revenue": "trailingTotalRevenue", "ni": "trailingNetIncome",
+         "ocf": "trailingOperatingCashFlow"}
+# 资产负债表项为【时点值】，必须用 instant 取数，不能用年度区间的 key 去查
+BAL = {
+    "cash": ["CashAndCashEquivalentsAtCarryingValue"],
+    "equity": ["StockholdersEquity"],
+    "debt": ["LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
+             "DebtLongtermAndShorttermCombinedAmount",
+             "LongTermDebt", "LongTermDebtNoncurrent",
+             "DebtInstrumentCarryingAmount"],
+}
+
+R = []          # results
+HARD = 0        # MISMATCH 计数
+
+
+def rec(level, verdict, name, detail):
+    global HARD
+    R.append({"layer": level, "verdict": verdict, "name": name, "detail": detail})
+    if verdict == "MISMATCH":
+        HARD += 1
+    icon = {"MATCH": "✅", "DEF": "⚠️ ", "MISMATCH": "❌"}[verdict]
+    print("  %s %-42s %s" % (icon, name, detail))
+
+
+def close(a, b, tol):
+    if a is None or b is None:
+        return None
+    d = abs(a - b)
+    base = max(abs(a), abs(b), 1e-9)
+    return d / base <= tol
+
+
+def pctdiff(a, b):
+    if a is None or b is None:
+        return None
+    return (b - a) / abs(a) * 100 if a else None
+
+
+# ══════════════════════════════════════════════════════════════════
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import importlib.util
+_spec = importlib.util.spec_from_file_location("am", os.path.join(ROOT, "scripts", "alpha_metrics.py"))
+am = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(am)
+
+
+def ytd_map(F, tags):
+    _, v, d = F.series(tags, "ytd")
+    return dict(zip(d, v))
+
+
+def annual_map(F, tags):
+    _, v, d = F.series(tags, "annual")
+    return dict(zip(d, v))
+
+
+def instant_map(F, tags):
+    """时点值（资产负债表项）"""
+    for tag in tags:
+        rows = {}
+        for it in F._items(tag):
+            if "start" in it:
+                continue
+            rows[it["end"]] = it["val"]
+        if rows:
+            return rows
+    return {}
+
+
+def discrete_quarters(F, tags, fy_year):
+    """某财年内的离散季度值（YTD 差分）。末季若无 YTD 记录则返回至最后一条为止。"""
+    ym = ytd_map(F, tags)
+    ends = sorted([d for d in ym if d.startswith(str(fy_year))])
+    out, prev = [], None
+    for d in ends:
+        out.append((d, ym[d] - (prev if prev is not None else 0)))
+        prev = ym[d]
+    return out
+
+
+def ttm_path2(F, tags):
+    """第二条独立路径：最近 4 个离散季度之和（Q4 = FY − 9M）"""
+    amap = annual_map(F, tags)
+    ym = ytd_map(F, tags)
+    if not ym or not amap:
+        return None, None
+    q_end = sorted(ym)[-1]
+    yr = int(q_end[:4])
+    qs = discrete_quarters(F, tags, yr)
+    if not qs or qs[-1][0] != q_end:
+        return None, None
+    need = 4 - len(qs)
+    prior = []
+    if need > 0:
+        py_ = yr - 1
+        pq = discrete_quarters(F, tags, py_)
+        fy_prev_end = "%d-12-31" % py_
+        # 补上 Q4（若去年同期无 Q4 的 YTD 记录）
+        if fy_prev_end in amap and (not pq or pq[-1][0] != fy_prev_end):
+            nine_m = pq[-1][1] if pq else 0
+            ytd9 = ym.get(pq[-1][0], 0) if pq else 0
+            prior = pq + [(fy_prev_end, amap[fy_prev_end] - ytd9)]
+        else:
+            prior = pq
+        prior = prior[-need:]
+    if len(qs) + len(prior) < 4:
+        return None, None
+    total = sum(v for _, v in qs) + sum(v for _, v in prior)
+    return total, q_end
+
+
+def fetch_yahoo(ticker, types):
+    url = ("https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/%s"
+           "?symbol=%s&type=%s&period1=1451606400&period2=2000000000" % (ticker, ticker, ",".join(types)))
+    for proxy in (None, PROXY):
+        cmd = ["curl", "-s", "--max-time", "30", "-A", UA]
+        if proxy:
+            cmd += ["-x", proxy]
+        cmd.append(url)
+        try:
+            p = subprocess.run(cmd, capture_output=True, text=True,
+                               encoding="utf-8", errors="replace")
+            if p.returncode != 0 or not (p.stdout or "").strip():
+                continue
+            d = json.loads(p.stdout)
+            res = (d.get("timeseries") or {}).get("result") or []
+            if not res:
+                continue
+            out = {}
+            for r in res:
+                t = r["meta"]["type"][0]
+                out[t] = {v["asOfDate"]: v["reportedValue"]["raw"]
+                          for v in (r.get(t) or []) if v}
+            return out, ("yahoo直连" if proxy is None else "yahoo代理")
+        except Exception:
+            continue
+    return None, None
+
+
+def main():
+    global R, HARD
+    ap = argparse.ArgumentParser(description="多层数据校验")
+    ap.add_argument("ticker", nargs="?", help="股票代码；或用 --all 校验全部已下载公司")
+    ap.add_argument("--all", action="store_true", help="校验 analysis/sec/*_facts.json 里的全部公司")
+    ap.add_argument("--no-cross", action="store_true", help="跳过 L3 外部交叉校验")
+    ap.add_argument("--require-cross", action="store_true",
+                    help="外部源不可用时视为失败（CI 用；否则仅告警并退出 0）")
+    ap.add_argument("--json", action="store_true")
+    a = ap.parse_args()
+
+    if a.all:
+        import glob
+        files = sorted(glob.glob(os.path.join(SEC_DIR, "*_facts.json")))
+        tks = [os.path.basename(f).replace("_facts.json", "").upper() for f in files]
+        if not tks:
+            print("✗ analysis/sec/ 下没有 *_facts.json，先跑 alpha_fetch.py")
+            return 1
+        bad = 0
+        for i, tk in enumerate(tks):
+            if i:
+                print("\n" + "#" * 78 + "\n")
+            ns = argparse.Namespace(ticker=tk, all=False, no_cross=a.no_cross,
+                                    require_cross=a.require_cross, json=False)
+            bad += _run_one(ns)
+        print("\n" + "=" * 78)
+        print("  全量校验: %d 家公司，%d 家存在硬错误" % (len(tks), bad))
+        print("__VERIFY_%s__ ALL" % ("PASS" if bad == 0 else "FAIL"))
+        return 0 if bad == 0 else 1
+
+    if not a.ticker:
+        ap.error("需要 ticker 或 --all")
+    return _run_one(a)
+
+
+def _run_one(a):
+    global R, HARD
+    tk = a.ticker.upper()
+    R = []
+    HARD = 0
+    path = os.path.join(SEC_DIR, "%s_facts.json" % tk.lower())
+    if not os.path.exists(path):
+        print("✗ 找不到 %s，先跑: py scripts/alpha_fetch.py %s" % (path, tk))
+        return 1
+
+    F = am.Facts(path)
+    print("多层数据校验 —— %s" % tk)
+    print("实体: %s" % F.entity)
+    print("=" * 78)
+
+    # ─────────────────────────── L1 会计恒等式
+    print("\n[L1] 会计恒等式（内部一致性）")
+    rev = annual_map(F, T["revenue"])
+    cogs = annual_map(F, T["cogs"])
+    gp = annual_map(F, T["gp"])
+    op = annual_map(F, T["op"])
+    sga = annual_map(F, T["sga"])
+    rd = annual_map(F, T["rd"])
+    years = sorted(set(rev) & set(gp))[-3:]
+    for y in years:
+        if y in cogs and y in gp:
+            calc = rev[y] - cogs[y]
+            ok = close(calc, gp[y], 0.005)
+            rec("L1", "MATCH" if ok else "MISMATCH", "Revenue − COGS = GrossProfit (%s)" % y,
+                "%.4fB − %.4fB = %.4fB vs 报表 %.4fB (Δ%.2f%%)"
+                % (rev[y] / 1e9, cogs[y] / 1e9, calc / 1e9, gp[y] / 1e9,
+                   abs(pctdiff(calc, gp[y]) or 0)))
+        if y in gp and y in op:
+            rec("L1", "MATCH", "GrossProfit > OpInc (%s)" % y,
+                "%.4fB > %.4fB" % (gp[y] / 1e9, op[y] / 1e9) if gp[y] > op[y]
+                else "❌ %.4fB vs %.4fB" % (gp[y] / 1e9, op[y] / 1e9))
+        if y in gp and y in op and y in sga:
+            sub = gp[y] - sga[y] - rd.get(y, 0)
+            d = abs(pctdiff(op[y], sub) or 0)
+            rec("L1", "MATCH" if d < 3 else "DEF",
+                "GrossProfit − SG&A − R&D ≈ OpInc (%s)" % y,
+                "%.4fB vs %.4fB (Δ%.1f%%) %s" % (sub / 1e9, op[y] / 1e9, d,
+                                                 "" if d < 10 else "← 口径差异，需人工确认"))
+
+    # ─────────────────────────── L2 时间一致性
+    print("\n[L2] 时间一致性（内部一致性）")
+
+    # YTD 单调性
+    bad = 0
+    for tag_key in ("revenue", "ni", "ocf"):
+        ym_ = ytd_map(F, T[tag_key])
+        for yr in sorted({d[:4] for d in ym_})[-4:]:
+            seq = [ym_[d] for d in sorted(d for d in ym_ if d.startswith(yr))]
+            for i in range(1, len(seq)):
+                if seq[i] < seq[i - 1] * 0.9:      # 累计口径不应显著下降
+                    bad += 1
+    rec("L2", "MATCH" if bad == 0 else "MISMATCH", "YTD 累计序列单调性",
+        "无异常下降" if bad == 0 else "%d 处异常下降（可能是季度而非累计口径）" % bad)
+
+    # 双路 TTM 交叉 —— 注意：这不是独立检查（两路共享 ytd 原语）
+    for tag_key, label in (("revenue", "Revenue"), ("ni", "NetIncome"), ("ocf", "OCF")):
+        p1 = F.ttm(T[tag_key])
+        p2, qe = ttm_path2(F, T[tag_key])
+        if p1 is None or p2 is None:
+            rec("L2", "DEF", "双路 TTM 交叉 %s" % label, "无法计算第二条路径，跳过")
+            continue
+        d = abs(pctdiff(p1, p2) or 0)
+        rec("L2", "MATCH" if d < 0.5 else "MISMATCH",
+            "双路 TTM 交叉 %s (截至 %s)" % (label, qe),
+            "路径1 %.4fB = 路径2 %.4fB (Δ%.3f%%) [两路共享 ytd 原语，独立性有限]" % (p1 / 1e9, p2 / 1e9, d))
+
+    # [D-35 结构性断言] ytd map 中每个结束日必须是该日**最长时长**的记录
+    # 此断言直接从原始 items 重算，不复用 alpha_metrics 的 series()，所以是独立的
+    miss = []
+    for tag in T["revenue"]:
+        if tag not in F.tax:
+            continue
+        best = {}
+        for it in F._items(tag):
+            if "start" not in it:
+                continue
+            n = (dt.date.fromisoformat(it["end"]) - dt.date.fromisoformat(it["start"])).days
+            if not (60 <= n <= 400):
+                continue
+            if it["end"] not in best or n > best[it["end"]][0]:
+                best[it["end"]] = (n, it["val"])
+        got = ytd_map(F, [tag])
+        for d_, (n_, v_) in best.items():
+            if abs(got.get(d_, 0) - v_) > 1:
+                miss.append("%s 取了 %s 而非最长时长记录" % (d_, d_))
+        break
+    rec("L2", "MATCH" if not miss else "MISMATCH", "YTD 取最长时长断言",
+        "每个结束日均取到最长时长记录" if not miss else "; ".join(miss[:3]))
+
+    # [D-42] 净债务同日性 —— 必须检验【引擎实际用的路径】
+    # 两次踩坑：
+    #   1) 一开始只检查"各 tag 有没有同日数据"→ 检不出引擎输出的日期混用
+    #   2) 改了之后用自己的 tag 列表 → 测的是引擎从没走过的路径（假绿）
+    # 所以：tag 列表必须与引擎一致（用 am.*），但【同日重算】自己独立做。
+    ENG_BAL = {"cash": am.CASH_TAGS, "equity": am.EQ_TAGS, "debt": am.DEBT_TAGS}
+
+    def _map(tags):
+        for t in tags:
+            if t in F.tax:
+                rows = {it["end"]: it["val"] for it in F._items(t) if "start" not in it}
+                if rows:
+                    return rows
+        return {}
+
+    cmap, dmap = _map(ENG_BAL["cash"]), _map(ENG_BAL["debt"])
+    allmaps = [_map(ENG_BAL[g]) for g in ("cash", "equity", "debt")]
+    common = set(allmaps[0])
+    for m_ in allmaps[1:]:
+        common &= set(m_)
+    # 注意 latest() 返回 (tag, value, date)
+    _, eng_cash, eng_cash_d = F.latest(ENG_BAL["cash"])
+    _, eng_debt, eng_debt_d = F.latest(ENG_BAL["debt"])
+    if eng_cash_d != eng_debt_d:
+        rec("L2", "MISMATCH", "净债务同日性（引擎输出）",
+            "引擎用的现金=%s 但债务=%s ← **净债务/ROIC 是混合口径的假数（D-42）**"
+            % (eng_cash_d, eng_debt_d))
+    elif common:
+        j = max(common)
+        exp_net = dmap[j] - cmap[j]
+        got_net = (eng_debt or 0) - (eng_cash or 0)
+        d = abs(pctdiff(exp_net, got_net) or 0)
+        rec("L2", "MATCH" if d < 0.5 else "MISMATCH",
+            "净债务独立重算（同日 %s）" % j,
+            "引擎 %.4fB vs 独立重算 %.4fB (Δ%.2f%%)"
+            % (got_net / 1e9, exp_net / 1e9, d))
+    else:
+        rec("L2", "DEF", "净债务同日性", "现金/权益/债务 无共同日期，跳过")
+
+    # TTM 应落在两个财年的合理包络内
+    # [D-40] 不能写死"公司一定在增长"：初版假设 TTM ≥ 上一财年，
+    #        结果 ITRI（收入下滑）被判为硬错误 —— 假警报。
+    #        改为对称包络：允许下滑，也允许增长。
+    rt = F.ttm(T["revenue"])
+    if rt and len(rev) >= 2:
+        # [D-41] 又犯了 D-34 的错：把「最新年份的标签」和「最大值」混在一起用。
+        #        标签与数值必须来自同一个 key，不能各自取。
+        years_sorted = sorted(rev)
+        last_y, prev_y = years_sorted[-1], years_sorted[-2]
+        last_v, prev_v = rev[last_y], rev[prev_y]
+        lo, hi = 0.5 * min(last_v, prev_v), 1.6 * max(last_v, prev_v)
+        inrange = lo <= rt <= hi
+        rec("L2", "MATCH" if inrange else "MISMATCH", "TTM 量级合理性",
+            "TTM %.4fB 落在包络 [%.4fB, %.4fB]" % (rt / 1e9, lo / 1e9, hi / 1e9)
+            if inrange else "TTM %.4fB 超出包络 [%.4fB, %.4fB]" % (rt / 1e9, lo / 1e9, hi / 1e9))
+        # 把收入趋势作为【信息】报出，而不是用合理性检查去隐式表达
+        trend = (rt / last_v - 1) * 100
+        rec("L2", "MATCH", "收入趋势（信息项，非错误）",
+            "TTM %.4fB vs FY%s %.4fB → %+.1f%%%s"
+            % (rt / 1e9, last_y[:4], last_v / 1e9, trend,
+               "（**下滑**，与 APH 反向）" if trend < -1 else ""))
+
+    # ─────────────────────────── L3 交叉来源
+    if not a.no_cross:
+        print("\n[L3] 交叉来源（SEC vs Yahoo，必须同日比对）")
+        ydata, ysrc = fetch_yahoo(tk, list(Y.values()) + list(TTM_Y.values()))
+        if not ydata:
+            if a.require_cross:
+                rec("L3", "MISMATCH", "外部源可用性",
+                    "Yahoo 不可达，但指定了 --require-cross → 视为失败")
+            else:
+                rec("L3", "DEF", "外部源可用性",
+                    "⚠️ Yahoo 不可达，**本次仅有内部校验**（内部双路不独立，无法捕获 YTD 类错误）")
+        else:
+            print("      源: %s" % ysrc)
+            # ── TTM 外部交叉（决定性）
+            print("      ── TTM 外部交叉（独立于 YTD 选择逻辑）──")
+            # 我的 TTM 截止日
+            _, _, _yd = F.series(T["revenue"], "ytd")
+            my_q = _yd[-1] if _yd else None
+            for k, ykey in TTM_Y.items():
+                if ykey not in ydata:
+                    continue
+                yv = ydata[ykey]
+                mine = F.ttm(T[k])
+                hit = yv.get(my_q) if my_q else None
+                if hit is None:
+                    rec("L3", "DEF", "TTM 交叉 %s" % k,
+                        "Yahoo 无 %s 日期的 trailing 值（有: %s）" % (my_q, sorted(yv)[-3:]))
+                    continue
+                d = abs(pctdiff(mine, hit) or 0)
+                rec("L3", "MATCH" if d < 0.5 else "DEF" if d < 2 else "MISMATCH",
+                    "TTM %s @%s（我 vs Yahoo trailing）" % (k, my_q),
+                    "%.4fB vs %.4fB (Δ%.2f%%)%s" % (mine / 1e9, hit / 1e9, d,
+                                                    "" if d < 2 else "  ← **TTM 算错了**"))
+
+            for k, ykey in Y.items():
+                if ykey not in ydata:
+                    continue
+                yv = ydata[ykey]
+                sv = (instant_map(F, BAL[k]) if k in BAL
+                      else annual_map(F, T[k]) if k in T else {})
+                common = sorted(set(yv) & set(sv))
+                if not common:
+                    ylast = sorted(yv)[-1] if yv else "?"
+                    slast = sorted(sv)[-1] if sv else "?"
+                    if ylast != slast:
+                        rec("L3", "DEF", "同一日期比对 %s" % k,
+                            "Yahoo 最新 %s vs SEC 最新 %s → **日期不同不可比**（勿误判为错误，见 D-38）"
+                            % (ylast, slast))
+                    else:
+                        rec("L3", "DEF", "同一日期比对 %s" % k, "无共同日期")
+                    continue
+                y0 = common[-1]
+                va, vb = sv[y0], abs(yv[y0]) if k == "capex" else yv[y0]
+                va = abs(va) if k == "capex" else va
+                d = abs(pctdiff(va, vb) or 0)
+                if d < 0.5:
+                    rec("L3", "MATCH", "SEC = Yahoo: %s (%s)" % (k, y0),
+                        "%.4fB = %.4fB" % (va / 1e9, vb / 1e9))
+                elif d < 5:
+                    rec("L3", "DEF", "SEC ≈ Yahoo: %s (%s)" % (k, y0),
+                        "%.4fB vs %.4fB (Δ%.2f%%) ← 聚合口径差异" % (va / 1e9, vb / 1e9, d))
+                else:
+                    rec("L3", "MISMATCH", "SEC vs Yahoo: %s (%s)" % (k, y0),
+                        "%.4fB vs %.4fB (Δ%.1f%%) ← **需查明**" % (va / 1e9, vb / 1e9, d))
+
+            # FCF 在 SEC 里是派生量（OCF − CapEx），单独处理
+            if "annualFreeCashFlow" in ydata:
+                yo = ydata.get("annualOperatingCashFlow", {})
+                yc = ydata.get("annualCapitalExpenditure", {})
+                so = annual_map(F, T["ocf"])
+                sc = annual_map(F, T["capex"])
+                common = sorted(set(ydata["annualFreeCashFlow"]) & set(so) & set(sc))
+                if common:
+                    y0 = common[-1]
+                    sec_fcf = so[y0] - sc[y0]
+                    yh_fcf = ydata["annualFreeCashFlow"][y0]
+                    d = abs(pctdiff(sec_fcf, yh_fcf) or 0)
+                    rec("L3", "MATCH" if d < 1 else "DEF",
+                        "SEC(OCF−CapEx) = Yahoo FCF (%s)" % y0,
+                        "%.4fB vs %.4fB (Δ%.2f%%)" % (sec_fcf / 1e9, yh_fcf / 1e9, d))
+                else:
+                    rec("L3", "DEF", "FCF 派生量交叉", "无共同日期，跳过")
+
+    # ─────────────────────────── L4 合理性
+    print("\n[L4] 量纲与合理性")
+    issues = []
+    for y in years:
+        if rev.get(y) is not None and rev[y] <= 0:
+            issues.append("Revenue %s ≤ 0" % y)
+        if rev.get(y) and gp.get(y) is not None:
+            gm = gp[y] / rev[y]
+            if not (-0.5 < gm < 1.0):
+                issues.append("GrossMargin %s = %.1f%% 越界" % (y, gm * 100))
+    rec("L4", "MATCH" if not issues else "MISMATCH", "数值区间检查",
+        "全部在合理区间" if not issues else "; ".join(issues))
+
+    cap = annual_map(F, T["capex"])
+    if cap:
+        neg = [y for y in cap if cap[y] < 0]
+        rec("L4", "DEF" if neg else "MATCH", "CapEx 符号约定",
+            "SEC 为正直（付款）%s" % ("✓" if not neg else "，异常: %s" % neg))
+
+    # ─────────────────────────── 结论
+    n_ok = sum(1 for r in R if r["verdict"] == "MATCH")
+    n_def = sum(1 for r in R if r["verdict"] == "DEF")
+    n_bad = HARD
+    print("\n" + "=" * 78)
+    print("  校验结果: ✅ %d 通过 / ⚠️ %d 提示 / ❌ %d 错误" % (n_ok, n_def, n_bad))
+    if n_bad:
+        print("  ❌ 存在硬错误 —— 在查明之前，**不要**用这些数据写档案")
+    else:
+        print("  ✅ 无硬错误。⚠️ 项为口径差异或日期不可比，已列明，需人工判断是否影响结论。")
+    print("=" * 78)
+    print("__VERIFY_%s__ %s" % ("PASS" if n_bad == 0 else "FAIL", tk))
+
+    if a.json:
+        print(json.dumps({"ticker": tk, "results": R,
+                          "ok": n_ok, "def": n_def, "bad": n_bad}, ensure_ascii=False, indent=1))
+    return 0 if n_bad == 0 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

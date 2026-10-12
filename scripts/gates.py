@@ -40,6 +40,7 @@ GATES = [
     ("G4", "语法 / 导入"),
     ("G5", "文档-CLI 漂移"),
     ("G6", "账本已固化进 git"),
+    ("G7", "一手数据多层校验"),
 ]
 
 BASH_CANDIDATES = [
@@ -75,6 +76,10 @@ def gate_cmd(gid):
     if gid == "G6":
         # 该脚本自己打印哨兵（因为它在 git 不存在时要给出具体修复提示）
         return [sys.executable, "scripts/gates_git_frozen.py", "--emit-sentinel"]
+    if gid == "G7":
+        # 多层数据校验（含外部交叉）。--require-cross：外部源不可用则判失败，
+        # 因为只有外部源才能捕获 YTD 选择类错误（内部双路共享原语，不独立）。
+        return [sys.executable, "scripts/verify_data.py", "--all", "--require-cross"]
     return None
 
 

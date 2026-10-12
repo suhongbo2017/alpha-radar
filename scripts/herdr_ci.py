@@ -35,9 +35,9 @@ except Exception:
     pass
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GATES = ["G1", "G2", "G3", "G4", "G5", "G6"]
+GATES = ["G1", "G2", "G3", "G4", "G5", "G6", "G7"]
 GATE_NAMES = {"G1": "账本回归测试", "G2": "skill 副本同步", "G3": "真实数据完整性",
-              "G4": "语法 / 导入", "G5": "文档-CLI 漂移", "G6": "账本已固化进 git"}
+              "G4": "语法 / 导入", "G5": "文档-CLI 漂移", "G6": "账本已固化进 git", "G7": "一手数据多层校验"}
 CANARY = "G4"
 WS_LABEL = "alpha-radar-ci"
 

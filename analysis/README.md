@@ -157,3 +157,26 @@ py scripts/herdr_ci.py --build A2   # 串行构建队列
 | G6 | **账本已固化进 git**（写入即 commit，检验无未提交改动） |
 
 **编排铁律**：并行只用于只读门禁；构建必须串行（同一文件）；条件用哨兵 `__GATE_PASS__/__GATE_FAIL__`；pane 侧命令必须跨 shell 安全；先跑 canary；人工批准项永不自动执行。
+---
+
+## 数据校验（[D-38~D-42] 后成为强制前置）
+
+> **错误的数据导致错误的结果。** 任何要写进档案的财务数字，必须先过 `verify_data.py`。
+
+```bash
+py scripts/verify_data.py ITRI --require-cross   # 单公司（含外部交叉）
+py scripts/verify_data.py --all --require-cross  # 全量（G7 门禁）
+```
+
+| 层 | 检查 |
+|---|---|
+| L1 | 会计恒等式：Revenue − COGS = GrossProfit 等 |
+| L2 | 时间一致性：YTD 最长时长断言、**净债务同日性与独立重算**、TTM 量级包络 |
+| L3 | **交叉来源：SEC vs Yahoo 同一日期逐项比对** + TTM vs Yahoo trailing |
+| L4 | 量纲与合理性 |
+
+**三种结论**：✅ MATCH / ⚠️ DEFINITIONAL（口径或日期差异，不算错）/ ❌ MISMATCH（退出码 1）
+
+两条铁的教训：
+1. **交叉校验的有效性上限 = 两条路径的独立性。** 共享原语的"双路验证"是自欺（D-39）
+2. **校验器必须做故障注入测试。** 没红过的校验器 = 未验证
