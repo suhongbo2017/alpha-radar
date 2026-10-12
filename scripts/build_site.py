@@ -342,9 +342,11 @@ def build_board(analyses, prices, holds):
     head = ["Ticker", "基本面", "赔率", "现价", "分析动作", "档案"]
     if holds:
         head = ["Ticker", "基本面", "赔率", "现价", "仓位%", "盈亏%", "分析动作", "一致性", "档案"]
+    numeric_headers = {"基本面", "赔率", "现价", "仓位%", "盈亏%"}
     h = ['<table><thead><tr>']
     for c in head:
-        h.append("<th>%s</th>" % c)
+        cls = ' class="num"' if c in numeric_headers else ''
+        h.append("<th%s>%s</th>" % (cls, c))
     h.append("</tr></thead><tbody>")
     for r in rows:
         an, t = r["an"], r["t"]
