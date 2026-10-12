@@ -92,6 +92,18 @@ py scripts/alpha_fetch.py APH --submissions    # 顺带取近期申报清单
 # 预滞后的手动逃逸口
 py analysis/sec/extract2.py <companyfacts.json>
 
+# 一手指标计算：从 companyfacts 直接算 TTM / Margin / FCF / ROIC / 净债务
+py scripts/alpha_metrics.py APH
+py scripts/alpha_metrics.py APH --years 8
+py scripts/alpha_metrics.py APH --json
+py scripts/alpha_metrics.py APH --score-inputs   # 直接输出 alpha_score.py 的定量参数
+
+# 行情快照（[D-29] yfinance 的备选源；本机直连 Yahoo 不可达，需本地代理）
+py scripts/alpha_quote.py APH
+py scripts/alpha_quote.py APH --json
+py scripts/alpha_quote.py APH --offline         # 只用缓存
+py scripts/alpha_quote.py APH --proxy http://127.0.0.1:7897
+
 # 行情 / 估值 / 财务快照（注意：依赖 yfinance，可能 429 限流，见 D-29）
 py "C:/Users/Administrator/.pi/agent/skills/stock-analysis/scripts/stock_info.py" <TICKER>
 
@@ -104,6 +116,11 @@ py scripts/alpha_score.py <子命令>
 
 **一手数据纪律**：`alpha_fetch.py` 取回的是 SEC 原始 `companyfacts`（未加工），
 `<ticker>.txt` 只是提取视图。**写作前必须与 10-K/10-Q 原文交叉验证**，不要把提取结果直接当结论。
+
+> **`alpha_metrics.py` 的 TTM 算法**：`最近年度 + 本年迄今 − 去年同期`。
+> 这是为了避开「Q4 无独立季报」的问题。两个容易踩的坑（已修为 D-34/D-35）：
+> ① 各 tag 的起始年份不同，**必须按日期对齐，不能用下标索引平行数组**；
+> ② 同一结束日可能同时有 90 天（Q2）与 181 天（H1）两份，**必须取最长时长**。
 
 ### 与已有 skill 的分工
 - `investment-bottom-up-research`：**行业与产业链研究**（世界规律 → 产业链 → 瓶颈 → 护城河）
@@ -937,12 +954,16 @@ D:/pi/select_stock/
 │   ├── alpha_ledger.py               # 预测账本 + 决策库 + 复盘引擎
 │   ├── alpha_score.py                # 评分锚 / 仓位 / Lite
 │   ├── alpha_fetch.py                # [D-14] SEC 自动取数
+│   ├── alpha_metrics.py              # 一手指标计算（TTM/Margin/FCF/ROIC）
+│   ├── alpha_quote.py                # [D-29] 行情快照（yfinance 备选源）
 │   ├── gates.py                      # 门禁运行器（跨 shell）
 │   ├── gates_data_integrity.py       # G3
+│   ├── gates_git_frozen.py           # G6 [D-18]
 │   ├── check_doc_cli.py              # G5 文档-CLI 漂移自检
-│   ├── test_ledger.sh                # G1 回归测试（39 项）
+│   ├── test_ledger.sh                # G1 回归测试（63 项）
 │   ├── sync_skills.sh                # G2 skill 同步
 │   └── herdr_ci.py                   # [D-28] Herdr 并行编排器（跨 shell）
+├── .gitignore / .gitattributes       # [D-18] 账本版本控制
 ├── data/                             # 机器可读、append-only
 │   ├── predictions.jsonl
 │   ├── actuals.jsonl

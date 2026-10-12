@@ -580,6 +580,7 @@ def cmd_report(a):
     L.append("| Ticker | Metric | Period | Bear | Base | Bull | 实际 | 落点 | 是否超出区间 |")
     L.append("|---|---|---|---:|---:|---:|---:|---|---|")
     hit_in, hit_total, sec2_rows = 0, 0, 0
+    sec2_printed = 0
     for k in sorted(latest):
         t, m, p = k
         v = latest[k]
@@ -592,6 +593,7 @@ def cmd_report(a):
             L.append("| %s | %s | %s | %s | %s | %s | %s | ⚠️ 单位不一致，跳过 | ⚠️ |" % (
                 t, m, p, fmt(d.get("Bear"), u), fmt(d.get("Base"), u), fmt(d.get("Bull"), u),
                 fmt(act0["actual_value"], act0["unit"])))
+            sec2_printed += 1
             continue
         act = aidx.get(k)
         if not act:
@@ -603,14 +605,18 @@ def cmd_report(a):
         hit_total += 1
         if inside:
             hit_in += 1
+        sec2_printed += 1
         L.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (
             t, m, p,
             fmt(d.get("Bear"), rows[0]["unit"]), fmt(d.get("Base"), rows[0]["unit"]),
             fmt(d.get("Bull"), rows[0]["unit"]),
             fmt(act["actual_value"], act["unit"]), loc,
             "否（区间内）" if inside else "⚠️ **是**"))
-    if sec2_rows == 0:
-        L.append("| _尚无已兑现情景_ | | | | | | | | |")
+    if sec2_printed == 0:
+        if sec2_rows:
+            L.append("| — | — | — | — | — | — | — | _全部待公布，尚无已兑现情景_ | — |")
+        else:
+            L.append("| _尚无记录_ | | | | | | | | |")
     L.append("")
     if hit_total:
         L.append("**区间命中率：%d/%d = %.0f%%** —— 低于 70%% 说明三情景设置过窄（Bear 不够悲观 / Bull 不够乐观）。"

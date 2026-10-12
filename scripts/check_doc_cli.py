@@ -30,6 +30,8 @@ TOOLS = [
     ("scripts/alpha_ledger.py", "alpha_ledger.py"),
     ("scripts/alpha_score.py", "alpha_score.py"),
     ("scripts/alpha_fetch.py", "alpha_fetch.py"),
+    ("scripts/alpha_metrics.py", "alpha_metrics.py"),
+    ("scripts/alpha_quote.py", "alpha_quote.py"),
 ]
 
 # 内部/次要选项，不强制出现在文档里
