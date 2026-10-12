@@ -240,68 +240,60 @@ def md_to_html(md):
 CSS = """
 *{box-sizing:border-box}
 :root{
- --bg:#0f1115; --fg:#e6e8ee; --mut:#9aa3b2; --line:#252a34;
- --card:#171a21; --acc:#5b9dff; --ok:#3fb950; --warn:#d29922; --bad:#f85149;
+ --bg:#f4f7f5; --surface:#ffffff; --surface-soft:#edf3ef; --fg:#18302b; --mut:#667873;
+ --line:#d8e4de; --line-strong:#c3d4cc; --acc:#16735f; --acc-strong:#0f5a4b; --acc-soft:#e2f0eb;
+ --ok:#24754a; --ok-soft:#e6f3ea; --warn:#9a6812; --warn-soft:#fff4dc; --bad:#b7423c; --bad-soft:#fbe9e7;
+ --shadow:0 12px 32px rgba(27,63,51,.07); --shadow-sm:0 3px 12px rgba(27,63,51,.06);
 }
-@media(prefers-color-scheme:light){:root{
- --bg:#fbfbfd; --fg:#1b1f27; --mut:#5c6473; --line:#e3e6ec;
- --card:#fff; --acc:#0b62d6; --ok:#1a7f37; --warn:#9a6700; --bad:#cf222e;}}
-body{margin:0;background:var(--bg);color:var(--fg);
- font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",sans-serif}
-header{padding:22px 26px 0;border-bottom:1px solid var(--line);position:sticky;top:0;
- background:var(--bg);z-index:9}
-h1{font-size:20px;margin:0 0 4px}
+@media(prefers-color-scheme:dark){:root{
+ --bg:#121a19; --surface:#192522; --surface-soft:#20302b; --fg:#e8f1ed; --mut:#9cb0a8;
+ --line:#2b3d37; --line-strong:#3a5048; --acc:#65c4a6; --acc-strong:#8ad7bd; --acc-soft:#183c32;
+ --ok:#79cf9b; --ok-soft:#193a2a; --warn:#e6b95f; --warn-soft:#443717; --bad:#f28c83; --bad-soft:#452523;
+ --shadow:0 14px 34px rgba(0,0,0,.22); --shadow-sm:0 4px 14px rgba(0,0,0,.18);
+}}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:0}
+header{padding:18px clamp(18px,4vw,56px) 0;border-bottom:1px solid var(--line);position:sticky;top:0;
+ background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(14px);z-index:9}
+.brandrow{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;max-width:1480px;margin:0 auto}
+h1{font-size:23px;line-height:1.2;letter-spacing:0;margin:0 0 4px;font-weight:760;color:var(--fg)}
+.brandmark{display:flex;align-items:center;gap:10px}.brandmark .mark{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--acc);color:#fff;font-size:17px;box-shadow:var(--shadow-sm)}
 .sub{color:var(--mut);font-size:12.5px;margin-bottom:14px}
-nav{display:flex;gap:4px;flex-wrap:wrap}
-nav button{background:none;border:none;color:var(--mut);padding:9px 13px;cursor:pointer;
- font:inherit;font-size:13.5px;border-bottom:2px solid transparent}
-nav button:hover{color:var(--fg)}
-nav button.on{color:var(--acc);border-bottom-color:var(--acc)}
-main{padding:22px 26px 60px;max-width:1400px}
+.header-status{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;padding-top:2px}
+nav{display:flex;gap:3px;flex-wrap:wrap;max-width:1480px;margin:0 auto}
+nav button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;color:var(--mut);padding:10px 14px;cursor:pointer;
+ font:inherit;font-size:13px;font-weight:650;letter-spacing:0;transition:color .18s,border-color .18s,background .18s;border-radius:7px 7px 0 0}
+nav button:hover{color:var(--fg);background:var(--surface-soft)}
+nav button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid color-mix(in srgb,var(--acc) 32%,transparent);outline-offset:2px}
+nav button.on{color:var(--acc-strong);border-bottom-color:var(--acc);background:var(--acc-soft)}
+main{padding:30px clamp(18px,4vw,56px) 72px;max-width:1590px;margin:0 auto}
 section{display:none}section.on{display:block}
-.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-input,select{background:var(--card);border:1px solid var(--line);color:var(--fg);
- padding:7px 11px;border-radius:7px;font:inherit;font-size:13.5px}
-input{min-width:230px}
-table{border-collapse:collapse;width:100%;font-size:13.5px}
-.tw{overflow-x:auto;margin:12px 0}
-th,td{padding:8px 11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{color:var(--mut);font-weight:600;white-space:nowrap;position:sticky;top:0;background:var(--bg)}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-tr:hover td{background:#ffffff08}
-.card{background:var(--card);border:1px solid var(--line);border-radius:11px;
- padding:15px 18px;margin-bottom:13px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:13px}
-.g{display:inline-block;font-size:11px;padding:2px 7px;border-radius:5px;
- border:1px solid var(--line);color:var(--mut);margin-left:7px;vertical-align:middle}
-.g.研究级{color:var(--acc);border-color:var(--acc)}
-.g.规则级{color:var(--warn);border-color:var(--warn)}
-.g.报告级{color:var(--ok);border-color:var(--ok)}
-.pill{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:20px;
- border:1px solid var(--line);color:var(--mut)}
-.pill.ok{color:var(--ok);border-color:var(--ok)}.pill.bad{color:var(--bad);border-color:var(--bad)}
-.pill.warn{color:var(--warn);border-color:var(--warn)}
-a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
-blockquote{margin:12px 0;padding:10px 15px;border-left:3px solid var(--acc);
- background:#5b9dff12;color:var(--fg);border-radius:0 8px 8px 0}
-blockquote p{margin:0}
-pre{background:var(--card);border:1px solid var(--line);border-radius:9px;
- padding:12px 14px;overflow-x:auto;font-size:12.5px}
-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;
- background:#88888822;padding:1px 5px;border-radius:4px}
-pre code{background:none;padding:0}
-h2{font-size:17px;margin:26px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
-h3{font-size:15px;margin:20px 0 8px}h4{font-size:14px;margin:16px 0 6px;color:var(--mut)}
-hr{border:none;border-top:1px solid var(--line);margin:22px 0}
-.dossier{max-width:960px}
-.meta{color:var(--mut);font-size:12.5px;margin-bottom:10px}
-.warnband{border:1px solid var(--bad);background:#f8514912;border-radius:9px;
- padding:11px 15px;margin-bottom:16px;font-size:13.5px}
-footer{color:var(--mut);font-size:12px;padding:18px 26px;border-top:1px solid var(--line)}
-.kpi{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px;margin-bottom:18px}
-.kpi div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px}
-.kpi b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
-.kpi span{color:var(--mut);font-size:12px}
+.board-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;margin:0 0 24px;padding:4px 0 22px;border-bottom:1px solid var(--line)}
+.eyebrow{color:var(--acc);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:0 0 7px}
+.board-intro h2{border:0;padding:0;margin:0 0 4px;font-size:28px;line-height:1.2;letter-spacing:0}.board-intro p{margin:0;color:var(--mut);max-width:690px;font-size:14px}
+.intro-note{max-width:300px;padding:12px 14px;border-left:3px solid var(--acc);background:var(--surface-soft);color:var(--mut);font-size:12.5px}
+.bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:0 0 16px}
+input,select{appearance:none;background:var(--surface);border:1px solid var(--line-strong);color:var(--fg);padding:9px 12px;border-radius:8px;font:inherit;font-size:13px;box-shadow:var(--shadow-sm)}
+input{min-width:250px}input::placeholder{color:var(--mut)}select{padding-right:32px;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:calc(100% - 16px) 54%,calc(100% - 11px) 54%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.tw{overflow:auto;margin:14px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:var(--shadow-sm)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:640px}th,td{padding:11px 13px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}tbody tr:last-child td{border-bottom:0}
+th{color:var(--mut);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;position:sticky;top:0;background:var(--surface);z-index:1}th[onclick]{cursor:pointer}th[onclick]:hover{color:var(--acc)}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}tbody tr:hover td{background:var(--surface-soft)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 19px;margin-bottom:13px;box-shadow:var(--shadow-sm)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}.grid .card{height:100%;margin:0;display:flex;flex-direction:column}.grid .card>div:last-child{margin-top:auto!important;padding-top:14px}
+.g{display:inline-block;font-size:10px;font-weight:750;padding:2px 7px;border-radius:5px;border:1px solid var(--line-strong);color:var(--mut);margin-left:7px;vertical-align:middle}.g.研究级{color:var(--acc);border-color:var(--acc)}.g.规则级{color:var(--warn);border-color:var(--warn)}.g.报告级{color:var(--ok);border-color:var(--ok)}
+.pill{display:inline-flex;align-items:center;min-height:24px;font-size:11px;font-weight:650;padding:2px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--mut);background:var(--surface)}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 48%,var(--line));background:var(--ok-soft)}.pill.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 48%,var(--line));background:var(--bad-soft)}.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 48%,var(--line));background:var(--warn-soft)}
+.btn{appearance:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);cursor:pointer;padding:7px 12px;border-radius:7px;font:inherit;font-size:12.5px;font-weight:650;box-shadow:var(--shadow-sm)}.btn:hover{border-color:var(--acc);color:var(--acc-strong);background:var(--acc-soft)}
+a{color:var(--acc-strong);text-decoration:none;font-weight:650}a:hover{text-decoration:underline}
+blockquote{margin:16px 0;padding:12px 16px;border-left:3px solid var(--acc);background:var(--acc-soft);color:var(--fg);border-radius:0 8px 8px 0}blockquote p{margin:0}
+pre{background:var(--surface-soft);border:1px solid var(--line);border-radius:8px;padding:13px 15px;overflow:auto;font-size:12px;line-height:1.6;color:var(--fg)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;background:var(--surface-soft);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+h2{font-size:19px;line-height:1.3;margin:34px 0 12px;padding-bottom:9px;border-bottom:1px solid var(--line);letter-spacing:0}h3{font-size:16px;line-height:1.35;margin:23px 0 9px}h4{font-size:14px;margin:18px 0 7px;color:var(--mut)}hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+.dossier{max-width:1000px}.dossier h1{font-size:28px}.dossier h2{margin-top:32px}.meta{color:var(--mut);font-size:12.5px;margin-bottom:10px}.warnband{border:1px solid color-mix(in srgb,var(--bad) 56%,var(--line));background:var(--bad-soft);color:var(--fg);border-radius:9px;padding:12px 15px;margin-bottom:19px;font-size:13px}
+footer{color:var(--mut);font-size:12px;padding:20px clamp(18px,4vw,56px);border-top:1px solid var(--line);max-width:none}.kpi{display:grid;grid-template-columns:repeat(6,minmax(125px,1fr));gap:12px;margin-bottom:29px}.kpi div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 15px;box-shadow:var(--shadow-sm)}.kpi b{display:block;font-size:24px;line-height:1.15;font-variant-numeric:tabular-nums;color:var(--fg)}.kpi span{display:block;color:var(--mut);font-size:11px;margin-top:5px;font-weight:650}
+.section-kicker{display:flex;justify-content:space-between;align-items:center;gap:12px}.section-kicker h2{flex:1}.muted{color:var(--mut)!important}.action-link{display:inline-flex;align-items:center;gap:5px}.empty{padding:28px;text-align:center;color:var(--mut);background:var(--surface);border:1px dashed var(--line-strong);border-radius:10px}
+@media(max-width:900px){.kpi{grid-template-columns:repeat(3,minmax(120px,1fr))}.board-intro{align-items:flex-start;flex-direction:column}.intro-note{max-width:none;width:100%;box-sizing:border-box}.header-status{display:none}}
+@media(max-width:600px){header{padding:15px 14px 0}.brandrow{display:block}.sub{margin-bottom:10px}nav{overflow-x:auto;flex-wrap:nowrap;margin:0 -4px;padding-bottom:1px}nav button{flex:0 0 auto;padding:9px 11px;font-size:12px}main{padding:23px 14px 52px}.board-intro h2{font-size:24px}.kpi{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.kpi div{padding:12px}.kpi b{font-size:21px}.grid{grid-template-columns:1fr}input{min-width:0;width:100%}.bar input{flex:1 1 100%}.dossier h1{font-size:24px}}
 """
 
 JS = """
@@ -337,6 +329,7 @@ function sortTbl(sec,idx,num){
 window.addEventListener('DOMContentLoaded',function(){
   var h=(location.hash||'').replace('#','');
   tab(document.getElementById('s-'+h)?h:'board');
+  ['board','doc','pred'].forEach(filt);
 });
 """
 
@@ -377,9 +370,9 @@ def build_board(analyses, prices, holds):
             h.append('<td>%s</td>' % ('<span class="pill bad">🔴 冲突</span>' if conflict else
                                       ('<span class="pill ok">✅</span>' if r["h"] else
                                        '<span class="pill">未持有</span>')))
-        h.append('<td><a href="#%s" onclick="tab(\'doc\');showDoc(\'%s\')">查看</a></td></tr>' % (t, t))
+        h.append('<td><a href="#%s" class="action-link" onclick="tab(\'doc\');showDoc(\'%s\');return false">查看 →</a></td></tr>' % (t, t))
     h.append("</tbody></table>")
-    return "".join(h)
+    return '<div class="tw">%s</div>' % "".join(h)
 
 
 def build_preds(preds):
@@ -411,7 +404,7 @@ def build_preds(preds):
                      ("%.0f%%" % (p["probability"] * 100)) if p.get("probability") else "—",
                      p.get("analysis_date", ""), esc((p.get("source_basis") or "")[:60])))
     h.append("</tbody></table>")
-    return "".join(h)
+    return '<div class="tw">%s</div>' % "".join(h)
 
 
 def build_decisions(decs):
@@ -425,7 +418,7 @@ def build_decisions(decs):
                      ("%.2f" % d["odds"]) if d.get("odds") is not None else "—",
                      esc(d.get("reason") or "")))
     h.append("</tbody></table>")
-    return "".join(h)
+    return '<div class="tw">%s</div>' % "".join(h)
 
 
 def main():
@@ -489,7 +482,7 @@ def main():
             '<div><b>%s</b><span class="g %s">%s</span></div>'
             '<div class="meta">%s</div>'
             '<div style="font-size:13px;color:var(--mut);max-height:5.2em;overflow:hidden">%s</div>'
-            '<div style="margin-top:9px"><a href="#%s" onclick="tab(\'doc\');showDoc(\'%s\')">打开档案 →</a></div>'
+            '<div style="margin-top:9px"><a href="#%s" class="action-link" onclick="tab(\'doc\');showDoc(\'%s\');return false">打开档案 →</a></div>'
             "</div>" % (d["grade"], esc(d["ticker"]), esc(d["title"]), esc(d["conclusion"][:120]),
                         d["ticker"], d["grade"], d["grade"],
                         esc(d["title"].split("（", 1)[-1].rstrip("）"))[:60],
@@ -508,19 +501,21 @@ def main():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Alpha Radar</title><style>%s</style></head><body>
 <header>
-<h1>🛰️ Alpha Radar</h1>
-<div class="sub">多维投资研究与决策系统　·　生成于 %s
-%s</div>
-<nav>
-<button data-t="board" onclick="tab('board')">组合雷达</button>
-<button data-t="doc" onclick="tab('doc')">公司档案 (%d)</button>
-<button data-t="pred" onclick="tab('pred')">预测账本 (%d)</button>
-<button data-t="dec" onclick="tab('dec')">决策记录 (%d)</button>
+<div class="brandrow"><div><div class="brandmark"><span class="mark">α</span><h1>Alpha Radar</h1></div>
+<div class="sub">多维投资研究与决策系统　·　生成于 %s</div></div>
+<div class="header-status">%s</div></div>
+<nav aria-label="主要导航">
+<button data-t="board" onclick="tab('board')">总览</button>
+<button data-t="doc" onclick="tab('doc')">公司档案 <span class="nav-count">%d</span></button>
+<button data-t="pred" onclick="tab('pred')">预测账本 <span class="nav-count">%d</span></button>
+<button data-t="dec" onclick="tab('dec')">决策记录 <span class="nav-count">%d</span></button>
 <button data-t="defect" onclick="tab('defect')">缺陷登记册</button>
 <button data-t="method" onclick="tab('method')">方法论</button>
 </nav></header>
 <main>
 <section id="s-board">
+<div class="board-intro"><div><div class="eyebrow">Research overview</div><h2>研究总览</h2><p>追踪公司评估、赔率与预测记录。这里展示已登记结论，不构成买卖建议。</p></div>
+<div class="intro-note">报告级、研究级与规则级结论采用不同证据标准。查看档案时请先确认等级和数据截点。</div></div>
 %s
 <div class="kpi">
 <div><b>%d</b><span>已建档公司</span></div>
@@ -530,32 +525,32 @@ def main():
 <div><b>%d</b><span>赔率 ≥1</span></div>
 <div><b>%d</b><span>已登记预测</span></div>
 </div>
-<h2>分析结论</h2>
-<div class="bar"><input id="q-board" placeholder="搜索 ticker…" oninput="filt('board')">
+<div class="section-kicker"><h2>分析结论</h2><span class="pill">按赔率排序</span></div>
+<div class="bar"><input id="q-board" aria-label="搜索股票代码" placeholder="搜索 ticker…" oninput="filt('board')">
 <span class="pill" id="c-board"></span></div>
 %s
 </section>
 <section id="s-doc">
+<div class="board-intro"><div><div class="eyebrow">Company research</div><h2>公司档案</h2><p>按档案等级筛选，并搜索公司代码、标题和结论摘要。</p></div></div>
 <div class="bar">
-<input id="q-doc" placeholder="搜索公司名 / 结论关键词…" oninput="filt('doc')">
-<select id="g-doc" onchange="filt('doc')">
+<input id="q-doc" aria-label="搜索公司档案" placeholder="搜索公司名 / 结论关键词…" oninput="filt('doc')">
+<select id="g-doc" aria-label="按档案等级筛选" onchange="filt('doc')">
 <option value="">全部等级</option><option>报告级</option><option>研究级</option><option>规则级</option>
 </select><span class="pill" id="c-doc"></span></div>
 <div class="grid" id="docgrid">%s</div>
 <div id="docview" style="display:none"><div class="bar">
-<button class="pill" onclick="tab('doc')">← 返回列表</button></div>%s</div>
+<button class="btn" onclick="showDocList()">← 返回档案列表</button></div>%s</div>
 </section>
-<section id="s-pred">
-<div class="bar"><input id="q-pred" placeholder="搜索 ticker / 指标…" oninput="filt('pred')">
+<section id="s-pred"><div class="board-intro"><div><div class="eyebrow">Forecast ledger</div><h2>预测账本</h2><p>追加记录的预测快照。预测能力以 Base 情景和最新版本为主口径。</p></div></div>
+<div class="bar"><input id="q-pred" aria-label="搜索预测记录" placeholder="搜索 ticker / 指标…" oninput="filt('pred')">
 <span class="pill" id="c-pred"></span></div>
 %s
 </section>
-<section id="s-dec"><h2>决策记录</h2><p style="color:var(--mut);font-size:13px">
-> 赔率 &lt;1:1 时任何价位都不建仓。决策 append-only，改主意记新的一条。</p>%s</section>
-<section id="s-defect"><h2>缺陷登记册</h2>
-<p style="color:var(--mut);font-size:13px">与预测账本同一条铁律：<b>旧记录永不覆盖</b>。
-修复后只更新状态并追加小节，不删除原始描述。</p>%s</section>
-<section id="s-method"><h2>方法论</h2>
+<section id="s-dec"><div class="board-intro"><div><div class="eyebrow">Decision history</div><h2>决策记录</h2><p>投资动作以时间顺序留痕，后续观点变化应追加记录。</p></div></div>
+<p class="muted">赔率 &lt;1:1 时不应建仓。决策记录为 append-only。</p>%s</section>
+<section id="s-defect"><div class="board-intro"><div><div class="eyebrow">Known issues</div><h2>缺陷登记册</h2><p>保留问题、修复状态和历史背景，避免丢失重要口径教训。</p></div></div>
+<p class="muted">修复后更新状态并追加说明，不删除原始记录。</p>%s</section>
+<section id="s-method"><div class="board-intro"><div><div class="eyebrow">Methodology</div><h2>方法论</h2><p>系统的证据等级、估值边界和数据校验口径。</p></div></div>
 <div class="card"><h3>五模块闭环</h3>
 <pre>基本面引擎 → 估值引擎 → 决策引擎 → 预测账本 → 复盘引擎</pre>
 <h3>九条铁律</h3>
@@ -594,12 +589,20 @@ L4 量纲合理性</pre>
 %s</footer>
 <script>%s
 function showDoc(t){
-  ['docgrid','docview'].forEach(function(id,i){
-    document.getElementById(id).style.display=i?'':'none';});
-  document.querySelectorAll('.dossier').forEach(d=>d.style.display='none');
+  tab('doc');
+  document.getElementById('docgrid').style.display='none';
+  document.getElementById('docview').style.display='';
+  document.querySelectorAll('.dossier').forEach(function(d){d.style.display='none';});
   var e=document.getElementById('doc-'+t); if(e)e.style.display='';
-  var g=document.querySelector('#s-doc .bar'); 
-  document.querySelectorAll('#docview').forEach(function(v){});
+  if(history.replaceState)history.replaceState(null,'','#'+t);
+  window.scrollTo(0,0);
+}
+function showDocList(){
+  document.getElementById('docgrid').style.display='';
+  document.getElementById('docview').style.display='none';
+  document.querySelectorAll('.dossier').forEach(function(d){d.style.display='none';});
+  if(history.replaceState)history.replaceState(null,'','#doc');
+  window.scrollTo(0,0);
 }
 </script>
 </body></html>""" % (
