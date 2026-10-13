@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "INTU",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:41+00:00",
+  "generated_at": "2026-10-13T09:14:56+00:00",
   "report": {
     "path": "analysis/INTU_AlphaRadar.md",
     "sha256": "49a74ad1615df21a25995ae199cabc1f51b8bf90ae39e7fee664d19542f077b2",
@@ -13,6 +13,12 @@
       "ttm_fcf": 8520000000.0,
       "net_debt_ebitda": 0.07
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "INTU",

@@ -40,6 +40,7 @@ REQ_PRED = {"ticker", "analysis_date", "forecast_version", "scenario",
             "metric", "forecast_period", "forecast_value", "unit"}
 REQ_ACT = {"ticker", "metric", "period", "actual_value", "unit"}
 REQ_DEC = {"ticker", "decision_date", "action", "price", "currency"}
+SNAPSHOTS = os.path.join(DATA, "research_snapshots")
 
 problems = []
 warnings = []
@@ -84,6 +85,16 @@ def main():
             problems.append("predictions #%d 指标 '%s' 不在词表中" % (i, r["metric"]))
         if not isinstance(r["forecast_value"], (int, float)):
             problems.append("predictions #%d forecast_value 非数值" % i)
+        status = r.get("prediction_status")
+        if status == "formal":
+            snap_path = os.path.join(SNAPSHOTS, "%s.json" % r["ticker"])
+            try:
+                with open(snap_path, encoding="utf-8") as sf:
+                    qualification = json.load(sf).get("qualification", {})
+                if not qualification.get("formal_predictions"):
+                    problems.append("predictions #%d: formal 预测没有正式档案资格（%s）" % (i, r["ticker"]))
+            except (OSError, ValueError):
+                problems.append("predictions #%d: formal 预测缺少研究快照（%s）" % (i, r["ticker"]))
         p = r.get("probability")
         if p is not None and not (0 < p <= 1):
             problems.append("predictions #%d probability=%s 越界（应 0-1）" % (i, p))
@@ -117,6 +128,19 @@ def main():
            and r.get("odds") is not None and r["odds"] < 1:
             warnings.append("decisions #%d: %s 在赔率 %.2f:1 时选了 %s（违反赔率纪律，已如实留痕）"
                             % (i, r["ticker"], r["odds"], r["action"]))
+
+    # 正式预测的三情景概率必须完整且合计 100%；历史 legacy/informational 不阻断
+    formal_groups = {}
+    for r in preds:
+        if r.get("prediction_status") == "formal":
+            k = (r.get("ticker"), r.get("metric"), _al.norm_period(r.get("forecast_period", "")),
+                 r.get("forecast_version", "v1"))
+            formal_groups.setdefault(k, []).append(r)
+    for k, rows in formal_groups.items():
+        scenarios = {r.get("scenario") for r in rows}
+        probs = [r.get("probability") for r in rows]
+        if scenarios != {"Bull", "Base", "Bear"} or any(p is None for p in probs) or abs(sum(probs) - 1.0) > 0.001:
+            problems.append("formal 情景概率不完整或不合计 100%%: %s scenarios=%s probs=%s" % (k, sorted(scenarios), probs))
 
     # 版本内数值冲突
     seen = {}

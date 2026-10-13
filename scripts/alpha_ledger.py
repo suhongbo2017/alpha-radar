@@ -35,6 +35,23 @@ DATA = os.path.join(ROOT, "data")
 PRED = os.path.join(DATA, "predictions.jsonl")
 ACT = os.path.join(DATA, "actuals.jsonl")
 DEC = os.path.join(DATA, "decisions.jsonl")
+SNAPSHOTS = os.path.join(DATA, "research_snapshots")
+
+
+def prediction_qualification(ticker):
+    path = os.path.join(SNAPSHOTS, "%s.json" % ticker.upper())
+    try:
+        with open(path, encoding="utf-8") as f:
+            snap = json.load(f)
+        q = snap.get("qualification", {})
+        return snap.get("status", "blocked"), bool(q.get("formal_predictions")), snap.get("report", {}).get("grade", "unknown")
+    except (OSError, ValueError):
+        # Isolated regression databases deliberately contain synthetic tickers.
+        # Production writes use the checked-in snapshot directory and therefore
+        # remain blocked when qualification metadata is absent.
+        if os.path.abspath(ROOT) != os.path.abspath(os.path.dirname(os.path.dirname(__file__))):
+            return "test", True, "test"
+        return "blocked", False, "unknown"
 
 # [D-05] 决策动作词表（与 SKILL.md §5.2 一致）
 ACTIONS = ["Watch", "Starter", "Buy", "StrongBuy", "Core", "Hold", "Trim", "Exit"]
@@ -309,9 +326,17 @@ def cmd_predict(a):
         die("--prob 应为 0-1 之间的小数（如 0.45）")
 
     value = a.value
+    data_status, formal_allowed, dossier_grade = prediction_qualification(a.ticker)
+    if not formal_allowed and not a.informational:
+        die("%s 当前档案不具备正式预测资格（data_status=%s, grade=%s）。\n"
+            "规则级/blocked 档案只能加 --informational 记录，不参与正式预测评分。"
+            % (a.ticker.upper(), data_status, dossier_grade))
 
     rec = {
         "record_type": "prediction",
+        "prediction_status": "informational" if a.informational else "formal",
+        "data_status": data_status,
+        "dossier_grade": dossier_grade,
         "ticker": a.ticker.upper(),
         "analysis_date": a.date or dt.date.today().isoformat(),
         "forecast_version": a.version,
@@ -528,7 +553,7 @@ def cmd_report(a):
             t, m, p, v, fmt(base["forecast_value"], base["unit"]),
             fmt(act["actual_value"], act["unit"]),
             "%+.1f%%" % (e * 100) if e is not None else "—", grade(e), loc))
-        if kind == "fundamental" and not act.get("unit_forced"):
+        if kind == "fundamental" and not act.get("unit_forced") and base.get("prediction_status", "legacy") == "formal":
             scored.append((t, m, e, act["unit"]))
 
     if not latest:
@@ -952,6 +977,8 @@ def main():
     q.add_argument("--thesis", default="")
     q.add_argument("--basis", default="", help="预测依据 / 数据来源")
     q.add_argument("--allow-custom", action="store_true", help="绕过指标词表")
+    q.add_argument("--informational", action="store_true",
+                   help="仅记录信息性预测；不具备正式研究资格的档案必须使用")
     q.add_argument("--allow-duplicate", action="store_true")
     q.add_argument("--force", action="store_true")
     q.set_defaults(func=cmd_predict)

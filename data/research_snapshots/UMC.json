@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "UMC",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:43+00:00",
+  "generated_at": "2026-10-13T09:14:58+00:00",
   "report": {
     "path": "analysis/UMC_AlphaRadar.md",
     "sha256": "a99e0844ae323eb8c0f0ca112d03df763a3027734a0588a5aa529ac9cd7b94e0",
@@ -12,6 +12,12 @@
       "ttm_revenue": 7080000000.0,
       "roic_pct": 15.7
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "UMC",

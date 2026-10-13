@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "GOOGL",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:41+00:00",
+  "generated_at": "2026-10-13T09:14:56+00:00",
   "report": {
     "path": "analysis/GOOGL_AlphaRadar.md",
     "sha256": "698ba171ee352db3c5feddb968bb1cee348be8089e74ffec128bf13d71953c4a",
@@ -12,6 +12,12 @@
       "ttm_revenue": 445870000000.0,
       "ttm_fcf": 53270000000.0
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": true,
+    "formal_valuation": true,
+    "portfolio_decisions": true
   },
   "data": {
     "ticker": "GOOGL",

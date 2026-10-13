@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "CRM",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:41+00:00",
+  "generated_at": "2026-10-13T09:14:55+00:00",
   "report": {
     "path": "analysis/CRM_AlphaRadar.md",
     "sha256": "aff6a6790718253a53e4f16f967ae824e072298c9f668e35d1eed022e0dbce73",
@@ -12,6 +12,12 @@
       "ttm_revenue": 43940000000.0,
       "ttm_fcf": 15150000000.0
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "CRM",

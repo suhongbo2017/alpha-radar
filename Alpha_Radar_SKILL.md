@@ -847,7 +847,7 @@ py scripts/alpha_ledger.py export
 
 | 子命令 | 关键选项 |
 |---|---|
-| `predict` | `--ticker` `--metric` `--period` `--value` `--unit` `--scenario` `--prob` `--confidence` `--version` `--date` `--thesis` `--basis` |
+| `predict` | `--ticker` `--metric` `--period` `--value` `--unit` `--scenario` `--prob` `--confidence` `--version` `--date` `--thesis` `--basis` `--informational` |
 | `actual` | `--ticker` `--metric` `--period` `--value` `--unit` `--date` `--source` `--fx` `--attribution` |
 | `decision` | `--ticker` `--action` `--price` `--currency` `--weight` `--prev-weight` `--odds` `--fair-value` `--thesis` `--reason` `--date` |
 | `decisions` | `--ticker` |

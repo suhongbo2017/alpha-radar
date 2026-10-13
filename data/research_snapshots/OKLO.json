@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "OKLO",
   "status": "blocked",
-  "generated_at": "2026-10-13T07:50:42+00:00",
+  "generated_at": "2026-10-13T09:14:57+00:00",
   "report": {
     "path": "analysis/OKLO_AlphaRadar.md",
     "sha256": "315e05cc5e5ea32eccc67f4c33fe59594c263082bd308be3dbe3ffa50f70f8ea",
@@ -13,6 +13,12 @@
       "roic_pct": -26.8,
       "net_debt_ebitda": 11.37
     }
+  },
+  "qualification": {
+    "data_status": "blocked",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "OKLO",

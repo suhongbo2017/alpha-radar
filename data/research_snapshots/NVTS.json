@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "NVTS",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:42+00:00",
+  "generated_at": "2026-10-13T09:14:57+00:00",
   "report": {
     "path": "analysis/NVTS_AlphaRadar.md",
     "sha256": "7cf97fc15228ed04b10fb14457c7db4da839c48865c062db5ac7f06940e251fb",
@@ -13,6 +13,12 @@
       "roic_pct": -44.4,
       "net_debt_ebitda": 1.29
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "NVTS",

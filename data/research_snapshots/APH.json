@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "APH",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:40+00:00",
+  "generated_at": "2026-10-13T09:14:55+00:00",
   "report": {
     "path": "analysis/APH_AlphaRadar.md",
     "sha256": "8b17fb3834b5d070b62b0b9b33fab509c0695cc75760797a7da3899fbae8b406",
@@ -13,6 +13,12 @@
       "ttm_fcf": 4710000000.0,
       "net_debt_ebitda": 1.46
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "APH",

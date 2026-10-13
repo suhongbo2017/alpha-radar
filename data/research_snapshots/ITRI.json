@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "ITRI",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:41+00:00",
+  "generated_at": "2026-10-13T09:14:56+00:00",
   "report": {
     "path": "analysis/ITRI_AlphaRadar.md",
     "sha256": "33baac4d09d18e1cab1aa0c2933ea5e7c23d7d701d44438282f265f9fef2955d",
@@ -13,6 +13,12 @@
       "ttm_fcf": 385400000.0,
       "net_debt_ebitda": 2.36
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "ITRI",

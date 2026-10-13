@@ -104,6 +104,12 @@ def snapshot_for(path):
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "report": {"path": str(path.relative_to(ROOT)).replace("\\", "/"), "sha256": sha256(path),
                    "grade": report_grade(text), "assertions": report_assertions(text)},
+        "qualification": {
+            "data_status": status,
+            "formal_predictions": status == "verified" and report_grade(text) == "research",
+            "formal_valuation": status == "verified" and report_grade(text) == "research",
+            "portfolio_decisions": status == "verified" and report_grade(text) == "research",
+        },
         "data": {k: metrics[k] for k in keys if k in metrics}, "error": error,
     }
 

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "ORCL",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:42+00:00",
+  "generated_at": "2026-10-13T09:14:57+00:00",
   "report": {
     "path": "analysis/ORCL_AlphaRadar.md",
     "sha256": "ecfbac1a323248922a86ed82f3b04bdb5bdb10cb84146293fcce0c4bb7a7fb61",
@@ -13,6 +13,12 @@
       "ttm_fcf": -28720000000.0,
       "net_debt_ebitda": 3.1
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": true,
+    "formal_valuation": true,
+    "portfolio_decisions": true
   },
   "data": {
     "ticker": "ORCL",

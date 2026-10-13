@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "MSFT",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:42+00:00",
+  "generated_at": "2026-10-13T09:14:56+00:00",
   "report": {
     "path": "analysis/MSFT_AlphaRadar.md",
     "sha256": "64843365770fffc6623537f548901ae4a8e3ce356d9380d92df783bb9c9b8523",
@@ -13,6 +13,12 @@
       "ttm_fcf": 66989999999.99999,
       "net_debt_ebitda": 0.15
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "MSFT",

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "NVDA",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:42+00:00",
+  "generated_at": "2026-10-13T09:14:57+00:00",
   "report": {
     "path": "analysis/NVDA_AlphaRadar.md",
     "sha256": "f56ee115f2a11946ab11e2edd7852072a9357f629811a1259b7391e060fb1074",
@@ -12,6 +12,12 @@
       "ttm_revenue": 302970000000.0,
       "ttm_fcf": 127010000000.0
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": true,
+    "formal_valuation": true,
+    "portfolio_decisions": true
   },
   "data": {
     "ticker": "NVDA",

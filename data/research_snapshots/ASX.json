@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "ASX",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:41+00:00",
+  "generated_at": "2026-10-13T09:14:55+00:00",
   "report": {
     "path": "analysis/ASX_AlphaRadar.md",
     "sha256": "bd6412bef9aeef34bd08700bacd6231558d26834bda2206bf6d6ef635520de16",
@@ -13,6 +13,12 @@
       "roic_pct": 8.0,
       "net_debt_ebitda": 1.22
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "ASX",

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "KTOS",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:41+00:00",
+  "generated_at": "2026-10-13T09:14:56+00:00",
   "report": {
     "path": "analysis/KTOS_AlphaRadar.md",
     "sha256": "1a65b48fb4457a382716d2c5379e02121857506c0ea25dd0c646c1eee5b7058d",
@@ -13,6 +13,12 @@
       "roic_pct": 1.0,
       "net_debt_ebitda": -6.67
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "KTOS",

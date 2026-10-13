@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "RKLB",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:43+00:00",
+  "generated_at": "2026-10-13T09:14:57+00:00",
   "report": {
     "path": "analysis/RKLB_AlphaRadar.md",
     "sha256": "ccdd48a514d015c26fa310f726cc302d4b326f80d8a08d92649e316c6ae722a1",
@@ -13,6 +13,12 @@
       "roic_pct": -15.8,
       "net_debt_ebitda": 14.01
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "RKLB",

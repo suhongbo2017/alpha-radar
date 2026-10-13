@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "SPCX",
   "status": "blocked",
-  "generated_at": "2026-10-13T07:50:43+00:00",
+  "generated_at": "2026-10-13T09:14:58+00:00",
   "report": {
     "path": "analysis/SPCX_AlphaRadar.md",
     "sha256": "812306a5900939716f00d3fcd2723a6f6315166bfac2fce52f4063e985cab533",
@@ -11,6 +11,12 @@
       "price": 162.57,
       "ttm_revenue": null
     }
+  },
+  "qualification": {
+    "data_status": "blocked",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "SPCX",

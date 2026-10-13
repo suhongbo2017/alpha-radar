@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "SKHY",
   "status": "blocked",
-  "generated_at": "2026-10-13T07:50:43+00:00",
+  "generated_at": "2026-10-13T09:14:58+00:00",
   "report": {
     "path": "analysis/SKHY_AlphaRadar.md",
     "sha256": "c56517a0d98aa9b3b479009e4702bdb46fe057688442944fc866f795a3e9c682",
@@ -10,6 +10,12 @@
     "assertions": {
       "ttm_revenue": null
     }
+  },
+  "qualification": {
+    "data_status": "blocked",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "SKHY",

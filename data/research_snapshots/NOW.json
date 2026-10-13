@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "NOW",
   "status": "verified",
-  "generated_at": "2026-10-13T07:50:42+00:00",
+  "generated_at": "2026-10-13T09:14:57+00:00",
   "report": {
     "path": "analysis/NOW_AlphaRadar.md",
     "sha256": "8b1f0521baa1e0701605c9f98216af19c61aa38f307c2af17fb26bd8b7e27d94",
@@ -13,6 +13,12 @@
       "ttm_fcf": 4580000000.0,
       "net_debt_ebitda": 0.28
     }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
   },
   "data": {
     "ticker": "NOW",
