@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "ASX",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:41+00:00",
+  "report": {
+    "path": "analysis/ASX_AlphaRadar.md",
+    "sha256": "bd6412bef9aeef34bd08700bacd6231558d26834bda2206bf6d6ef635520de16",
+    "grade": "rule",
+    "assertions": {
+      "price": 46.43,
+      "ttm_revenue": 20570000000.0,
+      "roic_pct": 8.0,
+      "net_debt_ebitda": 1.22
+    }
+  },
+  "data": {
+    "ticker": "ASX",
+    "entity": "ASE Technology Holding Co., Ltd.",
+    "ttm_period": "2025-12-31",
+    "ttm_revenue": 20573405000,
+    "ttm_gross_profit": 3640194000,
+    "ttm_op_income": 1639172000,
+    "ttm_net_income": 1313243000,
+    "ttm_ocf": 4534564000,
+    "ttm_capex": 5248406000,
+    "ttm_fcf": -713842000,
+    "gross_margin_pct": 17.693687554393644,
+    "op_margin_pct": 7.967431740151909,
+    "net_margin_pct": 6.383206863423921,
+    "fcf_margin_pct": -3.4697319184646394,
+    "cash_conversion_pct": -54.357190558030766,
+    "revenue_growth_ttm_pct": 13.300487320733856,
+    "fcf_growth_ttm_pct": -307.7689005311795,
+    "cash": 2947684000.0,
+    "equity": 11751006000,
+    "debt": 7574955000.0,
+    "net_debt": 4627271000.0,
+    "ebitda_ttm": 3788991000,
+    "net_debt_ebitda": 1.221240958344847,
+    "shares": 4447029782,
+    "shares_date": "2025-12-31",
+    "price": 46.43,
+    "market_cap": 206475592778.26,
+    "tax_rate": 0.19699905651090027,
+    "nopat": 1316256662.5409145,
+    "invested_capital": 16378277000.0,
+    "roic_pct": 8.036600324569639
+  },
+  "error": null
+}

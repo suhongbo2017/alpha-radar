@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "NVTS",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:42+00:00",
+  "report": {
+    "path": "analysis/NVTS_AlphaRadar.md",
+    "sha256": "7cf97fc15228ed04b10fb14457c7db4da839c48865c062db5ac7f06940e251fb",
+    "grade": "rule",
+    "assertions": {
+      "price": 10.78,
+      "ttm_revenue": 40000000.0,
+      "roic_pct": -44.4,
+      "net_debt_ebitda": 1.29
+    }
+  },
+  "data": {
+    "ticker": "NVTS",
+    "entity": "Navitas Semiconductor Corp",
+    "ttm_period": "2026-06-30",
+    "ttm_revenue": 36535000,
+    "ttm_gross_profit": 10189000,
+    "ttm_op_income": -115764000,
+    "ttm_net_income": -313052000,
+    "ttm_ocf": -66474000,
+    "ttm_capex": 1373000,
+    "ttm_fcf": -67847000,
+    "gross_margin_pct": 27.88832626248803,
+    "op_margin_pct": -316.8578075817709,
+    "net_margin_pct": -856.8550704803613,
+    "fcf_margin_pct": -185.70411933762145,
+    "cash_conversion_pct": 21.672757241608423,
+    "revenue_growth_ttm_pct": -46.403685067554676,
+    "fcf_growth_ttm_pct": 34.26541597403625,
+    "cash": 124792000.0,
+    "equity": 381132000,
+    "debt": 4533000,
+    "net_debt": -120259000.0,
+    "ebitda_ttm": -93183000,
+    "net_debt_ebitda": 1.2905680220641105,
+    "shares": 240643000,
+    "shares_date": "2026-06-30",
+    "price": 10.78,
+    "market_cap": 2594131540.0,
+    "tax_rate": 0.0,
+    "nopat": -115764000.0,
+    "invested_capital": 260873000.0,
+    "roic_pct": -44.375615721059674
+  },
+  "error": null
+}

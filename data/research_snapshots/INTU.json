@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "INTU",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:41+00:00",
+  "report": {
+    "path": "analysis/INTU_AlphaRadar.md",
+    "sha256": "49a74ad1615df21a25995ae199cabc1f51b8bf90ae39e7fee664d19542f077b2",
+    "grade": "report",
+    "assertions": {
+      "price": 302.75,
+      "ttm_revenue": 21448000000.0,
+      "ttm_fcf": 8520000000.0,
+      "net_debt_ebitda": 0.07
+    }
+  },
+  "data": {
+    "ticker": "INTU",
+    "entity": "INTUIT INC.",
+    "ttm_period": "2026-07-31",
+    "ttm_revenue": 21448000000,
+    "ttm_gross_profit": null,
+    "ttm_op_income": 5884000000,
+    "ttm_net_income": 4566000000,
+    "ttm_ocf": 8838000000,
+    "ttm_capex": 221000000,
+    "ttm_fcf": 8617000000,
+    "gross_margin_pct": null,
+    "op_margin_pct": 27.43379336068631,
+    "net_margin_pct": 21.28869824692279,
+    "fcf_margin_pct": 40.17624020887728,
+    "cash_conversion_pct": 188.7209811651336,
+    "revenue_growth_ttm_pct": 13.897297010249066,
+    "fcf_growth_ttm_pct": 41.65707710011508,
+    "cash": 7200000000.0,
+    "equity": 18992000000,
+    "debt": 7669000000,
+    "net_debt": 469000000.0,
+    "ebitda_ttm": 6543000000,
+    "net_debt_ebitda": 0.0716796576493963,
+    "shares": 276000000,
+    "shares_date": "2026-04-30",
+    "price": 302.75,
+    "market_cap": 83559000000.0,
+    "tax_rate": 0.24115007478810038,
+    "nopat": 4465072959.946817,
+    "invested_capital": 19461000000.0,
+    "roic_pct": 22.943697445901122
+  },
+  "error": null
+}

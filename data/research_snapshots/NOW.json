@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "NOW",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:42+00:00",
+  "report": {
+    "path": "analysis/NOW_AlphaRadar.md",
+    "sha256": "8b1f0521baa1e0701605c9f98216af19c61aa38f307c2af17fb26bd8b7e27d94",
+    "grade": "report",
+    "assertions": {
+      "price": 140.86,
+      "ttm_revenue": 14730000000.0,
+      "ttm_fcf": 4580000000.0,
+      "net_debt_ebitda": 0.28
+    }
+  },
+  "data": {
+    "ticker": "NOW",
+    "entity": "ServiceNow, Inc.",
+    "ttm_period": "2026-06-30",
+    "ttm_revenue": 14732000000,
+    "ttm_gross_profit": 11015000000,
+    "ttm_op_income": 1680000000,
+    "ttm_net_income": 1670000000,
+    "ttm_ocf": 5308000000,
+    "ttm_capex": 728000000,
+    "ttm_fcf": 4580000000,
+    "gross_margin_pct": 74.76920988324736,
+    "op_margin_pct": 11.403746945424926,
+    "net_margin_pct": 11.335867499321207,
+    "fcf_margin_pct": 31.088786315503665,
+    "cash_conversion_pct": 274.251497005988,
+    "revenue_growth_ttm_pct": 22.186281827983745,
+    "fcf_growth_ttm_pct": 18.991945959989607,
+    "cash": 4664000000.0,
+    "equity": 12516000000,
+    "debt": 5435000000,
+    "net_debt": 771000000.0,
+    "ebitda_ttm": 2751000000,
+    "net_debt_ebitda": 0.2802617230098146,
+    "shares": 1034334000,
+    "shares_date": "2026-06-30",
+    "price": 140.86,
+    "market_cap": 145696287240.0,
+    "tax_rate": 0.28815004262574595,
+    "nopat": 1195907928.3887467,
+    "invested_capital": 13287000000.0,
+    "roic_pct": 9.000586501006598
+  },
+  "error": null
+}

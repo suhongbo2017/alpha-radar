@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "QCOM",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:43+00:00",
+  "report": {
+    "path": "analysis/QCOM_AlphaRadar.md",
+    "sha256": "543911e1d52bbfd7df3666b25a13e2af2c50ad6a119cafb287680edb6294b47e",
+    "grade": "rule",
+    "assertions": {
+      "price": 175.5,
+      "ttm_revenue": 44070000000.0,
+      "roic_pct": 104.4,
+      "net_debt_ebitda": 0.27
+    }
+  },
+  "data": {
+    "ticker": "QCOM",
+    "entity": "QUALCOMM INC/DE",
+    "ttm_period": "2026-06-28",
+    "ttm_revenue": 44069000000,
+    "ttm_gross_profit": 23897000000,
+    "ttm_op_income": 10220000000,
+    "ttm_net_income": 9260000000,
+    "ttm_ocf": 12401000000,
+    "ttm_capex": 1985000000,
+    "ttm_fcf": 10416000000,
+    "gross_margin_pct": 54.226326896457834,
+    "op_margin_pct": 23.190905171435702,
+    "net_margin_pct": 21.012503120107105,
+    "fcf_margin_pct": 23.63566225691529,
+    "cash_conversion_pct": 112.48380129589633,
+    "revenue_growth_ttm_pct": 1.8771528307557128,
+    "fcf_growth_ttm_pct": -10.376871450696957,
+    "cash": 12260000000.0,
+    "equity": 4909000000,
+    "debt": 15434000000,
+    "net_debt": 3174000000.0,
+    "ebitda_ttm": 11793000000,
+    "net_debt_ebitda": 0.2691427117781735,
+    "shares": 1069000000,
+    "shares_date": "2026-06-28",
+    "price": 175.5,
+    "market_cap": 187609500000.0,
+    "tax_rate": 0.17409917945058864,
+    "nopat": 8440706386.014984,
+    "invested_capital": 8083000000.0,
+    "roic_pct": 104.4254161328094
+  },
+  "error": null
+}

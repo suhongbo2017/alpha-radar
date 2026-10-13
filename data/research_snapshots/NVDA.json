@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "ticker": "NVDA",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:42+00:00",
+  "report": {
+    "path": "analysis/NVDA_AlphaRadar.md",
+    "sha256": "f56ee115f2a11946ab11e2edd7852072a9357f629811a1259b7391e060fb1074",
+    "grade": "research",
+    "assertions": {
+      "price": 229.28,
+      "ttm_revenue": 302970000000.0,
+      "ttm_fcf": 127010000000.0
+    }
+  },
+  "data": {
+    "ticker": "NVDA",
+    "entity": "NVIDIA CORP",
+    "ttm_period": "2026-07-26",
+    "ttm_revenue": 302970000000,
+    "ttm_gross_profit": 226241000000,
+    "ttm_op_income": 197579000000,
+    "ttm_net_income": 192880000000,
+    "ttm_ocf": 134360000000,
+    "ttm_capex": 7354000000,
+    "ttm_fcf": 127006000000,
+    "gross_margin_pct": 74.67439020365053,
+    "op_margin_pct": 65.2140475954715,
+    "net_margin_pct": 63.66306895072119,
+    "fcf_margin_pct": 41.92032214410668,
+    "cash_conversion_pct": 65.84715885524679,
+    "revenue_growth_ttm_pct": 83.37590335193501,
+    "fcf_growth_ttm_pct": 76.3408911042306,
+    "cash": 22443000000.0,
+    "equity": 228984000000,
+    "debt": 33366000000,
+    "net_debt": 10923000000.0,
+    "ebitda_ttm": 201266000000,
+    "net_debt_ebitda": 0.054271461647769616,
+    "shares": 24285000000,
+    "shares_date": "2026-07-26",
+    "price": 229.28,
+    "market_cap": 5568064800000.0,
+    "tax_rate": 0.16045320205621064,
+    "nopat": 165876816790.93597,
+    "invested_capital": 239907000000.0,
+    "roic_pct": 69.14213290605775
+  },
+  "error": null
+}

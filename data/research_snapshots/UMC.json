@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "ticker": "UMC",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:43+00:00",
+  "report": {
+    "path": "analysis/UMC_AlphaRadar.md",
+    "sha256": "a99e0844ae323eb8c0f0ca112d03df763a3027734a0588a5aa529ac9cd7b94e0",
+    "grade": "rule",
+    "assertions": {
+      "price": 22.96,
+      "ttm_revenue": 7080000000.0,
+      "roic_pct": 15.7
+    }
+  },
+  "data": {
+    "ticker": "UMC",
+    "entity": "United Microelectronics Corporation",
+    "ttm_period": "2024-12-31",
+    "ttm_revenue": 7084556000,
+    "ttm_gross_profit": 2307230000,
+    "ttm_op_income": 1574034000,
+    "ttm_net_income": 1484435000,
+    "ttm_ocf": 2862825000,
+    "ttm_capex": 2700323000,
+    "ttm_fcf": 162502000,
+    "gross_margin_pct": 32.567037369737776,
+    "op_margin_pct": 22.217821413226176,
+    "net_margin_pct": 20.953112658012728,
+    "fcf_margin_pct": 2.2937499541255657,
+    "cash_conversion_pct": 10.947060666179388,
+    "revenue_growth_ttm_pct": -2.5182282385996957,
+    "fcf_growth_ttm_pct": -190.89953068450697,
+    "cash": 3202203000.0,
+    "equity": 11152995000,
+    "debt": 594999000.0,
+    "net_debt": -2607204000.0,
+    "ebitda_ttm": null,
+    "net_debt_ebitda": null,
+    "shares": 12588156344,
+    "shares_date": "2025-12-31",
+    "price": 22.96,
+    "market_cap": 289024069658.24,
+    "tax_rate": 0.14673030208621937,
+    "nopat": 1343075515.6860197,
+    "invested_capital": 8545791000.0,
+    "roic_pct": 15.716222356549789
+  },
+  "error": null
+}

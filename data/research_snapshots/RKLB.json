@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "RKLB",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:43+00:00",
+  "report": {
+    "path": "analysis/RKLB_AlphaRadar.md",
+    "sha256": "ccdd48a514d015c26fa310f726cc302d4b326f80d8a08d92649e316c6ae722a1",
+    "grade": "rule",
+    "assertions": {
+      "price": 68.21,
+      "ttm_revenue": 770000000.0,
+      "roic_pct": -15.8,
+      "net_debt_ebitda": 14.01
+    }
+  },
+  "data": {
+    "ticker": "RKLB",
+    "entity": "Rocket Lab Corp",
+    "ttm_period": "2026-06-30",
+    "ttm_revenue": 769146000,
+    "ttm_gross_profit": 286615000,
+    "ttm_op_income": -223494000,
+    "ttm_net_income": -165459000,
+    "ttm_ocf": -222461000,
+    "ttm_capex": 148678000,
+    "ttm_fcf": -371139000,
+    "gross_margin_pct": 37.264056499026196,
+    "op_margin_pct": -29.057422127918496,
+    "net_margin_pct": -21.51204062687708,
+    "fcf_margin_pct": -48.25338752330507,
+    "cash_conversion_pct": 224.308741138288,
+    "revenue_growth_ttm_pct": 52.528739963074834,
+    "fcf_growth_ttm_pct": 81.87738900323434,
+    "cash": 2302185000.0,
+    "equity": 3492153000,
+    "debt": 27597000.0,
+    "net_debt": -2274588000.0,
+    "ebitda_ttm": -162385000,
+    "net_debt_ebitda": 14.007377528712627,
+    "shares": 629681803,
+    "shares_date": "2026-06-30",
+    "price": 68.21,
+    "market_cap": 42950595782.63,
+    "tax_rate": 0.13705231645430982,
+    "nopat": -192863629.58636048,
+    "invested_capital": 1217565000.0,
+    "roic_pct": -15.840109528966462
+  },
+  "error": null
+}

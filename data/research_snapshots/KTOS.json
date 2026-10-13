@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "KTOS",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:41+00:00",
+  "report": {
+    "path": "analysis/KTOS_AlphaRadar.md",
+    "sha256": "1a65b48fb4457a382716d2c5379e02121857506c0ea25dd0c646c1eee5b7058d",
+    "grade": "rule",
+    "assertions": {
+      "price": 42.36,
+      "ttm_revenue": 1520000000.0,
+      "roic_pct": 1.0,
+      "net_debt_ebitda": -6.67
+    }
+  },
+  "data": {
+    "ticker": "KTOS",
+    "entity": "KRATOS DEFENSE & SECURITY SOLUTIONS, INC.",
+    "ttm_period": "2026-06-28",
+    "ttm_revenue": 1522500000,
+    "ttm_gross_profit": 350200000,
+    "ttm_op_income": 18400000,
+    "ttm_net_income": 30900000,
+    "ttm_ocf": -39600000,
+    "ttm_capex": 89300000,
+    "ttm_fcf": -128900000,
+    "gross_margin_pct": 23.001642036124796,
+    "op_margin_pct": 1.2085385878489328,
+    "net_margin_pct": 2.0295566502463056,
+    "fcf_margin_pct": -8.466338259441708,
+    "cash_conversion_pct": -417.15210355987057,
+    "revenue_growth_ttm_pct": 25.504904789382564,
+    "fcf_growth_ttm_pct": 110.62091503267975,
+    "cash": 783600000.0,
+    "equity": 1996300000,
+    "debt": 235200000.0,
+    "net_debt": -548400000.0,
+    "ebitda_ttm": 82200000,
+    "net_debt_ebitda": -6.671532846715328,
+    "shares": 190100000,
+    "shares_date": "2026-06-28",
+    "price": 42.36,
+    "market_cap": 8052636000.0,
+    "tax_rate": 0.2426470588235294,
+    "nopat": 13935294.11764706,
+    "invested_capital": 1447900000.0,
+    "roic_pct": 0.9624486578939886
+  },
+  "error": null
+}

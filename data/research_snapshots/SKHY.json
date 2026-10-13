@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "ticker": "SKHY",
+  "status": "blocked",
+  "generated_at": "2026-10-13T07:50:43+00:00",
+  "report": {
+    "path": "analysis/SKHY_AlphaRadar.md",
+    "sha256": "c56517a0d98aa9b3b479009e4702bdb46fe057688442944fc866f795a3e9c682",
+    "grade": "rule",
+    "assertions": {
+      "ttm_revenue": null
+    }
+  },
+  "data": {
+    "ticker": "SKHY",
+    "entity": "SK hynix Inc."
+  },
+  "error": "缺少真实 TTM 截止日或营业收入"
+}

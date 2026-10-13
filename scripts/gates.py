@@ -42,6 +42,7 @@ GATES = [
     ("G6", "账本已固化进 git"),
     ("G7", "一手数据多层校验"),
     ("G8", "站点安全构建"),
+    ("G9", "研究快照一致性"),
 ]
 
 BASH_CANDIDATES = [
@@ -84,6 +85,8 @@ def gate_cmd(gid):
         # 多层数据校验（含外部交叉）。--require-cross：外部源不可用则判失败，
         # 因为只有外部源才能捕获 YTD 选择类错误（内部双路共享原语，不独立）。
         return [sys.executable, "scripts/verify_data.py", "--all", "--require-cross"]
+    if gid == "G9":
+        return [sys.executable, "scripts/research_snapshot.py", "validate"]
     return None
 
 

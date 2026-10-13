@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "ORCL",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:42+00:00",
+  "report": {
+    "path": "analysis/ORCL_AlphaRadar.md",
+    "sha256": "ecfbac1a323248922a86ed82f3b04bdb5bdb10cb84146293fcce0c4bb7a7fb61",
+    "grade": "research",
+    "assertions": {
+      "price": 141.4,
+      "ttm_revenue": 71780000000.0,
+      "ttm_fcf": -28720000000.0,
+      "net_debt_ebitda": 3.1
+    }
+  },
+  "data": {
+    "ticker": "ORCL",
+    "entity": "Oracle Corporation",
+    "ttm_period": "2026-08-31",
+    "ttm_revenue": 71776000000,
+    "ttm_gross_profit": 24238000000,
+    "ttm_op_income": 23057000000,
+    "ttm_net_income": 18920000000,
+    "ttm_ocf": 46940000000,
+    "ttm_capex": 75660000000,
+    "ttm_fcf": -28720000000,
+    "gross_margin_pct": 33.76894783771734,
+    "op_margin_pct": 32.12355104770397,
+    "net_margin_pct": 26.35978600089166,
+    "fcf_margin_pct": -40.013374944271064,
+    "cash_conversion_pct": -151.7970401691332,
+    "revenue_growth_ttm_pct": 21.61713375580332,
+    "fcf_growth_ttm_pct": 388.4353741496598,
+    "cash": 31894000000.0,
+    "equity": 42508000000,
+    "debt": 137242000000,
+    "net_debt": 105348000000.0,
+    "ebitda_ttm": 33938000000,
+    "net_debt_ebitda": 3.1041310625257825,
+    "shares": 3000000000,
+    "shares_date": "2026-08-31",
+    "price": 141.4,
+    "market_cap": 424200000000.0,
+    "tax_rate": 0.21905651564689396,
+    "nopat": 18006213918.729565,
+    "invested_capital": 147856000000.0,
+    "roic_pct": 12.178209824917193
+  },
+  "error": null
+}

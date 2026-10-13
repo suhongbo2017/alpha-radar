@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "MSFT",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:42+00:00",
+  "report": {
+    "path": "analysis/MSFT_AlphaRadar.md",
+    "sha256": "64843365770fffc6623537f548901ae4a8e3ce356d9380d92df783bb9c9b8523",
+    "grade": "report",
+    "assertions": {
+      "price": 535.07,
+      "ttm_revenue": 331840000000.0,
+      "ttm_fcf": 66989999999.99999,
+      "net_debt_ebitda": 0.15
+    }
+  },
+  "data": {
+    "ticker": "MSFT",
+    "entity": "MICROSOFT CORPORATION",
+    "ttm_period": "2026-06-30",
+    "ttm_revenue": 331839000000,
+    "ttm_gross_profit": 225465000000,
+    "ttm_op_income": 155237000000,
+    "ttm_net_income": 133749000000,
+    "ttm_ocf": 182935000000,
+    "ttm_capex": 115948000000,
+    "ttm_fcf": 66987000000,
+    "gross_margin_pct": 67.94409337058032,
+    "op_margin_pct": 46.780818408927225,
+    "net_margin_pct": 40.30538905915218,
+    "fcf_margin_pct": 20.18659651216403,
+    "cash_conversion_pct": 50.08411277841329,
+    "revenue_growth_ttm_pct": 17.788686799846666,
+    "fcf_growth_ttm_pct": -6.457108544776635,
+    "cash": 76843000000.0,
+    "equity": 442387000000,
+    "debt": 106888000000,
+    "net_debt": 30045000000.0,
+    "ebitda_ttm": 194237000000,
+    "net_debt_ebitda": 0.1546821666314863,
+    "shares": 7445000000,
+    "shares_date": "2026-03-31",
+    "price": 535.07,
+    "market_cap": 3983596150000.0005,
+    "tax_rate": 0.19396265985271252,
+    "nopat": 125126818572.44446,
+    "invested_capital": 472432000000.0,
+    "roic_pct": 26.48567806000535
+  },
+  "error": null
+}

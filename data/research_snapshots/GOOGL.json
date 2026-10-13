@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "ticker": "GOOGL",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:41+00:00",
+  "report": {
+    "path": "analysis/GOOGL_AlphaRadar.md",
+    "sha256": "698ba171ee352db3c5feddb968bb1cee348be8089e74ffec128bf13d71953c4a",
+    "grade": "research",
+    "assertions": {
+      "price": 351.66,
+      "ttm_revenue": 445870000000.0,
+      "ttm_fcf": 53270000000.0
+    }
+  },
+  "data": {
+    "ticker": "GOOGL",
+    "entity": "Alphabet Inc.",
+    "ttm_period": "2026-06-30",
+    "ttm_revenue": 445866000000,
+    "ttm_gross_profit": 271517000000,
+    "ttm_op_income": 147628000000,
+    "ttm_net_income": 244205000000,
+    "ttm_ocf": 185675000000,
+    "ttm_capex": 132402000000,
+    "ttm_fcf": 53273000000,
+    "gross_margin_pct": 60.89654739316297,
+    "op_margin_pct": 33.1103963971238,
+    "net_margin_pct": 54.77094014793682,
+    "fcf_margin_pct": 11.948208654618202,
+    "cash_conversion_pct": 21.814868655432935,
+    "revenue_growth_ttm_pct": 20.050404012934877,
+    "fcf_growth_ttm_pct": -20.16394916676657,
+    "cash": 242474000000.0,
+    "equity": 640480000000,
+    "debt": 103675000000,
+    "net_debt": -138799000000.0,
+    "ebitda_ttm": 173717000000,
+    "net_debt_ebitda": -0.7989949170202111,
+    "shares": 12309000000,
+    "shares_date": "2026-06-30",
+    "price": 351.66,
+    "market_cap": 4328582940000.0005,
+    "tax_rate": 0.183995001152809,
+    "nopat": 120465185969.81311,
+    "invested_capital": 501681000000.0,
+    "roic_pct": 24.012307815088295
+  },
+  "error": null
+}

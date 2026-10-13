@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ticker": "APH",
+  "status": "verified",
+  "generated_at": "2026-10-13T07:50:40+00:00",
+  "report": {
+    "path": "analysis/APH_AlphaRadar.md",
+    "sha256": "8b17fb3834b5d070b62b0b9b33fab509c0695cc75760797a7da3899fbae8b406",
+    "grade": "report",
+    "assertions": {
+      "price": 87.24,
+      "ttm_revenue": 29010000000.0,
+      "ttm_fcf": 4710000000.0,
+      "net_debt_ebitda": 1.46
+    }
+  },
+  "data": {
+    "ticker": "APH",
+    "entity": "AMPHENOL CORPORATION",
+    "ttm_period": "2026-06-30",
+    "ttm_revenue": 29011600000,
+    "ttm_gross_profit": 11168600000,
+    "ttm_op_income": 7841400000,
+    "ttm_net_income": 5143400000,
+    "ttm_ocf": 5871700000,
+    "ttm_capex": 1158000000,
+    "ttm_fcf": 4713700000,
+    "gross_margin_pct": 38.49701498710861,
+    "op_margin_pct": 27.028498945249485,
+    "net_margin_pct": 17.728770560741218,
+    "fcf_margin_pct": 16.247638875484288,
+    "cash_conversion_pct": 91.6456040751254,
+    "revenue_growth_ttm_pct": 54.16941226485279,
+    "fcf_growth_ttm_pct": 67.31267525645121,
+    "cash": 5419100000.0,
+    "equity": 15491600000,
+    "debt": 18811300000,
+    "net_debt": 13392200000.0,
+    "ebitda_ttm": 9145300000,
+    "net_debt_ebitda": 1.4643806108055504,
+    "shares": 1289200000,
+    "shares_date": "2026-06-30",
+    "price": 87.24,
+    "market_cap": 112469808000.0,
+    "tax_rate": 0.2916518747098501,
+    "nopat": 5554440989.650182,
+    "invested_capital": 28883800000.0,
+    "roic_pct": 19.230298609082535
+  },
+  "error": null
+}
