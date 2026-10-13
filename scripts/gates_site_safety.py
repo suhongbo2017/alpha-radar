@@ -134,8 +134,11 @@ def main():
     rn_rows = sum(len(re.findall(r"<tr>", d)) - d.count("<table>") for d in docs_)
     a11y.append(("表格无丢失 (%d 张)" % md_n, md_n == rn_n))
     a11y.append(("数据行无丢失 (%d 行)" % md_rows, md_rows == rn_rows))
+    # 只检查实际表格单元格；缺陷记录正文可能会引用旧 CSS 字符串，
+    # 不能把说明文字误判为当前渲染结果。
+    table_inline_right = re.findall(r"<(?:td|th)\b[^>]*style=\"[^\"]*text-align:\s*right", h)
     a11y.append(("数字列用等宽数字(不靠内联对齐)",
-                 'class="num"' in h and 'style="text-align:right"' not in h))
+                 'class="num"' in h and not table_inline_right))
 
     miss = [n for n, ok_ in a11y if not ok_]
     if miss:
