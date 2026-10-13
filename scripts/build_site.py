@@ -45,8 +45,13 @@ DATA = os.path.join(ROOT, "data")
 ANALYSIS = os.path.join(ROOT, "analysis")
 
 # 公开站点绝不出现的字符串（构建后断言）
-# [D-73] 公开站点绝不出现的字段（数量类一律禁止）
-FORBIDDEN = ["positions.json", "market_value", "cost_basis", "unrealized_pnl",
+# [D-73] 公开站点绝不出现的**数据字段**（数量类一律禁止）
+#
+# 注意：**不要把文件名 "positions.json" 放进来**。
+# 文档正文里合法地会提到它（D-73 的说明写明了"positions.json 仅本地"），
+# 那是说明文字，不是数据泄漏 —— 把它当禁用词会产生假警报（实测踩过）。
+# 真正的保护是：① 下面这些**字段名**；② 默认代码路径根本不读那个文件。
+FORBIDDEN = ["market_value", "cost_basis", "unrealized_pnl",
              "realized_pnl", "avg_cost", '"qty"', "shares"]
 
 RULE_MARK = "Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。"
@@ -301,6 +306,96 @@ footer{color:var(--mut);font-size:12px;padding:20px clamp(18px,4vw,56px);border-
 @media(max-width:600px){header{padding:15px 14px 0}.brandrow{display:block}.sub{margin-bottom:10px}nav{overflow-x:auto;flex-wrap:nowrap;margin:0 -4px;padding-bottom:1px}nav button{flex:0 0 auto;padding:9px 11px;font-size:12px}main{padding:23px 14px 52px}.board-intro h2{font-size:24px}.kpi{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.kpi div{padding:12px}.kpi b{font-size:21px}.grid{grid-template-columns:1fr}input{min-width:0;width:100%}.bar input{flex:1 1 100%}.dossier h1{font-size:24px}}
 """
 
+A11Y_CSS = r"""
+/* ══════════════════════════════════════════════════════════════
+   [D-76] 无障碍层 —— 面向视力不佳者
+   ──────────────────────────────────────────────────────────────
+   改造前实测的可读性问题：
+     字号：11 个文字元素里 10 个 ≤13px（table 13 / th 11 / pill 11 / .g 10 / pre 12 …）
+     对比度：浅色主题 --mut 在 --bg 上仅 4.33:1，**低于 WCAG AA 的 4.5**
+     行宽：main 1590px ÷ 15px ≈ 106 字/行，远超中文建议的 ≤40 字/行
+   本层不改原配色与布局，只做四件事：
+     ① 用 --fs 统一放大并让用户可调（A−/A+/重置，存 localStorage）
+     ② 修正不达标对比度
+     ③ 收窄正文行宽（表格保持满宽可横向滚动）
+     ④ 高对比度模式开关
+   ══════════════════════════════════════════════════════════════ */
+:root{ --fs:19px; --lh:1.9; }
+
+/* ① 字号：全部随 --fs 缩放 */
+body{font-size:var(--fs);line-height:var(--lh)}
+h1{font-size:calc(var(--fs)*1.32)}
+.sub{font-size:calc(var(--fs)*0.80);line-height:1.6}
+nav button{font-size:calc(var(--fs)*0.86);font-weight:700;padding:13px 17px;min-height:48px}
+table{font-size:calc(var(--fs)*0.88)}
+th{font-size:calc(var(--fs)*0.80);letter-spacing:.02em}
+td,th{padding:14px 16px}
+.pill{font-size:calc(var(--fs)*0.80);min-height:32px;padding:5px 13px}
+.g{font-size:calc(var(--fs)*0.80);padding:3px 10px;font-weight:800}
+pre{font-size:calc(var(--fs)*0.82);line-height:1.75;padding:16px 18px}
+code{font-size:.94em;padding:2px 6px}
+h2{font-size:calc(var(--fs)*1.20);margin:40px 0 15px;padding-bottom:11px}
+h3{font-size:calc(var(--fs)*1.05);margin:26px 0 11px}
+h4{font-size:calc(var(--fs)*0.95)}
+.meta,.intro-note,.warnband{font-size:calc(var(--fs)*0.82);line-height:1.7}
+footer{font-size:calc(var(--fs)*0.80);line-height:1.7}
+.kpi b{font-size:calc(var(--fs)*1.72);line-height:1.2}
+.kpi span{font-size:calc(var(--fs)*0.80);font-weight:700}
+.kpi div{padding:17px 18px}
+.eyebrow{font-size:calc(var(--fs)*0.80);letter-spacing:.08em}
+.board-intro h2{font-size:calc(var(--fs)*1.50)}
+.board-intro p{font-size:calc(var(--fs)*0.88);line-height:1.75;max-width:56ch}
+input,select{font-size:calc(var(--fs)*0.88);padding:12px 15px;min-height:48px}
+input{min-width:290px}
+.btn{font-size:calc(var(--fs)*0.84);padding:10px 16px;min-height:44px}
+p,li{line-height:var(--lh)}
+.dossier h1{font-size:calc(var(--fs)*1.45)}
+.dossier h2{font-size:calc(var(--fs)*1.20)}
+ul,ol{padding-left:1.6em}
+li{margin:.35em 0}
+
+/* ② 对比度：浅色次要文字 4.33:1 → 达标 */
+:root{--mut:#4a5a55}
+@media(prefers-color-scheme:dark){:root{--mut:#b4c6be}}
+
+/* ③ 行宽：正文收窄，表格仍满宽 */
+.dossier{max-width:52ch}
+main{max-width:1680px}
+
+/* 表格可读性：斑马纹 + 数字不换行 */
+tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-soft) 60%,var(--surface))}
+tbody tr:nth-child(even):hover td,tbody tr:hover td{background:var(--surface-soft)}
+td.num,th.num{white-space:nowrap}
+th{position:sticky;top:0}
+
+/* ④ 高对比度模式 */
+html.hc{--bg:#ffffff;--surface:#ffffff;--surface-soft:#eef2f0;--fg:#000000;--mut:#1f2b27;
+  --line:#000000;--line-strong:#000000;--acc:#00453a;--acc-strong:#003329;--acc-soft:#dff0ea;
+  --ok:#0a4d24;--bad:#8a1d17;--warn:#6b4700;--shadow:none;--shadow-sm:none}
+html.hc a{text-decoration:underline}
+html.hc .tw,html.hc .card{border-width:2px}
+@media(prefers-color-scheme:dark){
+  html.hc{--bg:#000000;--surface:#000000;--surface-soft:#141414;--fg:#ffffff;--mut:#d8d8d8;
+    --line:#ffffff;--line-strong:#ffffff;--acc:#7ff0cf;--acc-strong:#a6f7de;--acc-soft:#0d2b24}
+}
+
+/* 字号控件 */
+.a11y{display:flex;gap:5px;align-items:center}
+.a11y button{appearance:none;background:var(--surface);border:1px solid var(--line-strong);
+  color:var(--fg);cursor:pointer;min-width:44px;min-height:44px;padding:0 11px;border-radius:8px;
+  font:inherit;font-size:calc(var(--fs)*0.84);font-weight:800;box-shadow:var(--shadow-sm)}
+.a11y button:hover{border-color:var(--acc);color:var(--acc-strong);background:var(--acc-soft)}
+.a11y .lbl{color:var(--mut);font-size:calc(var(--fs)*0.72);font-weight:700;margin-right:3px}
+
+/* 兜底：可读性下限 —— 对视力不佳者，任何文字都不应低于约 15px。
+   用 --fs 调大时下限同步抬高（0.79 × 19px ≈ 15px）。 */
+table,th,td,.pill,.g,.kpi span,.sub,.meta,pre,footer,.eyebrow,nav button,input,select,.btn{
+  font-size:max(calc(var(--fs)*var(--lo,0.79)), 15px)}
+
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}
+  *{transition:none!important;animation:none!important}}
+"""
+
 JS = """
 function tab(id){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));
@@ -521,11 +616,17 @@ def main():
 
     htmlout = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Alpha Radar</title><style>%s</style></head><body>
+<title>Alpha Radar</title><style>%s</style><style>%s</style></head><body>
 <header>
 <div class="brandrow"><div><div class="brandmark"><span class="mark">α</span><h1>Alpha Radar</h1></div>
 <div class="sub">多维投资研究与决策系统　·　生成于 %s</div></div>
-<div class="header-status">%s</div></div>
+<div class="header-status"><div class="a11y" role="group" aria-label="显示设置">
+<span class="lbl">字号</span>
+<button onclick="fs(-1)" title="缩小字号" aria-label="缩小字号">A−</button>
+<button onclick="fs(0)" title="重置字号" aria-label="重置字号">A</button>
+<button onclick="fs(1)" title="放大字号" aria-label="放大字号">A+</button>
+<button onclick="hc()" title="切换高对比度" aria-label="切换高对比度" id="hcbtn">◐</button>
+</div>%s</div></div>
 <nav aria-label="主要导航">
 <button data-t="board" onclick="tab('board')">总览</button>
 <button data-t="doc" onclick="tab('doc')">公司档案 <span class="nav-count">%d</span></button>
@@ -610,6 +711,29 @@ L4 量纲合理性</pre>
 <footer>Alpha Radar · 本页由 <code>py scripts/build_site.py</code> 生成 · 只读快照，不含任何写操作
 %s</footer>
 <script>%s
+/* [D-76] 显示设置：字号 + 高对比度，存 localStorage */
+(function(){
+  var FS_DEFAULT=19, FS_MIN=15, FS_MAX=32;
+  function apply(px){
+    px=Math.max(FS_MIN,Math.min(FS_MAX,px));
+    document.documentElement.style.setProperty('--fs',px+'px');
+    try{localStorage.setItem('ar_fs',px);}catch(e){}
+  }
+  window.fs=function(d){
+    if(d===0){apply(FS_DEFAULT);return;}
+    var cur=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fs'))||FS_DEFAULT;
+    apply(cur+d*2);
+  };
+  window.hc=function(){
+    var on=document.documentElement.classList.toggle('hc');
+    var b=document.getElementById('hcbtn'); if(b)b.setAttribute('aria-pressed',on);
+    try{localStorage.setItem('ar_hc',on?'1':'0');}catch(e){}
+  };
+  try{
+    var v=localStorage.getItem('ar_fs'); if(v)apply(parseFloat(v));
+    if(localStorage.getItem('ar_hc')==='1'){document.documentElement.classList.add('hc');}
+  }catch(e){}
+})();
 function showDoc(t){
   tab('doc');
   document.getElementById('docgrid').style.display='none';
@@ -628,7 +752,7 @@ function showDocList(){
 }
 </script>
 </body></html>""" % (
-        CSS, dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        CSS, A11Y_CSS, dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
         ('<span class="pill bad">🔴 含持仓数量 — 请勿公开部署</span>'
          if (holds and any(v.get("weight_pct") is not None for v in holds.values()))
          else ('<span class="pill ok">仅含持仓标的 · 不含数量 · 可公开</span>' if holds

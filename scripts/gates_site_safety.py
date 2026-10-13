@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Gate G8 —— 站点安全构建
+"""Gate G8 —— 站点安全与可读性
 
 为什么需要：仓库是**公开**的（GitHub）。站点若把持仓数据带进去并部署，等于公开账户明细。
-本门禁做两件事：
+本门禁做三件事：
   1. 用默认参数（不含持仓）重新构建站点
-  2. 断言输出中**不含任何持仓字段**
+  2. 断言输出中**不含任何持仓数量字段**
+  3. [D-76] 断言**可读性下限**未被改回去（面向视力不佳者）
+
+第 3 条的理由：用户明确要求 UI 要方便视力不好的人观看。
+原设计有 11 个文字元素里 10 个 <=13px、浅色次要文字对比度仅 4.33:1（低于 WCAG AA）。
+修复后必须防止被无意改回去 —— 否则这类回归没有任何信号。
 
 同时也验证站点生成器本身可用（构建失败 = 页面不可用）。
 
@@ -24,9 +29,9 @@ except Exception:
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "site", "index.html")
 
-# 公开站点绝不该出现的字段
-FORBIDDEN = ["market_value", "cost_basis", "unrealized_pnl", "realized_pnl",
-             "avg_cost", "positions.json", "qty"]
+# 禁用词表**从 build_site 导入**，保证单一来源（避免两处维护 + 口径漂移）
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+from build_site import FORBIDDEN  # noqa: E402
 
 
 def main():
@@ -74,7 +79,27 @@ def main():
             unbalanced.append("%s(%d/%d)" % (tag, o, c))
 
     print("  ✓ 站点已构建 %.0f KB，含 %d 份档案（构建到临时文件，不污染工作区）" % (kb, n_doc))
-    print("  ✓ 无持仓/敏感字段")
+    print("  ✓ 无持仓数量字段")
+
+    # [D-76] 可读性下限断言
+    a11y = [
+        ("字号变量 --fs", "var(--fs)" in h),
+        ("最小字号兜底 font-size:max", "font-size:max(" in h),
+        ("字号调节控件", 'onclick="fs(' in h),
+        ("高对比度开关", 'onclick="hc()"' in h),
+        ("设置持久化 localStorage", "localStorage" in h),
+        ("浅色次要文字对比度修正", "--mut:#4a5a55" in h),
+        ("正文行宽限制 52ch", "max-width:52ch" in h),
+        ("尊重 reduced-motion", "prefers-reduced-motion" in h),
+        ("无障碍标注 aria-label", "aria-label" in h),
+    ]
+    miss = [n for n, ok_ in a11y if not ok_]
+    if miss:
+        print("  ✗ 可读性项缺失: %s" % ", ".join(miss))
+        print("     （用户要求 UI 方便视力不好的人观看 —— 不要降低字号/对比度）")
+        print("__GATE_FAIL__ G8")
+        return 1
+    print("  ✓ 可读性下限完整（字号/对比度/行宽/控件，共 %d 项）" % len(a11y))
     if unbalanced:
         print("  ⚠️ 标签不平衡: %s" % ", ".join(unbalanced))
     print("__GATE_PASS__ G8")
