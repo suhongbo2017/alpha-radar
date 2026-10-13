@@ -102,9 +102,46 @@ def main():
     a11y.append(("档案页容器不被窄行宽挤压",
                  ".dossier{max-width:none}" in h and "#docview{max-width:" in h))
 
+    # [D-80] **内容完整性**：markdown 里的表格/数据行必须全部出现在页面上。
+    # 实测踩过：fence 状态判断错误导致闭合后所有内容被吞进 <pre>，
+    # GOOGL 7 张表只渲染出 2 张 —— **页面不报错，只是少了东西**。
+    def _tables(md_):
+        o, c = [], []
+        for ln in md_.split(chr(10)):
+            q = ln.strip().lstrip(">").strip()
+            if q.startswith("|") and q.endswith("|"):
+                c.append(q)
+            else:
+                if c:
+                    o.append(c)
+                    c = []
+        if c:
+            o.append(c)
+        return o
+
+    md_n = md_rows = 0
+    import glob as _g
+    for f_ in sorted(_g.glob(os.path.join(ROOT, "analysis", "*_AlphaRadar.md"))):
+        for t_ in _tables(open(f_, encoding="utf-8").read()):
+            if len(t_) < 2:
+                continue
+            md_n += 1
+            sep_ok = re.match(r"^\|?[\s:\-|]+\|?$", t_[1])
+            md_rows += len(t_) - (2 if sep_ok else 1)
+    docs_ = re.findall(r'<div id="doc-[^"]+" class="dossier".*?(?=<div id="doc-|</section>)',
+                       h, re.S)
+    rn_n = sum(d.count("<table>") for d in docs_)
+    rn_rows = sum(len(re.findall(r"<tr>", d)) - d.count("<table>") for d in docs_)
+    a11y.append(("表格无丢失 (%d 张)" % md_n, md_n == rn_n))
+    a11y.append(("数据行无丢失 (%d 行)" % md_rows, md_rows == rn_rows))
+    a11y.append(("数字列用等宽数字(不靠内联对齐)",
+                 'class="num"' in h and 'style="text-align:right"' not in h))
+
     miss = [n for n, ok_ in a11y if not ok_]
     if miss:
-        print("  ✗ 可读性项缺失: %s" % ", ".join(miss))
+        if md_n != rn_n or md_rows != rn_rows:
+            print("  ✗ 内容丢失: 表格 %d→%d，数据行 %d→%d" % (md_n, rn_n, md_rows, rn_rows))
+        print("  ✗ 未通过项: %s" % ", ".join(miss))
         print("     （用户要求 UI 方便视力不好的人观看 —— 不要降低字号/对比度）")
         print("__GATE_FAIL__ G8")
         return 1

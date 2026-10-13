@@ -121,6 +121,36 @@ def inline(s):
     return s
 
 
+def _is_num(cell):
+    """单元格是否数字（**先剥掉 markdown 记号**，否则 **$445.87B** 判不出来）"""
+    t = re.sub(r"[*`\s]", "", cell)
+    if not t or t in ("—", "-", "–", "n/a", "N/A", "?"):
+        return False
+    t = t.replace("%", "").replace("$", "").replace(",", "").replace("+", "")
+    t = t.replace("−", "-").replace("≈", "").replace("~", "").replace("x", "")
+    for u in ("B", "M", "K", "T", "bp", "pp", "倍"):
+        t = t.replace(u, "")
+    try:
+        float(t)
+        return True
+    except ValueError:
+        return False
+
+
+def _num_cols(head, body):
+    """判断哪些列是数字列：≥60% 的单元格是数字"""
+    out = set()
+    for j in range(len(head)):
+        vals = []
+        for r in body:
+            cs = split_row(r)
+            if len(cs) > j:
+                vals.append(cs[j])
+        if vals and sum(1 for v in vals if _is_num(v)) >= max(1, len(vals) * 0.6):
+            out.add(j)
+    return out
+
+
 def split_row(line):
     line = line.strip()
     if line.startswith("|"):
@@ -150,16 +180,27 @@ def md_to_html(md):
             body = tbl[2:]
         else:
             body = tbl[1:]
+        # [D-80] 数字列必须同时拿到「右对齐」和「等宽数字（tabular-nums）」。
+        # 只右对齐不够 —— 数字字形宽度不等（"1" 比 "0" 窄），小数点对不齐，
+        # 看起来仍然是"没对齐"。class="num" 同时提供两者。
+        has_marker = bool(aligns) and any(aligns)
+        autocols = set() if has_marker else _num_cols(head, body)
+
+        def _attr(j):
+            if j < len(aligns) and aligns[j]:
+                return ' class="num"' if aligns[j] == "right" else                        ' style="text-align:%s"' % aligns[j]
+            if j in autocols:
+                return ' class="num"'
+            return ""
+
         h = ['<div class="tw"><table><thead><tr>']
         for j, c in enumerate(head):
-            al = (' style="text-align:%s"' % aligns[j]) if j < len(aligns) and aligns[j] else ""
-            h.append("<th%s>%s</th>" % (al, inline(c)))
+            h.append("<th%s>%s</th>" % (_attr(j), inline(c)))
         h.append("</tr></thead><tbody>")
         for r in body:
             h.append("<tr>")
             for j, c in enumerate(split_row(r)):
-                al = (' style="text-align:%s"' % aligns[j]) if j < len(aligns) and aligns[j] else ""
-                h.append("<td%s>%s</td>" % (al, inline(c)))
+                h.append("<td%s>%s</td>" % (_attr(j), inline(c)))
             h.append("</tr>")
         h.append("</tbody></table></div>")
         out.append("".join(h))
@@ -170,19 +211,29 @@ def md_to_html(md):
             out.append('<pre><code>%s</code></pre>' % esc("\n".join(code)))
             code.clear()
 
+    # [D-80] 显式维护 in_code 状态。
+    #
+    # 旧实现用一个"上一行是否为 ```"的启发式判断是否在代码块内 —— 它**无法区分
+    # 开 fence 与闭 fence**。实测后果：
+    #     行56 '```'  闭合 → code 被清空
+    #     行57 ''     因"上一行是 ```"被追加进 code
+    #     行58+       之后所有行（**包括 5 张表格**）全被吞进 <pre>
+    #   GOOGL 档案 7 张表只渲染出 2 张，另外 5 张**在页面上彻底消失**。
+    #   这类"数据静默消失"是最难被发现的缺陷 —— 页面不报错，只是少了东西。
+    in_code = False
     while i < len(lines):
         ln = lines[i]
         if ln.strip().startswith("```"):
-            if code:
-                flush_code()
+            if in_code:
+                out.append('<pre><code>%s</code></pre>' % esc(chr(10).join(code)))
+                code.clear()
+                in_code = False
             else:
                 flush_tbl()
-                code.append("")     # 占位，进入 code 模式
+                in_code = True
             i += 1
-            if code and code[0] == "":
-                code.clear()
             continue
-        if code or (i > 0 and lines[i - 1].strip().startswith("```") and not ln.strip().startswith("```")):
+        if in_code:
             code.append(ln)
             i += 1
             continue
