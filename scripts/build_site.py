@@ -112,7 +112,31 @@ def esc(s):
     return html.escape(s, quote=False)
 
 
+DISPLAY_LABELS = (
+    # 长词组先替换，避免 Revenue Growth 被拆成不自然的混排。
+    ("Revenue Sources", "收入来源（Revenue Sources）"),
+    ("Revenue Growth", "收入增长率（Revenue Growth）"),
+    ("Revenue", "营业收入（Revenue）"),
+    ("GrossProfit", "毛利（GrossProfit）"),
+    ("OpInc", "营业利润（OpInc）"),
+    ("NetIncome", "净利润（NetIncome）"),
+    ("OCF", "经营现金流（OCF）"),
+    ("CapEx", "资本开支（CapEx）"),
+)
+
+
+def display_labels(s):
+    """把分析正文中的内部指标名转为面向读者的显示名称。
+
+    数据文件、账本和校验器继续使用英文 canonical key；这里只处理 HTML 可见文本。
+    """
+    for source, label in DISPLAY_LABELS:
+        s = re.sub(r"(?<![A-Za-z（(])" + re.escape(source) + r"(?![A-Za-z])", label, s)
+    return s
+
+
 def inline(s):
+    s = display_labels(s)
     s = esc(s)
     s = re.sub(r"`([^`]+)`", lambda m: "<code>%s</code>" % m.group(1), s)
     s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)

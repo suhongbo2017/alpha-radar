@@ -71,7 +71,7 @@
 
 **年度序列（10-K，按日期对齐，已过校验）**
 
-| 年度 | Revenue | GrossProfit | OpInc | NetIncome | OCF | CapEx |
+| 年度 | 营业收入（Revenue） | 毛利（GrossProfit） | 营业利润（OpInc） | 净利润（NetIncome） | 经营现金流（OCF） | 资本开支（CapEx） |
 |---|---:|---:|---:|---:|---:|---:|
 | 2019 | 2.50B | 752M | 133M | 49M | 173M | 61M |
 | 2020 | 2.17B | 602M | **−10M** | **−58M** | 110M | 46M |

@@ -11,14 +11,14 @@
 
 | 指标 | 期间 | 预测（Base） | 实际 | 绝对误差 | 百分比误差 | 最接近情景 |
 |---|---|---:|---:|---:|---:|---|
-| Revenue | | | | | | |
+| 营业收入（Revenue） | | | | | | |
 | Gross Margin | | | | | | |
 | Operating Margin | | | | | | |
 | EPS | | | | | | |
 | FCF | | | | | | |
 | FCF Margin | | | | | | |
 | ROIC | | | | | | |
-| CapEx | | | | | | |
+| 资本开支（CapEx） | | | | | | |
 | Organic Growth | | | | | | |
 
 ```text

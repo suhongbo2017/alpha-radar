@@ -27,8 +27,8 @@
 
 | 指标 | 数值 | 备注 / 来源 |
 |---|---:|---|
-| Revenue (TTM / FY) | | |
-| Revenue Growth | | |
+| 营业收入（Revenue，TTM / FY） | | |
+| 收入增长率（Revenue Growth） | | |
 | Organic Growth | | |
 | Gross Margin | | |
 | Operating Margin | | |
@@ -38,7 +38,7 @@
 | ROIC vs WACC | | |
 | Net Debt / EBITDA | | |
 | Interest Coverage | | |
-| CapEx | | |
+| 资本开支（CapEx） | | |
 | Shares Outstanding（净稀释？） | | |
 
 ## 3. Moat（各 0–5）
@@ -75,7 +75,7 @@
 
 ## 6. Forecast
 
-| 情景 | 概率 | 关键假设 | Revenue | EPS | FCF | Exit Multiple | Fair Value |
+| 情景 | 概率 | 关键假设 | 营业收入（Revenue） | 每股收益（EPS） | 自由现金流（FCF） | 退出倍数（Exit Multiple） | 公允价值（Fair Value） |
 |---|---:|---|---:|---:|---:|---:|---:|
 | Bull | | | | | | | |
 | Base | | | | | | | |

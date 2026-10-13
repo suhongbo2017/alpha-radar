@@ -67,7 +67,7 @@
 
 **年度序列（10-K，按日期对齐）**
 
-| 年度 | Revenue | GrossProfit | OpInc | NetIncome | OCF | CapEx |
+| 年度 | 营业收入（Revenue） | 毛利（GrossProfit） | 营业利润（OpInc） | 净利润（NetIncome） | 经营现金流（OCF） | 资本开支（CapEx） |
 |---|---:|---:|---:|---:|---:|---:|
 | 2021 | 10.88B | 3.40B | 2.11B | 1.59B | 1.54B | 360M |
 | 2022 | 12.62B | 4.03B | 2.59B | 1.90B | 2.17B | 384M |

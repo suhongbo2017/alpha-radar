@@ -208,7 +208,7 @@ py scripts/verify_data.py MSFT --json
 
 | 层 | 内容 | 结果含义 |
 |---|---|---|
-| L1 | Revenue、COGS、GrossProfit、OpInc 等会计关系 | 发现取数或转写错误 |
+| L1 | 营业收入（Revenue）、销售成本（COGS）、毛利（GrossProfit）、营业利润（OpInc）等会计关系 | 发现取数或转写错误 |
 | L2 | YTD 时长、财年归属、TTM、资产负债表同日性 | 发现时间错位和 TTM 错误 |
 | L3 | SEC 与 Yahoo 同日数据、Yahoo trailing TTM | 发现共享内部路径无法发现的问题 |
 | L4 | 正负号、数值范围、有限数和单位 | 发现明显异常输入 |

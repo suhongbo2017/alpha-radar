@@ -529,12 +529,12 @@ def main():
         q_end = yd[-1]
 
     print("\nTTM（截至 %s）" % q_end)
-    print("  Revenue          %s" % f(ttm_rev))
+    print("  营业收入 Revenue          %s" % f(ttm_rev))
     print("  Gross Margin     %s" % f(pct(ttm_gp, ttm_rev), "%"))
     print("  Operating Margin %s" % f(pct(ttm_op, ttm_rev), "%"))
     print("  Net Margin       %s" % f(pct(ttm_ni, ttm_rev), "%"))
-    print("  OCF              %s" % f(ttm_ocf))
-    print("  CapEx            %s" % f(ttm_cx))
+    print("  经营现金流 OCF              %s" % f(ttm_ocf))
+    print("  资本开支 CapEx            %s" % f(ttm_cx))
     print("  FCF              %s" % f(ttm_fcf))
     print("  FCF Margin       %s" % f(pct(ttm_fcf, ttm_rev), "%"))
     print("  Cash Conversion  %s" % f(pct(ttm_fcf, ttm_ni), "%"))
@@ -560,7 +560,7 @@ def main():
     net_debt = (debt - cash) if (debt is not None and cash is not None) else None
     ebitda = (ttm_op + ttm_da) if (ttm_op is not None and ttm_da is not None) else None
     print("  Net Debt      %s" % f(net_debt))
-    print("  EBITDA (TTM)  %s  [OpInc + D&A]" % f(ebitda))
+    print("  EBITDA（TTM）  %s  [营业利润 OpInc + 折旧摊销 D&A]" % f(ebitda))
     print("  NetDebt/EBITDA %s" % f(net_debt / ebitda if (net_debt is not None and ebitda) else None, "x"))
 
     # ---- ROIC（NOPAT / 投入资本）
