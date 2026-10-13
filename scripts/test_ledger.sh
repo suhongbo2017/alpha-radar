@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Alpha Radar ledger 回归测试（P0-1/2/3 + P1-4/7 + P2-17 + 边界）
 cd "$(dirname "$0")/.." || exit 1
-L="py scripts/alpha_ledger.py"
+# [D-74] 不硬编码 'py'（Windows 启动器）—— 否则 GitHub Actions 的 Linux runner 上必挂，
+# 导致 CI 无法运行门禁，只能做"构建站点"这一半的事。
+PY=$(command -v python3 2>/dev/null || command -v py 2>/dev/null || command -v python 2>/dev/null)
+[ -n "$PY" ] || { echo "✗ 找不到 python 解释器"; exit 1; }
+L="$PY scripts/alpha_ledger.py"
 pass=0; fail=0
 ok()   { echo "  ✓ $1"; pass=$((pass+1)); }
 ng()   { echo "  ✗ $1"; fail=$((fail+1)); }
@@ -179,7 +183,7 @@ echo "$out" | grep -q "## 7. 误差归因分布" && ok "T12 报告含第 7 节" 
 echo "$out" | grep -q "Demand" && echo "$out" | grep -q "Margin" && ok "T12 两类归因均统计" || ng "T12 归因聚合不全"
 
 # ---------- T13 alpha_score.py ----------
-S="py scripts/alpha_score.py"
+S="$PY scripts/alpha_score.py"
 out=$($S score --revenue-growth 8 --organic-growth 6 --gross-margin 39 --operating-margin 28 \
       --fcf-growth 22 --fcf-margin 19 --roic 20.2 --net-debt-ebitda 2.1 --moat 4.2 --management 4.0)
 out2=$($S score --revenue-growth 8 --organic-growth 6 --gross-margin 39 --operating-margin 28 \

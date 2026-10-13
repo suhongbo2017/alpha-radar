@@ -35,6 +35,7 @@ TOOLS = [
     ("scripts/verify_data.py", "verify_data.py"),
     ("scripts/alpha_portfolio.py", "alpha_portfolio.py"),
     ("scripts/alpha_scenario.py", "alpha_scenario.py"),
+    ("scripts/pages_build.py", "pages_build.py"),
 ]
 
 # 内部/次要选项，不强制出现在文档里

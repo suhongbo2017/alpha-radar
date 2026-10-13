@@ -41,7 +41,22 @@ ANALYSES = os.path.join(DATA, "analyses.jsonl")
 TXNS = os.path.join(DATA, "transactions.jsonl")
 PORTF = os.path.join(DATA, "portfolio.json")
 QUOTES = os.path.join(DATA, "quotes")
+# [D-73] 持仓数据分两级敏感度：
+#   holdings.json —— **只存标的**，可入库、可公开。用于"持有/未持有"与冲突判定。
+#   positions.json —— 含数量/成本/盈亏，**仅本地**（gitignored）。仅用于仓位%/盈亏显示。
 SNAPSHOT = os.path.join(DATA, "positions.json")
+HOLDINGS = os.path.join(DATA, "holdings.json")
+
+
+def load_holdings_tickers():
+    """只含标的的持仓清单（可公开）"""
+    if not os.path.exists(HOLDINGS):
+        return set(), None
+    try:
+        d = json.load(open(HOLDINGS, encoding="utf-8"))
+        return {str(t).upper() for t in d.get("tickers", [])}, d.get("as_of")
+    except Exception:
+        return set(), None
 
 # 建仓类动作（与分析结论比对时用）
 ENTRY_ACTIONS = {"Buy", "StrongBuy", "Core", "Starter"}
@@ -150,14 +165,21 @@ def load_snapshot():
 
 
 def derive_holdings():
-    """[D-13] 持仓来源优先级：券商快照 > 手工交易流
+    """[D-13/D-73] 持仓来源优先级：本地全量快照 > 只含标的的清单 > 手工交易流
 
-    为什么快照优先：API 给的是**当前持仓状态**（含 avg_cost / realized_pnl），
-    不是交易流水。按"买入交易"导入会捏造不存在的历史，且重复导入会重复计。
+    分级敏感度：
+      positions.json（本地，含数量）→ 给出 shares/avg_cost/last_pnl
+      holdings.json（可公开，仅标的）→ 只标记"持有"，数量相关字段为 None
     """
     snap = load_snapshot()
     if snap and snap["holdings"]:
         return snap["holdings"], [], snap
+    tickers, asof = load_holdings_tickers()
+    if tickers:
+        return {t: {"shares": None, "avg_cost": None, "cost": None, "realized": None,
+                    "last": None, "name": None, "last_pnl": None,
+                    "source": "holdings.json（仅标的）", "snapshot_date": asof}
+                for t in sorted(tickers)}, [], None
     txns = sorted(load(TXNS), key=lambda r: (r["ticker"], r["date"], r.get("logged_at", "")))
     pos = {}
     for t in txns:
@@ -201,7 +223,12 @@ def build_rows():
         # 价格优先级：自取行情 > 券商快照的 last > 成本价（最后兜底）
         if px is None and h and h.get("last"):
             px, px_time = h["last"], h.get("snapshot_date")
-        mv = (h["shares"] * px) if (h and px) else (h["shares"] * h["avg_cost"] if h else None)
+        # [D-73] shares 可能为 None（只有标的清单时）→ 市值不可算，降级为 None
+        mv = None
+        if h and h.get("shares") and px:
+            mv = h["shares"] * px
+        elif h and h.get("shares") and h.get("avg_cost"):
+            mv = h["shares"] * h["avg_cost"]
         rows.append({"ticker": t, "hold": h, "analysis": a, "price": px,
                      "price_time": px_time, "market_value": mv})
     return rows, load_portf(), snap
@@ -375,9 +402,22 @@ def cmd_sync(a):
                                    "realized_pnl", "quote_date")})
     with open(SNAPSHOT, "w", encoding="utf-8") as f:
         json.dump(snap, f, ensure_ascii=False, indent=1)
-    print("✓ 已保存持仓快照 → %s（%d 条）"
-          % (os.path.relpath(SNAPSHOT, ROOT), len(snap["positions"])))
-    print("  注：快照是**当前状态**，会覆盖上一次快照；交易流水（transactions.jsonl）不受影响")
+    # [D-73] 默认**只写标的**（可公开）；--full 才写含数量的本地快照
+    tickers = sorted({str(p_.get("code", "")).split(".")[-1].upper()
+                      for p_ in rows if isinstance(p_, dict) and p_.get("qty")})
+    hj = {"_note": "只保存【标的】，不保存数量/成本/盈亏（可公开的最小信息集）",
+          "as_of": snap.get("quote_date"), "source": "broker-api", "tickers": tickers}
+    with open(HOLDINGS, "w", encoding="utf-8") as f:
+        json.dump(hj, f, ensure_ascii=False, indent=1)
+    print("✓ 已保存持仓标的 → %s（%d 个，不含数量）"
+          % (os.path.relpath(HOLDINGS, ROOT), len(tickers)))
+    if a.full:
+        with open(SNAPSHOT, "w", encoding="utf-8") as f:
+            json.dump(snap, f, ensure_ascii=False, indent=1)
+        print("  含数量的本地快照 → %s（⚠️ 已 gitignore，勿入库）"
+              % os.path.relpath(SNAPSHOT, ROOT))
+    else:
+        print("  未写入含数量的快照（如需仓位%%/盈亏，加 --full）")
     return 0
 
 
@@ -386,6 +426,20 @@ def cmd_holdings(a):
     holds = [(r, ) for r in rows if r["hold"]]
     if not holds:
         print("（还没有持仓记录。用 `buy` 记录买入）")
+        return 0
+    if any(h.get("shares") is None for _r, h in [(r, r["hold"]) for r in rows] if h):
+        print("持仓（仅标的 —— 本地无含数量的快照，故不显示仓位/盈亏）")
+        print("%-6s %-10s %s" % ("TICKER", "分析动作", "说明"))
+        print("-" * 62)
+        for r in rows:
+            if r["hold"]:
+                an = r["analysis"] or {}
+                od = an.get("odds")
+                print("%-6s %-10s %s" % (r["ticker"], an.get("action", "—"),
+                                         ("赔率 %.2f" % od) if od is not None else "无赔率（规则级或无效）"))
+        print("-" * 62)
+        print("共 %d 个持仓标的。要看仓位%%/盈亏：`sync --full` 拉取含数量的本地快照。"
+              % sum(1 for r in rows if r["hold"]))
         return 0
     print("持仓（按市值降序）")
     print("%-6s %10s %10s %10s %12s %10s %12s %s" %
@@ -432,7 +486,10 @@ def cmd_board(a):
     tot_mv = sum(r["market_value"] or 0 for r in rows)
     total = tot_mv + cash
 
-    print("🛰️ 组合雷达（Radar Board）　%s" % dt.date.today().isoformat())
+    granular = any(r["hold"] and r["hold"].get("shares") for r in rows)
+    print("🛰️ 组合雷达（Radar Board）　%s%s" % (
+        dt.date.today().isoformat(),
+        "" if granular else "　（仅标的视图 —— 本地无含数量的快照）"))
     print("═" * 104)
     print("%-6s %6s %6s %9s %7s %9s %9s %7s %-9s %s" %
           ("TICKER", "基本面", "赔率", "现价", "仓位", "市值", "未实现", "盈亏%",
@@ -445,7 +502,7 @@ def cmd_board(a):
 
     for r in sorted(rows, key=sortkey):
         t, h, an = r["ticker"], r["hold"], r["analysis"]
-        wpct = (r["market_value"] / total * 100) if (r["market_value"] and total) else 0.0
+        wpct = (r["market_value"] / total * 100) if (r["market_value"] and total) else None
         un = (h.get("last_pnl") if (h and h.get("last_pnl") is not None)
               else ((r["market_value"] - h["cost"]) if (h and r["market_value"]) else None))
         mark, why = _verdict(h, an)
@@ -456,20 +513,24 @@ def cmd_board(a):
             ("%.1f" % an["fundamental_score"]) if an and an.get("fundamental_score") is not None else "—",
             ("%.2f" % an["odds"]) if an and an.get("odds") is not None else "—",
             ("%.2f" % r["price"]) if r["price"] else "—",
-            ("%.1f%%" % wpct) if h else "—",
+            (("%.1f%%" % wpct) if wpct is not None else "—") if h else "—",
             fmt(r["market_value"]) if h else "—",
             fmt(un) if un is not None else "—",
             ("%+.1f%%" % pnlpct) if pnlpct is not None else "—",
             (an or {}).get("action", "—"),
             mark, why))
     print("─" * 104)
-    print("股票市值 %s　｜　现金 %s　｜　组合总值 %s　｜　股票仓位 %.1f%%　｜　现金 %.1f%%"
-          % (fmt(tot_mv), fmt(cash), fmt(total),
-             (tot_mv / total * 100) if total else 0, (cash / total * 100) if total else 0))
+    if not granular:
+        print("共 %d 个持仓标的。数量/仓位/盈亏不可用 —— 本地无 positions.json（已 gitignore）。"
+              % sum(1 for r in rows if r["hold"]))
+    else:
+        print("股票市值 %s　｜　现金 %s　｜　组合总值 %s　｜　股票仓位 %.1f%%　｜　现金 %.1f%%"
+              % (fmt(tot_mv), fmt(cash), fmt(total),
+                 (tot_mv / total * 100) if total else 0, (cash / total * 100) if total else 0))
     # 集中度（不依赖任何主题映射，纯客观）
     held = sorted([r for r in rows if r["hold"] and r["market_value"]],
                   key=lambda r: -r["market_value"])
-    if held and tot_mv:
+    if held and tot_mv and all(r["market_value"] for r in held):
         w = [r["market_value"] / tot_mv for r in held]
         hhi = sum(x * x for x in w)
         print("")
@@ -566,6 +627,8 @@ def main():
     q.add_argument("--dry-run", dest="dry_run", action="store_true",
                    help="只看字段，不写入交易流")
     q.add_argument("--as-of", dest="as_of", default=None, help="快照日期")
+    q.add_argument("--full", action="store_true",
+                   help="[D-73] 同时写含数量/成本的本地快照（⚠️ 已 gitignore，勿公开）")
     q.set_defaults(func=cmd_sync)
 
     q = sub.add_parser("holdings", help="当前持仓")

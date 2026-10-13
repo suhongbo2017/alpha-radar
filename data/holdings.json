@@ -1,0 +1,23 @@
+{
+ "_note": "只保存【标的】，不保存数量/成本/盈亏。这是可公开的最小信息集 —— 用于在组合雷达上判断“持有/未持有”与“持仓 vs 分析结论是否冲突”。",
+ "as_of": "2026-10-09",
+ "source": "futu-api",
+ "tickers": [
+  "APH",
+  "ASX",
+  "GOOGL",
+  "ITRI",
+  "KTOS",
+  "MSFT",
+  "NFLX",
+  "NVDA",
+  "NVTS",
+  "OKLO",
+  "ORCL",
+  "QCOM",
+  "RKLB",
+  "SKHY",
+  "SPCX",
+  "UMC"
+ ]
+}

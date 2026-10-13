@@ -9,8 +9,11 @@
 1. **只读**。站点不提供任何写操作 —— 写操作必须走 alpha_portfolio.py / alpha_ledger.py，
    因为那些命令带 append-only、自动 git 固化、单位/版本校验三层纪律。
    一个"方便"的界面能把这些纪律打穿。
-2. **默认不含持仓**。`data/positions.json` 默认**不读**。
-   用 `--include-holdings` 才包含，且会在页面上打红标 —— 因为仓库是公开的。
+2. **持仓分两级敏感度**（[D-73]）：
+   `data/holdings.json` —— **只含标的**，可入库可公开，站点**默认读它**，
+   用来判断"持有/未持有"与"持仓 vs 分析结论是否冲突"。
+   `data/positions.json` —— 含数量/成本/盈亏，**仅本地**（gitignored），
+   需 `--include-holdings` 才读，且页面会打红标。
 3. **不生成"分析"**。站点只呈现已经写好的档案，不调用 alpha_scenario.py 产生新的"报告"。
    规则级结果会明确标注等级，不与研究级混淆。
 4. 零外部依赖（不引 CDN）—— 本机网络受限，且离线可用更重要。
@@ -42,7 +45,9 @@ DATA = os.path.join(ROOT, "data")
 ANALYSIS = os.path.join(ROOT, "analysis")
 
 # 公开站点绝不出现的字符串（构建后断言）
-FORBIDDEN = ["positions.json", "market_value", "cost_basis", "unrealized_pnl"]
+# [D-73] 公开站点绝不出现的字段（数量类一律禁止）
+FORBIDDEN = ["positions.json", "market_value", "cost_basis", "unrealized_pnl",
+             "realized_pnl", "avg_cost", '"qty"', "shares"]
 
 RULE_MARK = "Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。"
 
@@ -340,8 +345,11 @@ def build_board(analyses, prices, holds):
         h = holds.get(t) if holds else None
         rows.append({"t": t, "an": an, "h": h})
     head = ["Ticker", "基本面", "赔率", "现价", "分析动作", "档案"]
+    granular = bool(holds) and any(v.get("weight_pct") is not None for v in holds.values())
     if holds:
-        head = ["Ticker", "基本面", "赔率", "现价", "仓位%", "盈亏%", "分析动作", "一致性", "档案"]
+        head = (["Ticker", "基本面", "赔率", "现价", "仓位%", "盈亏%", "分析动作", "一致性", "档案"]
+                if granular else
+                ["Ticker", "基本面", "赔率", "现价", "是否持有", "分析动作", "一致性", "档案"])
     numeric_headers = {"基本面", "赔率", "现价", "仓位%", "盈亏%"}
     h = ['<table><thead><tr>']
     for c in head:
@@ -358,14 +366,17 @@ def build_board(analyses, prices, holds):
         h.append("<tr><td><b>%s</b></td>" % t)
         h.append('<td class="num">%s</td><td class="num">%s</td><td class="num">%s</td>' % (g, od, px))
         if holds:
-            if r["h"]:
-                wp = r["h"].get("weight_pct")
-                pnl = r["h"].get("pnl_pct")
-                h.append('<td class="num">%s</td><td class="num">%s</td>' % (
-                    ("%.1f%%" % wp) if wp is not None else "—",
-                    ("%+.1f%%" % pnl) if pnl is not None else "—"))
+            if granular:
+                if r["h"]:
+                    wp = r["h"].get("weight_pct")
+                    pnl = r["h"].get("pnl_pct")
+                    h.append('<td class="num">%s</td><td class="num">%s</td>' % (
+                        ("%.1f%%" % wp) if wp is not None else "—",
+                        ("%+.1f%%" % pnl) if pnl is not None else "—"))
+                else:
+                    h.append('<td class="num">—</td><td class="num">—</td>')
             else:
-                h.append('<td class="num">—</td><td class="num">—</td>')
+                h.append('<td>%s</td>' % ('<span class="pill">持有</span>' if r["h"] else "—"))
         h.append('<td><span class="pill %s">%s</span></td>' % (cls, act))
         if holds:
             conflict = r["h"] and an.get("odds") is not None and an["odds"] < 1 and act in ("Watch", "Trim", "Exit")
@@ -436,13 +447,22 @@ def main():
     analyses = latest_by(load_jsonl(os.path.join(DATA, "analyses.jsonl")))
 
     # ── 持仓：默认不读
-    holds = None
+    # [D-73] 默认读【只含标的】的清单（可公开）；--include-holdings 才读含数量的本地快照
+    holds = {}
+    hj = os.path.join(DATA, "holdings.json")
+    if os.path.exists(hj):
+        try:
+            _h = json.load(open(hj, encoding="utf-8"))
+            holds = {str(t).upper(): {"weight_pct": None, "pnl_pct": None}
+                     for t in _h.get("tickers", [])}
+        except Exception:
+            holds = {}
     if a.include_holdings:
         pf = os.path.join(DATA, "positions.json")
         if os.path.exists(pf):
             raw = json.load(open(pf, encoding="utf-8"))
             tot = sum(p["qty"] * (p.get("last") or 0) for p in raw["positions"] if p.get("qty"))
-            holds = {}
+            holds = dict(holds)      # 保留只含标的的成员集
             for p in raw["positions"]:
                 if not p.get("qty"):
                     continue
@@ -609,12 +629,15 @@ function showDocList(){
 </script>
 </body></html>""" % (
         CSS, dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        ('<span class="pill bad">🔴 含持仓数据 — 请勿公开部署</span>' if holds
-         else '<span class="pill ok">不含持仓数据 · 可公开</span>'),
+        ('<span class="pill bad">🔴 含持仓数量 — 请勿公开部署</span>'
+         if (holds and any(v.get("weight_pct") is not None for v in holds.values()))
+         else ('<span class="pill ok">仅含持仓标的 · 不含数量 · 可公开</span>' if holds
+               else '<span class="pill ok">不含持仓数据 · 可公开</span>')),
         len(docs), len(preds), len(decs),
-        ('<div class="warnband">🔴 <b>本页含真实持仓数据</b>（仓位% / 盈亏%）。'
+        ('<div class="warnband">🔴 <b>本页含持仓数量</b>（仓位% / 盈亏%）。'
          '仓库是<b>公开</b>的 —— <b>不要部署到公网</b>。'
-         '要生成可公开版本，去掉 <code>--include-holdings</code> 重新构建。</div>' if holds else ''),
+         '要生成可公开版本，去掉 <code>--include-holdings</code> 重新构建。</div>'
+         if (holds and any(v.get("weight_pct") is not None for v in holds.values())) else ''),
         len(docs), n_doc["报告级"], n_doc["研究级"], n_doc["规则级"],
         len(odds_ok), len(preds),
         build_board(analyses, None, holds),
@@ -626,7 +649,7 @@ function showDocList(){
 
     # ── 安全断言
     if not a.include_holdings:
-        for bad in ("market_value", "cost_basis", "unrealized_pnl", "avg_cost"):
+        for bad in ("market_value", "cost_basis", "unrealized_pnl", "avg_cost", "shares"):
             if bad in htmlout:
                 print("✗ 构建中止：输出中含持仓字段 '%s'" % bad)
                 return 1
@@ -642,7 +665,13 @@ function showDocList(){
     print("✓ %s（%.0f KB）" % (_rel, kb))
     print("  档案 %d（报告级 %d / 研究级 %d / 规则级 %d）｜预测 %d ｜决策 %d"
           % (len(docs), n_doc["报告级"], n_doc["研究级"], n_doc["规则级"], len(preds), len(decs)))
-    print("  持仓数据：%s" % ("🔴 已包含（勿公开）" if holds else "✓ 未包含（可公开）"))
+    _gran = bool(holds) and any(v.get("weight_pct") is not None for v in holds.values())
+    if _gran:
+        print("  持仓数据：🔴 含数量（勿公开）")
+    elif holds:
+        print("  持仓数据：✓ 仅含标的 %d 个（不含数量，可公开）" % len(holds))
+    else:
+        print("  持仓数据：✓ 未包含（可公开）")
     return 0
 
 

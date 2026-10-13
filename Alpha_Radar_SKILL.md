@@ -103,6 +103,11 @@ py scripts/alpha_metrics.py APH --years 8
 py scripts/alpha_metrics.py APH --json
 py scripts/alpha_metrics.py APH --score-inputs   # 直接输出 alpha_score.py 的定量参数
 
+# [D-75] 站点构建的【唯一入口】—— 本地与 CI 共用同一条路径
+py scripts/pages_build.py                  # 构建 + 安全断言
+py scripts/pages_build.py --with-gates     # 再跑全部 8 道门禁（CI 用这个）
+py scripts/pages_build.py --strict         # 任一失败即非零退出
+
 # [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
 py scripts/build_site.py                     # 默认：不含持仓（可公开）
 py scripts/build_site.py --include-holdings  # 🔴 含持仓，不要公开
@@ -137,7 +142,7 @@ py scripts/alpha_portfolio.py analysis --ticker APH --score 84.6 --odds 0.92 --a
 
 | 子命令 | 关键选项 |
 |---|---|
-| `sync` | `--url` `--user` `--password` `--proxy` `--dry-run` `--as-of` |
+| `sync` | `--url` `--user` `--password` `--proxy` `--dry-run` `--as-of` `--full` |
 | `analysis` | `--ticker` `--score` `--lifecycle` `--moat` `--roic` `--wacc` `--net-debt-ebitda` `--odds` `--weighted` `--bear` `--action` `--price` `--valuation-pct` `--dossier` `--date` |
 | `buy` / `sell` | `--ticker` `--shares` `--price` `--date` `--fee` `--currency` `--note` |
 | `cash` | `--amount` |
@@ -600,6 +605,24 @@ g_bear = min(TTM Revenue YoY × 0.1, 0)
 > 但反过来也成立：**研究级把结论押在一致预期上，而一致预期可能系统性偏高。**
 > 所以研究级档案必须写明"对一致预期的折扣假设"，并把它列为最大单点风险。
 
+### 5.4c2 [D-73] 持仓的分级敏感度（两级）
+
+| 文件 | 内容 | 是否入库 | 用途 |
+|---|---|---|---|
+| **`data/holdings.json`** | **只含标的**（tickers） | ✅ 可公开 | 判断"持有/未持有"与"持仓 vs 分析结论是否冲突" |
+| `data/positions.json` | 含数量/成本/盈亏 | ❌ gitignore（仅本地） | 仓位% / 盈亏% |
+
+```bash
+py scripts/alpha_portfolio.py sync         # 默认**只写标的**（可公开）
+py scripts/alpha_portfolio.py sync --full  # 额外写含数量的本地快照（⚠️ 勿公开）
+```
+
+> **设计要点**：公开站点**能显示冲突标记，但不显示数量**。
+> 实测公开版：16 个「持有」标记 + 3 个「🔴 冲突」标记，**数量类字段 0 处**。
+>
+> **更根本的原则**：安全的保障是"**敏感数据根本不进仓库**"，而不是"构建时过滤掉"。
+> `positions.json` 从未入库，所以 CI 根本读不到数量 —— 这比任何过滤都可靠。
+
 ### 5.4d 静态站点 —— 只读呈现（[D-70]）
 
 产出 `site/index.html`：**单文件、零外部依赖、可离线打开、可直接上 GitHub Pages**。
@@ -623,8 +646,24 @@ g_bear = min(TTM Revenue YoY × 0.1, 0)
 3. **默认不含持仓**。`data/positions.json` 默认**不读**；`--include-holdings` 才包含，
    且页面顶部会打红标。构建时还有一道断言：公开版若含持仓字段则**中止构建**。
 
-> **由 [G8] 门禁守护**：每次跑门禁都会重新构建站点并断言"无持仓/敏感字段"。
+> **由 [G8] 门禁守护**：每次跑门禁都会重新构建站点并断言"无数量类字段"。
 > 仓库是公开的 —— 这条门禁防的是"不小心把账户明细推到 Pages 上"。
+
+### 5.4e 部署 —— 本地与 CI 共用同一条路径（[D-75]）
+
+```bash
+py scripts/pages_build.py --with-gates --strict   # ← CI 用的就是这条命令
+```
+
+`.github/workflows/pages.yml` 只做两件事：**调用上面这条命令** + **上传产物**。
+
+> **为什么这样设计**：如果 CI 与本地跑的是**不同的命令序列**，
+> 那么"本地通过"推不出"CI 通过"，验证就**被迫依赖 Actions**，反馈回路变长。
+> 收敛成同一个入口后：**本地跑通 ⟺ CI 跑通**（CI 只多一步上传）。
+> 实测价值：第一次跑本地就抓到 G5 文档漂移 —— **push 之前就修掉了**。
+
+**产物不入库**：`site/` 已 gitignore，由 CI 构建。本地看预览：
+`py scripts/build_site.py` 后用浏览器打开 `site/index.html`。
 
 ### 5.5 组合层 —— Radar Board（[D-13]）
 
@@ -1174,7 +1213,12 @@ D:/pi/select_stock/
 │   ├── alpha_metrics.py              # 一手指标计算（TTM/Margin/FCF/ROIC）
 │   ├── alpha_quote.py                # [D-29] 行情快照（yfinance 备选源）
 │   ├── verify_data.py                # [G7] 四层数据校验（含外部交叉）
-│   ├── alpha_portfolio.py            # [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
+│   ├── alpha_portfolio.py            # [D-75] 站点构建的【唯一入口】—— 本地与 CI 共用同一条路径
+py scripts/pages_build.py                  # 构建 + 安全断言
+py scripts/pages_build.py --with-gates     # 再跑全部 8 道门禁（CI 用这个）
+py scripts/pages_build.py --strict         # 任一失败即非零退出
+
+# [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
 py scripts/build_site.py                     # 默认：不含持仓（可公开）
 py scripts/build_site.py --include-holdings  # 🔴 含持仓，不要公开
 py scripts/build_site.py --with-gates        # 同时嵌入最近一次门禁结果

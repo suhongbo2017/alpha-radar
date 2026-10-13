@@ -51,7 +51,7 @@ def main():
     ap.add_argument("ticker")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
-    o = subprocess.run(["py", "scripts/alpha_metrics.py", a.ticker, "--json"],
+    o = subprocess.run([sys.executable, "scripts/alpha_metrics.py", a.ticker, "--json"],
                        capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
     if "{" not in o:
         print("✗ 无法取得 %s 的指标" % a.ticker)

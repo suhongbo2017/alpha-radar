@@ -23,3 +23,6 @@ data/positions_raw.json
 
 # ── 个人持仓数据（⚠️ 公开仓库不得包含）──────────────────
 data/positions.json
+
+# ── 生成物：站点由 pages_build.py / CI 构建，不入库（D-75）──
+site/

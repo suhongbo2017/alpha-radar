@@ -1,0 +1,49 @@
+name: Build and Deploy Alpha Radar site
+
+# [D-75] CI 只做两件事：**调用与本地相同的构建脚本** + **上传产物**。
+# 所有验证逻辑都在 scripts/pages_build.py 里 —— 本地跑它通过，CI 必通过，
+# 因此本地预览不需要 push 后去 Actions 检查。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 与本地完全相同的命令（--with-gates 会跑全部 8 道门禁）
+      - name: Build + verify（与本地同一脚本）
+        run: python3 scripts/pages_build.py --with-gates --strict
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
