@@ -60,7 +60,7 @@ footer{color:var(--mut);font-size:12px;padding:20px clamp(18px,4vw,56px);border-
 </style></head><body>
 <header>
 <div class="brandrow"><div><div class="brandmark"><span class="mark">α</span><h1>Alpha Radar</h1></div>
-<div class="sub">多维投资研究与决策系统　·　生成于 2026-10-13 00:07</div></div>
+<div class="sub">多维投资研究与决策系统　·　生成于 2026-10-13 09:09</div></div>
 <div class="header-status"><span class="pill ok">不含持仓数据 · 可公开</span></div></div>
 <nav aria-label="主要导航">
 <button data-t="board" onclick="tab('board')">总览</button>
@@ -2449,9 +2449,9 @@ CapEx 强度：为 AI 基建大举投入</code></pre>
 <div class="tw"><table><thead><tr><th>级别</th><th>含义</th></tr></thead><tbody><tr><td><strong>S1</strong></td><td>会让系统输出<strong>错误结论</strong>（不是报错，而是悄悄给你错答案）</td></tr><tr><td><strong>S2</strong></td><td>功能缺失，导致闭环断掉或关键问题无法回答</td></tr><tr><td><strong>S3</strong></td><td>设计与流程缺陷，降低可复现性/可扩展性</td></tr><tr><td><strong>S4</strong></td><td>卫生问题（死参数、文档漂移、误导性描述）</td></tr></tbody></table></div>
 <hr>
 <h1>一、总账</h1>
-<div class="tw"><table><thead><tr><th>ID</th><th>严重度</th><th>缺陷</th><th>状态</th></tr></thead><tbody><tr><td>D-01</td><td>S1</td><td>三情景事后择优，制造"预测很准"的假象</td><td>✅ 已修复</td></tr><tr><td>D-02</td><td>S1</td><td>预测修订后 v1/v2 混算</td><td>✅ 已修复</td></tr><tr><td>D-03</td><td>S1</td><td>单位/币种不校验，产生假误差</td><td>✅ 已修复</td></tr><tr><td>D-04</td><td>S1</td><td>指标名静默失配</td><td>✅ 已修复</td></tr><tr><td>D-05</td><td>S2</td><td>Decision Database 完全缺失</td><td>✅ 已修复</td></tr><tr><td>D-06</td><td>S2</td><td>无 due 复盘提醒</td><td>✅ 已修复</td></tr><tr><td>D-07</td><td>S2</td><td>FairValue 被计入预测能力评分</td><td>✅ 已修复</td></tr><tr><td>D-08</td><td>S2</td><td>probability 只写不读</td><td>✅ 已修复</td></tr><tr><td>D-09</td><td>S2</td><td>误差归因未入库，无法聚合</td><td>✅ 已修复</td></tr><tr><td>D-10</td><td>S3</td><td>Fundamental Score 不可复现</td><td>✅ 已修复</td></tr><tr><td>D-11</td><td>S3</td><td>仓位阶梯与赔率脱钩</td><td>✅ 已修复</td></tr><tr><td>D-12</td><td>S3</td><td>无快速筛查档（Lite）</td><td>✅ 已修复</td></tr><tr><td>D-13</td><td>S3</td><td>无组合横向视图</td><td>⬜ 未修复</td></tr><tr><td>D-14</td><td>S3</td><td>无数据获取自动化</td><td>✅ 已修复</td></tr><tr><td>D-15</td><td>S4</td><td>港股/A股为空头承诺</td><td>✅ 已修复</td></tr><tr><td>D-16</td><td>S4</td><td>skill 副本会漂移</td><td>✅ 已修复</td></tr><tr><td>D-17</td><td>S2</td><td>重复录入无检测</td><td>✅ 已修复</td></tr><tr><td>D-18</td><td>S1</td><td>append-only 无任何技术保障（无版本控制）</td><td>⛔ 待批准</td></tr><tr><td>D-19</td><td>S1</td><td><code>norm_unit_checked</code> 未定义，全线崩溃</td><td>✅ 已修复</td></tr><tr><td>D-20</td><td>S2</td><td>报告自相矛盾（口径 vs 实际行为）</td><td>✅ 已修复</td></tr><tr><td>D-21</td><td>S4</td><td><code>predict --force</code> 死参数</td><td>✅ 已修复</td></tr><tr><td>D-22</td><td>S4</td><td><code>CURRENCIES</code> 声明未使用</td><td>✅ 已修复</td></tr><tr><td>D-23</td><td>S1</td><td>斜杠别名写了但匹配不上</td><td>✅ 已修复</td></tr><tr><td>D-24</td><td>S4</td><td>单位不一致的行被算进"待公布"</td><td>✅ 已修复</td></tr><tr><td>D-25</td><td>S1</td><td>测试 T4 是假测试（恒绿）</td><td>✅ 已修复</td></tr><tr><td>D-26</td><td>S1</td><td>Herdr 新 tab 是 PowerShell，门禁全线挂死</td><td>✅ 已修复</td></tr><tr><td>D-27</td><td>S2</td><td>编排器无 canary，错误配置以超时形式浪费数分钟</td><td>✅ 已修复</td></tr><tr><td>D-28</td><td>S4</td><td><code>herdr_ci.sh</code> 自身非跨 shell</td><td>🔧 本轮修复</td></tr><tr><td>D-29</td><td>S2</td><td><code>stock-analysis</code> 依赖 yfinance 已 429 限流</td><td>⬜ 未修复</td></tr><tr><td>D-30</td><td>S2</td><td>决策回报年化未加护栏，1 天回报年化成天文数字</td><td>✅ 已修复</td></tr><tr><td>D-31</td><td>S1</td><td>attribution 追记使 report 直接崩溃</td><td>✅ 已修复</td></tr><tr><td>D-32</td><td>S2</td><td><code>autocommit</code> 的 <code>.strip()</code> 绑定错误，写入后崩</td><td>✅ 已修复</td></tr><tr><td>D-33</td><td>S2</td><td>实际值无重复检测，留下重复行</td><td>✅ 已修复</td></tr><tr><td>D-34</td><td><strong>S1</strong></td><td><code>alpha_metrics</code> 用下标索引平行数组，年份错位</td><td>✅ 已修复</td></tr><tr><td>D-35</td><td><strong>S1</strong></td><td>YTD 取"最后一条"而非"最长时长"，TTM 偏小</td><td>✅ 已修复</td></tr><tr><td>D-36</td><td>S3</td><td>Moat 十类平均会拖低分数（不适用项计 0）</td><td>🔧 已记口径</td></tr><tr><td>D-37</td><td>S2</td><td>3 年与 5 年情景的隐含 CAGR 不自洽</td><td>⬜ 未修复</td></tr><tr><td>D-38</td><td>S2</td><td>跳日期比对产生假警报（SEC Q2 vs Yahoo FY）</td><td>✅ 已修复</td></tr><tr><td>D-39</td><td><strong>S1</strong></td><td>内部"双路交叉"共享原语，无法捕获目标 bug</td><td>✅ 已修复</td></tr><tr><td>D-40</td><td>S2</td><td>校验器内嵌"公司一定在增长"假设 → 假警报</td><td>✅ 已修复</td></tr><tr><td>D-41</td><td><strong>S1</strong></td><td>又犯 D-34：年份标签与数值来自不同 key</td><td>✅ 已修复</td></tr><tr><td>D-42</td><td><strong>S1</strong></td><td><code>latest()</code> 取第一个 tag 的最后日期 → 净债务混日期</td><td>✅ 已修复</td></tr><tr><td>D-43</td><td><strong>S2</strong></td><td>赔率定义不统一，跨公司比较失效</td><td>✅ 已修复</td></tr><tr><td>D-44</td><td>S2</td><td>财年归属按自然年 → 7 月财年公司校验全错</td><td>✅ 已修复</td></tr><tr><td>D-45</td><td>S2</td><td>L1 在无 GrossProfit 时<strong>静默什么都不做</strong></td><td>✅ 已修复</td></tr><tr><td><strong>D-46</strong></td><td><strong>S1</strong></td><td>净债务未扣短期投资 → APH/INTU 两份档案均错</td><td>✅ 已修复</td></tr><tr><td>D-47</td><td><strong>S1</strong></td><td><code>pctdiff() or 99</code> 假值零静默关闭检查</td><td>✅ 已修复</td></tr><tr><td>D-48</td><td>S2</td><td>候选财年末不含未结束财年 → 当年 YTD 被丢弃</td><td>✅ 已修复</td></tr><tr><td>D-49</td><td>S2</td><td>单调性检查对 NI/OCF 不成立 → 大量假警报</td><td>✅ 已修复</td></tr><tr><td>D-50</td><td><strong>S1</strong></td><td>校验器第三次"测引擎没走的路径"</td><td>✅ 已修复</td></tr><tr><td>D-51</td><td>S3</td><td>INTU 不单列 GrossProfit → 毛利率无法由引擎算</td><td>⬜ 已知局限</td></tr><tr><td>D-52</td><td>S2</td><td>Lite 用单一收入阈值，不看质量 → INTU 被误判</td><td>✅ 已修复</td></tr><tr><td><strong>D-53</strong></td><td><strong>S1</strong></td><td>季末=财年末时 TTM 重复计算当年（MSFT CapEx 167.35B vs 真值 115.95B）</td><td>✅ 已修复</td></tr><tr><td><strong>D-54</strong></td><td><strong>S1</strong></td><td>总债务未含融资租赁负债（MSFT $66.59B）</td><td>✅ 已修复</td></tr><tr><td>D-55</td><td>S2</td><td>校验器 <code>instant_map</code> 取第一个 tag → 比对静默退化为"不可比"</td><td>✅ 已修复</td></tr><tr><td><strong>D-56</strong></td><td><strong>S1</strong></td><td>改 <code>ttm()</code> 签名后调用处仍按位传参 → 去年同期 TTM 全错（YoY 恒为 0.0%）</td><td>✅ 已修复</td></tr><tr><td>D-57</td><td>S3</td><td>人工编辑账本遗留占位记录</td><td>✅ 已修复</td></tr></tbody></table></div>
-<p><strong>统计</strong>：S1 缺陷 23 个（<strong>全部已修复</strong>）；S2 23 个；S3 8 个；S4 4 个。</p>
-<blockquote><p> <strong>最值得注意的一点</strong>：S1 级别的 23 个缺陷里，<strong>22 个不会报错</strong>。它们不崩溃、不抛异常，</p>
+<div class="tw"><table><thead><tr><th>ID</th><th>严重度</th><th>缺陷</th><th>状态</th></tr></thead><tbody><tr><td>D-01</td><td>S1</td><td>三情景事后择优，制造"预测很准"的假象</td><td>✅ 已修复</td></tr><tr><td>D-02</td><td>S1</td><td>预测修订后 v1/v2 混算</td><td>✅ 已修复</td></tr><tr><td>D-03</td><td>S1</td><td>单位/币种不校验，产生假误差</td><td>✅ 已修复</td></tr><tr><td>D-04</td><td>S1</td><td>指标名静默失配</td><td>✅ 已修复</td></tr><tr><td>D-05</td><td>S2</td><td>Decision Database 完全缺失</td><td>✅ 已修复</td></tr><tr><td>D-06</td><td>S2</td><td>无 due 复盘提醒</td><td>✅ 已修复</td></tr><tr><td>D-07</td><td>S2</td><td>FairValue 被计入预测能力评分</td><td>✅ 已修复</td></tr><tr><td>D-08</td><td>S2</td><td>probability 只写不读</td><td>✅ 已修复</td></tr><tr><td>D-09</td><td>S2</td><td>误差归因未入库，无法聚合</td><td>✅ 已修复</td></tr><tr><td>D-10</td><td>S3</td><td>Fundamental Score 不可复现</td><td>✅ 已修复</td></tr><tr><td>D-11</td><td>S3</td><td>仓位阶梯与赔率脱钩</td><td>✅ 已修复</td></tr><tr><td>D-12</td><td>S3</td><td>无快速筛查档（Lite）</td><td>✅ 已修复</td></tr><tr><td>D-13</td><td>S3</td><td>无组合横向视图</td><td>⬜ 未修复</td></tr><tr><td>D-14</td><td>S3</td><td>无数据获取自动化</td><td>✅ 已修复</td></tr><tr><td>D-15</td><td>S4</td><td>港股/A股为空头承诺</td><td>✅ 已修复</td></tr><tr><td>D-16</td><td>S4</td><td>skill 副本会漂移</td><td>✅ 已修复</td></tr><tr><td>D-17</td><td>S2</td><td>重复录入无检测</td><td>✅ 已修复</td></tr><tr><td>D-18</td><td>S1</td><td>append-only 无任何技术保障（无版本控制）</td><td>⛔ 待批准</td></tr><tr><td>D-19</td><td>S1</td><td><code>norm_unit_checked</code> 未定义，全线崩溃</td><td>✅ 已修复</td></tr><tr><td>D-20</td><td>S2</td><td>报告自相矛盾（口径 vs 实际行为）</td><td>✅ 已修复</td></tr><tr><td>D-21</td><td>S4</td><td><code>predict --force</code> 死参数</td><td>✅ 已修复</td></tr><tr><td>D-22</td><td>S4</td><td><code>CURRENCIES</code> 声明未使用</td><td>✅ 已修复</td></tr><tr><td>D-23</td><td>S1</td><td>斜杠别名写了但匹配不上</td><td>✅ 已修复</td></tr><tr><td>D-24</td><td>S4</td><td>单位不一致的行被算进"待公布"</td><td>✅ 已修复</td></tr><tr><td>D-25</td><td>S1</td><td>测试 T4 是假测试（恒绿）</td><td>✅ 已修复</td></tr><tr><td>D-26</td><td>S1</td><td>Herdr 新 tab 是 PowerShell，门禁全线挂死</td><td>✅ 已修复</td></tr><tr><td>D-27</td><td>S2</td><td>编排器无 canary，错误配置以超时形式浪费数分钟</td><td>✅ 已修复</td></tr><tr><td>D-28</td><td>S4</td><td><code>herdr_ci.sh</code> 自身非跨 shell</td><td>🔧 本轮修复</td></tr><tr><td>D-29</td><td>S2</td><td><code>stock-analysis</code> 依赖 yfinance 已 429 限流</td><td>⬜ 未修复</td></tr><tr><td>D-30</td><td>S2</td><td>决策回报年化未加护栏，1 天回报年化成天文数字</td><td>✅ 已修复</td></tr><tr><td>D-31</td><td>S1</td><td>attribution 追记使 report 直接崩溃</td><td>✅ 已修复</td></tr><tr><td>D-32</td><td>S2</td><td><code>autocommit</code> 的 <code>.strip()</code> 绑定错误，写入后崩</td><td>✅ 已修复</td></tr><tr><td>D-33</td><td>S2</td><td>实际值无重复检测，留下重复行</td><td>✅ 已修复</td></tr><tr><td>D-34</td><td><strong>S1</strong></td><td><code>alpha_metrics</code> 用下标索引平行数组，年份错位</td><td>✅ 已修复</td></tr><tr><td>D-35</td><td><strong>S1</strong></td><td>YTD 取"最后一条"而非"最长时长"，TTM 偏小</td><td>✅ 已修复</td></tr><tr><td>D-36</td><td>S3</td><td>Moat 十类平均会拖低分数（不适用项计 0）</td><td>🔧 已记口径</td></tr><tr><td>D-37</td><td>S2</td><td>3 年与 5 年情景的隐含 CAGR 不自洽</td><td>⬜ 未修复</td></tr><tr><td>D-38</td><td>S2</td><td>跳日期比对产生假警报（SEC Q2 vs Yahoo FY）</td><td>✅ 已修复</td></tr><tr><td>D-39</td><td><strong>S1</strong></td><td>内部"双路交叉"共享原语，无法捕获目标 bug</td><td>✅ 已修复</td></tr><tr><td>D-40</td><td>S2</td><td>校验器内嵌"公司一定在增长"假设 → 假警报</td><td>✅ 已修复</td></tr><tr><td>D-41</td><td><strong>S1</strong></td><td>又犯 D-34：年份标签与数值来自不同 key</td><td>✅ 已修复</td></tr><tr><td>D-42</td><td><strong>S1</strong></td><td><code>latest()</code> 取第一个 tag 的最后日期 → 净债务混日期</td><td>✅ 已修复</td></tr><tr><td>D-43</td><td><strong>S2</strong></td><td>赔率定义不统一，跨公司比较失效</td><td>✅ 已修复</td></tr><tr><td>D-44</td><td>S2</td><td>财年归属按自然年 → 7 月财年公司校验全错</td><td>✅ 已修复</td></tr><tr><td>D-45</td><td>S2</td><td>L1 在无 GrossProfit 时<strong>静默什么都不做</strong></td><td>✅ 已修复</td></tr><tr><td><strong>D-46</strong></td><td><strong>S1</strong></td><td>净债务未扣短期投资 → APH/INTU 两份档案均错</td><td>✅ 已修复</td></tr><tr><td>D-47</td><td><strong>S1</strong></td><td><code>pctdiff() or 99</code> 假值零静默关闭检查</td><td>✅ 已修复</td></tr><tr><td>D-48</td><td>S2</td><td>候选财年末不含未结束财年 → 当年 YTD 被丢弃</td><td>✅ 已修复</td></tr><tr><td>D-49</td><td>S2</td><td>单调性检查对 NI/OCF 不成立 → 大量假警报</td><td>✅ 已修复</td></tr><tr><td>D-50</td><td><strong>S1</strong></td><td>校验器第三次"测引擎没走的路径"</td><td>✅ 已修复</td></tr><tr><td>D-51</td><td>S3</td><td>INTU 不单列 GrossProfit → 毛利率无法由引擎算</td><td>⬜ 已知局限</td></tr><tr><td>D-52</td><td>S2</td><td>Lite 用单一收入阈值，不看质量 → INTU 被误判</td><td>✅ 已修复</td></tr><tr><td><strong>D-53</strong></td><td><strong>S1</strong></td><td>季末=财年末时 TTM 重复计算当年（MSFT CapEx 167.35B vs 真值 115.95B）</td><td>✅ 已修复</td></tr><tr><td><strong>D-54</strong></td><td><strong>S1</strong></td><td>总债务未含融资租赁负债（MSFT $66.59B）</td><td>✅ 已修复</td></tr><tr><td>D-55</td><td>S2</td><td>校验器 <code>instant_map</code> 取第一个 tag → 比对静默退化为"不可比"</td><td>✅ 已修复</td></tr><tr><td><strong>D-56</strong></td><td><strong>S1</strong></td><td>改 <code>ttm()</code> 签名后调用处仍按位传参 → 去年同期 TTM 全错（YoY 恒为 0.0%）</td><td>✅ 已修复</td></tr><tr><td>D-57</td><td>S3</td><td>人工编辑账本遗留占位记录</td><td>✅ 已修复</td></tr><tr><td>D-58</td><td>S2</td><td>引擎只支持 us-gaap，IFRS 公司（ASX/UMC）取不到数</td><td>✅ 已修复</td></tr><tr><td>D-59</td><td>S2</td><td>第三方用本币、SEC 用 USD 时报 3037% 假错误</td><td>✅ 已修复</td></tr><tr><td>D-60</td><td><strong>S1</strong></td><td>52/53 周财年的"去年同期"精确匹配落空（NVDA/QCOM/KTOS）</td><td>✅ 已修复</td></tr><tr><td>D-61</td><td>S2</td><td>第三方资产负债表口径逐家不同 → 误判为错误</td><td>✅ 已修复</td></tr><tr><td>D-62</td><td>S2</td><td><code>balance_sheet</code> 存在回退路径（违反 D-50 单一路径原则）</td><td>✅ 已修复</td></tr><tr><td>D-63</td><td><strong>S1</strong></td><td><code>series()</code> 只取第一个 tag（NVTS 换 tag 后 2026 数据不可见）</td><td>✅ 已修复</td></tr><tr><td>D-64</td><td><strong>S1</strong></td><td>陈旧 tag 污染（NFLX 的 GrossProfit 停在 2011 年）</td><td>✅ 已修复</td></tr><tr><td>D-65</td><td><strong>S1</strong></td><td><code>q_end</code> 缺最近日期回退 → 去年同期返回 None</td><td>✅ 已修复</td></tr><tr><td>D-66/67</td><td>S3</td><td>规则情景缺规模约束，算出 NVDA 市值 $22T</td><td>✅ 已修复</td></tr><tr><td>D-68</td><td>S2</td><td>无一致预期能力（研究级情景缺锚）</td><td>✅ 已修复</td></tr><tr><td>D-69</td><td><strong>S1</strong></td><td>未侦测一次性项（GOOGL P/E 17.7x 实为 29x）</td><td>✅ 已修复</td></tr><tr><td>D-70</td><td>S3</td><td>blockquote 内未做块级递归渲染</td><td>✅ 已修复</td></tr><tr><td><strong>D-71</strong></td><td><strong>S2</strong></td><td>回归测试用固定临时目录 → <strong>flaky</strong>（残留触发版本冲突）</td><td>✅ 已修复</td></tr><tr><td><strong>D-72</strong></td><td><strong>S2</strong></td><td>G8 就地重建站点 → <strong>弄脏工作区，挡住 git pull</strong></td><td>✅ 已修复</td></tr></tbody></table></div>
+<p><strong>统计</strong>：S1 缺陷 27 个（<strong>全部已修复</strong>）；S2 28 个；S3 10 个；S4 4 个。</p>
+<blockquote><p> <strong>最值得注意的一点</strong>：S1 级别的 27 个缺陷里，<strong>26 个不会报错</strong>。它们不崩溃、不抛异常，</p>
 <p> 只是安静地给你一个错的数字或错的评级。这正是这套系统最危险的地方 ——</p>
 <p> 一个投资决策系统的最坏失败模式不是"跑不起来"，而是"跑得很好但答案是错的"。</p>
 <p> 唯一一个会崩的就是 D-31，而它反而是最好处理的那种。</p></blockquote>
@@ -2915,6 +2915,71 @@ ITRI 的实际情况：
 ---
 
 # 三、S2 缺陷详情（闭环断掉 / 关键问题无法回答）
+
+## D-71 回归测试用固定临时目录 → flaky（S2）
+
+**现象**：G1 间歇性失败，T1/T2/T4/T7/T8 拿到**空输出**（如 `'revenues' -&gt; 实得 ''`）。
+连跑 5 次全过，无法稳定复现 —— 典型的 flaky。
+
+**根因（已实测确认）**：
+`test_ledger.sh` 的 `fresh()` 用**固定路径** `/c/tmp/ar_reg`：
+</code></pre>
+<pre><code>fresh(){ export ALPHA_RADAR_HOME=/c/tmp/ar_reg; rm -rf /c/tmp/ar_reg; mkdir -p /c/tmp/ar_reg; }</code></pre>
+<pre><code>
+Windows 上 `rm -rf` 遇到文件锁（前一次运行残留的 python 进程仍在持有句柄）会**静默失败**，
+而 `mkdir -p` 仍然成功 → **旧预测残留下来** → 同 key 写入被"版本冲突"拒绝 →
+写预测的用例全部拿到空输出。
+
+实测：在有残留的目录里写同 key 预测 →
+</code></pre>
+<pre><code>✗ 版本冲突：同一 (ticker=T, metric=Revenue, period=2027, version=v1, scenario=Base) 已存在数值</code></pre>
+<pre><code>
+**为什么是 S2**：**flaky 的门禁比没有门禁更糟** —— 它会训练人忽略红灯。
+而且它确实咬了一次：我一度以为是自己引入的回归。
+
+**修复**：临时库改为**每次运行唯一**（`/c/tmp/ar_reg_$$`），并**断言目录为空**，
+不清空就直接中止（"否则结果不可信"）；结束时一并清理。
+
+## D-72 G8 就地重建站点 → 弄脏工作区，挡住 git pull（S2）
+
+**现象**：跑完门禁后 `git status` 总有 `M site/index.html`；
+**下一次 `git pull` 直接被拒**：
+</code></pre>
+<pre><code>error: Your local changes to the following files would be overwritten by merge:
+	site/index.html
+Aborting</code></pre>
+<pre><code>
+**根因**：G8 为了"验证站点能构建且不含持仓"，**就地在 `site/index.html` 重建**。
+而页面里嵌了生成时间戳 → **每次构建字节都不同** → 工作区永远脏。
+
+**为什么是 S2**：门禁必须能**随时跑而不产生副作用**。
+一个会改文件的门禁会：① 挡住拉取/切换分支；② 污染 diff；③ 让人不敢跑它。
+
+**修复**：G8 构建到**临时文件**（`tempfile.gettempdir()`），校验完删除。
+已提交的 `site/index.html` 只在显式运行 `build_site.py` 时更新。
+
+**验证**：连跑 3 次 G8，`git status site/` 始终 0 处改动。
+
+---
+
+## D-58 ~ D-70（13 家公司建档时修复，摘要）
+
+| ID | 缺陷 | 实证 |
+|---|---|---|
+| D-58 | 引擎只支持 us-gaap | ASX/UMC 是外国私人发行人（IFRS），0 个 us-gaap tag；且债务 tag 需区分【合计】与【分项】 |
+| D-59 | 币种差异被当成错误 | ASX：SEC 用 **USD**、第三方用 **NT$**，曾报 Δ**3037%**；除以隐含倍数 31.370 后逐项吻合到小数点后四位 |
+| **D-60** | 52/53 周财年同期查表落空 | NVDA(1月)/QCOM(9月)/KTOS(12月底)：季末逐年漂移（2026-07-26 vs 2025-07-27），双路 TTM 全错 |
+| D-61 | 第三方资产负债表口径逐家不同 | MSFT=债务+经营租赁非流动；GOOGL=非流动债务+经营租赁非流动；NFLX=面值；KTOS=债务+融资租赁+经营租赁 → 降级为"参考" |
+| D-62 | `balance_sheet` 有回退路径 | `debt_at` 失败就换另一条路径 = D-50 的教训 |
+| **D-63** | `series()` 只取第一个 tag | NVTS 中途从 `NetIncomeLoss` 换到 `ProfitLoss` → 2026 季度完全不可见 |
+| **D-64** | 陈旧 tag 污染 | NFLX 的 `GrossProfit` 停在 **2011 年** → 毛利率被算成 **3.4%**（真值 49.1%） |
+| **D-65** | `q_end` 缺最近日期回退 | 只有 `prior` 做了回退，`cur` 没做 → 去年同期返回 None |
+| D-66/67 | 规则情景缺规模约束 | 曾算出 NVDA 市值 $5.57T → Bull $22.4T |
+| D-68 | 无一致预期能力 | 需破解 Yahoo crumb 认证；解出后与三份原始报告**一字不差** |
+| **D-69** | 未侦测一次性项 | **GOOGL 的 TTM P/E 17.7x 实为 29x** —— `EquitySecuritiesFvNiGainLoss` 计入净利润 |
+| D-70 | blockquote 内未递归渲染 | APH 档案的 ```bash 代码块与 - 列表以字面文本显示 |
+
+---
 
 ## D-44 财年归属按自然年 → 7 月财年公司校验全错（S2）
 
