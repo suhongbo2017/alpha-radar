@@ -89,10 +89,19 @@ def main():
         ("高对比度开关", 'onclick="hc()"' in h),
         ("设置持久化 localStorage", "localStorage" in h),
         ("浅色次要文字对比度修正", "--mut:#4a5a55" in h),
-        ("正文行宽限制 52ch", "max-width:52ch" in h),
+        ("档案页宽度合理且居中", "#docview{max-width:" in h and "margin:0 auto" in h),
+        ("档案容器不被窄行宽挤压", ".dossier{max-width:none}" in h),
+        ("表格不被强制窄宽", "min-width:520px" in h),
         ("尊重 reduced-motion", "prefers-reduced-motion" in h),
         ("无障碍标注 aria-label", "aria-label" in h),
     ]
+    # [D-77] 正文里不得有内联固定字号 —— 它会绕开 --fs，使部分文字不跟随用户的字号设置
+    body = h[h.find("</head>"):]
+    inline_fs = re.findall(r'style="[^"]*font-size:\s*[0-9.]+px', body)
+    a11y.append(("无内联固定字号（不绕开 --fs）", not inline_fs))
+    a11y.append(("档案页容器不被窄行宽挤压",
+                 ".dossier{max-width:none}" in h and "#docview{max-width:" in h))
+
     miss = [n for n, ok_ in a11y if not ok_]
     if miss:
         print("  ✗ 可读性项缺失: %s" % ", ".join(miss))

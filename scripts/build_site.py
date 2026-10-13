@@ -358,9 +358,23 @@ li{margin:.35em 0}
 :root{--mut:#4a5a55}
 @media(prefers-color-scheme:dark){:root{--mut:#b4c6be}}
 
-/* ③ 行宽：正文收窄，表格仍满宽 */
-.dossier{max-width:52ch}
+/* ③ 行宽与排版（[D-77] 修）
+   ─────────────────────────────────────────────────────────────
+   上一版把行宽限制（max-width:52ch ≈ 540px）加到了 **.dossier 容器**上。
+   但容器里还有**表格**（min-width:640px）→ 表格被压到必须横向滚动，
+   整页内容挤成窄窄一条。这是把"限制正文"错加到"容器"的典型错误。
+
+   正确做法：
+     · 把宽度与居中放在**包裹层 #docview** 上（它只包档案，不包其它内容）
+     · 容器要够宽放表格；正文靠容器宽度自然形成合理行宽
+     · 表格不再强制 min-width，避免中等屏幕上被压出横向滚动条
+   ───────────────────────────────────────────────────────────── */
+#docview{max-width:1160px;margin:0 auto}
+.dossier{max-width:none}
+.dossier .tw{max-width:100%;overflow-x:auto}
+table{min-width:520px}
 main{max-width:1680px}
+
 
 /* 表格可读性：斑马纹 + 数字不换行 */
 tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-soft) 60%,var(--surface))}
@@ -385,7 +399,19 @@ html.hc .tw,html.hc .card{border-width:2px}
   color:var(--fg);cursor:pointer;min-width:44px;min-height:44px;padding:0 11px;border-radius:8px;
   font:inherit;font-size:calc(var(--fs)*0.84);font-weight:800;box-shadow:var(--shadow-sm)}
 .a11y button:hover{border-color:var(--acc);color:var(--acc-strong);background:var(--acc-soft)}
-.a11y .lbl{color:var(--mut);font-size:calc(var(--fs)*0.72);font-weight:700;margin-right:3px}
+ .a11y .lbl{color:var(--mut);font-size:calc(var(--fs)*0.72);font-weight:700;margin-right:3px}
+
+/* 原先用内联 font-size 的两处 → 改为类，**随 --fs 缩放**
+   （实测：内联固定 12px/13px 会绕开无障碍层，比周围文字小一大截） */
+.cell-note{color:var(--mut);font-size:calc(var(--fs)*0.82);line-height:1.6}
+.card-conclusion{color:var(--mut);font-size:calc(var(--fs)*0.86);line-height:1.65;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ④ 卡片与 KPI 的栅格在放大字号后要跟着变宽，否则内容被挤 */
+.grid{grid-template-columns:repeat(auto-fill,minmax(400px,1fr))}
+.kpi{grid-template-columns:repeat(6,minmax(155px,1fr))}
+@media(max-width:1100px){.kpi{grid-template-columns:repeat(3,minmax(140px,1fr))}}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* 兜底：可读性下限 —— 对视力不佳者，任何文字都不应低于约 15px。
    用 --fs 调大时下限同步抬高（0.79 × 19px ≈ 15px）。 */
@@ -505,7 +531,7 @@ def build_preds(preds):
     for p in sorted(preds, key=lambda x: (x["ticker"], x["metric"], x["forecast_period"])):
         h.append('<tr><td><b>%s</b></td><td>%s</td><td>%s</td><td>%s</td>'
                  '<td class="num" data-v="%s">%s</td><td>%s</td><td class="num">%s</td>'
-                 '<td>%s</td><td style="color:var(--mut);font-size:12px">%s</td></tr>' % (
+                 '<td>%s</td><td class="cell-note">%s</td></tr>' % (
                      p["ticker"], p["metric"], p["forecast_period"], p["scenario"],
                      p["forecast_value"], n(p["forecast_value"], p.get("unit", "")),
                      p.get("unit", ""),
@@ -521,7 +547,7 @@ def build_decisions(decs):
     for d in sorted(decs, key=lambda x: (x["ticker"], x["decision_date"])):
         h.append('<tr><td><b>%s</b></td><td>%s</td><td><span class="pill">%s</span></td>'
                  '<td class="num">%.2f</td><td class="num">%s</td>'
-                 '<td style="color:var(--mut);font-size:12.5px">%s</td></tr>' % (
+                 '<td class="cell-note">%s</td></tr>' % (
                      d["ticker"], d["decision_date"], d["action"], d["price"],
                      ("%.2f" % d["odds"]) if d.get("odds") is not None else "—",
                      esc(d.get("reason") or "")))
@@ -598,7 +624,7 @@ def main():
             '<div class="card" data-grade="%s" data-txt="%s %s %s">'
             '<div><b>%s</b><span class="g %s">%s</span></div>'
             '<div class="meta">%s</div>'
-            '<div style="font-size:13px;color:var(--mut);max-height:5.2em;overflow:hidden">%s</div>'
+            '<div class="card-conclusion">%s</div>'
             '<div style="margin-top:9px"><a href="#%s" class="action-link" onclick="tab(\'doc\');showDoc(\'%s\');return false">打开档案 →</a></div>'
             "</div>" % (d["grade"], esc(d["ticker"]), esc(d["title"]), esc(d["conclusion"][:120]),
                         d["ticker"], d["grade"], d["grade"],
