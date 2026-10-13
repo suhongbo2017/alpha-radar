@@ -30,8 +30,13 @@ FORBIDDEN = ["market_value", "cost_basis", "unrealized_pnl", "realized_pnl",
 
 
 def main():
-    r = subprocess.run([sys.executable, "scripts/build_site.py"], cwd=ROOT,
-                       capture_output=True, text=True, encoding="utf-8",
+    # [D-72] 构建到**临时文件**，不要覆盖已提交的 site/index.html。
+    # 旧实现就地重建 → 每次跑门禁都把工作区弄脏 → **会挡住 git pull**（实测发生过）。
+    # 门禁要能随时跑而不产生副作用。
+    import tempfile
+    tmp = os.path.join(tempfile.gettempdir(), "ar_site_gate_%d.html" % os.getpid())
+    r = subprocess.run([sys.executable, "scripts/build_site.py", "--out", tmp],
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
                        errors="replace")
     if r.returncode != 0:
         print("  ✗ 站点构建失败")
@@ -40,14 +45,18 @@ def main():
         print("__GATE_FAIL__ G8")
         return 1
 
-    if not os.path.exists(OUT):
-        print("  ✗ 构建成功但未生成 %s" % OUT)
+    if not os.path.exists(tmp):
+        print("  ✗ 构建成功但未生成产物")
         print("__GATE_FAIL__ G8")
         return 1
 
-    h = open(OUT, encoding="utf-8").read()
+    h = open(tmp, encoding="utf-8").read()
     leaks = [f for f in FORBIDDEN if f in h]
-    kb = os.path.getsize(OUT) / 1024
+    kb = os.path.getsize(tmp) / 1024
+    try:
+        os.remove(tmp)
+    except Exception:
+        pass
     n_doc = h.count('class="dossier"')
 
     if leaks:
@@ -64,7 +73,7 @@ def main():
         if o != c:
             unbalanced.append("%s(%d/%d)" % (tag, o, c))
 
-    print("  ✓ 站点已构建 %.0f KB，含 %d 份档案" % (kb, n_doc))
+    print("  ✓ 站点已构建 %.0f KB，含 %d 份档案（构建到临时文件，不污染工作区）" % (kb, n_doc))
     print("  ✓ 无持仓/敏感字段")
     if unbalanced:
         print("  ⚠️ 标签不平衡: %s" % ", ".join(unbalanced))

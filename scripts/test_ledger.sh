@@ -5,7 +5,21 @@ L="py scripts/alpha_ledger.py"
 pass=0; fail=0
 ok()   { echo "  ✓ $1"; pass=$((pass+1)); }
 ng()   { echo "  ✗ $1"; fail=$((fail+1)); }
-fresh(){ export ALPHA_RADAR_HOME=/c/tmp/ar_reg; rm -rf /c/tmp/ar_reg; mkdir -p /c/tmp/ar_reg; }
+# [D-71] 临时库必须【每次运行唯一】且【断言为空】。
+# 旧实现用固定路径 /c/tmp/ar_reg：Windows 上 rm -rf 遇到文件锁会静默失败，
+# 而 mkdir -p 仍然成功 → 残留的旧预测会触发"版本冲突" → 写预测的用例全部拿到空输出。
+# 实测该残留会让 T1/T2/T4/T7/T8 失败，且是间歇性的（取决于是否有残留进程持锁）。
+# flaky 的门禁比没有门禁更糟 —— 它会训练人忽略红灯。
+RUN_DIR="/c/tmp/ar_reg_$$"
+fresh(){
+  export ALPHA_RADAR_HOME="$RUN_DIR"
+  rm -rf "$RUN_DIR" 2>/dev/null
+  mkdir -p "$RUN_DIR/data"
+  if [ -n "$(ls -A "$RUN_DIR/data" 2>/dev/null)" ]; then
+    echo "  ✗ 临时库未清空（$RUN_DIR/data 有残留）—— 中止，否则结果不可信"
+    exit 1
+  fi
+}
 
 # ---------- T1 P0-1: Base 计分，不得事后择优 ----------
 fresh
@@ -178,7 +192,7 @@ $S lite --revenue-growth 55 --moat-trend up --valuation-pct 97 | grep -q "观察
 $S lite --revenue-growth -5 --moat-trend down --valuation-pct 20 | grep -q "放弃" && ok "T13 [D-12] Lite 双降→放弃" || ng "T13 [D-12] Lite 放弃判定错误"
 $S lite --revenue-growth 18 --moat-trend up --valuation-pct 45 | grep -q "升级到完整" && ok "T13 [D-12] Lite 三满足→升级" || ng "T13 [D-12] Lite 升级判定错误"
 
-unset ALPHA_RADAR_HOME; rm -rf /c/tmp/ar_reg
+unset ALPHA_RADAR_HOME; rm -rf "$RUN_DIR" 2>/dev/null
 echo
 echo "════════════════════════════"
 echo "  通过 $pass / 失败 $fail"
