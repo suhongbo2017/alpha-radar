@@ -481,6 +481,16 @@ html.hc .tw,html.hc .card{border-width:2px}
 .cell-note{color:var(--mut);font-size:calc(var(--fs)*0.82);line-height:1.6}
 .card-conclusion{color:var(--mut);font-size:calc(var(--fs)*0.86);line-height:1.65;
   display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.chart-panel{background:var(--surface);border:1px solid var(--line);padding:12px;overflow:hidden}
+.chart-grid{stroke:var(--line);stroke-width:1}.chart-label{fill:var(--mut);font-size:14px}
+#forecast-chart{display:block;width:100%;min-height:300px}
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px 18px;margin:14px 0;color:var(--mut)}
+.chart-legend span{display:inline-flex;align-items:center;gap:7px}
+.chart-legend i{display:inline-block;width:28px;border-top:3px solid currentColor}
+.chart-legend i.dashed{border-top-style:dashed}
+.chart-legend i.actual{color:var(--acc-strong)}
+.chart-notice{margin-top:14px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 /* ④ 卡片与 KPI 的栅格在放大字号后要跟着变宽，否则内容被挤 */
 .grid{grid-template-columns:repeat(auto-fill,minmax(400px,1fr))}
@@ -531,6 +541,7 @@ window.addEventListener('DOMContentLoaded',function(){
   var h=(location.hash||'').replace('#','');
   tab(document.getElementById('s-'+h)?h:'board');
   ['board','doc','pred'].forEach(filt);
+  initChart();
 });
 """
 
@@ -616,6 +627,58 @@ def build_preds(preds):
     return '<div class="tw">%s</div>' % "".join(h)
 
 
+def build_chart_data(preds, actuals):
+    """Prepare public chart data without holdings or source prose."""
+    groups = {}
+    for row in actuals:
+        if row.get("record_type") not in (None, "actual") or row.get("actual_value") is None:
+            continue
+        ticker = str(row.get("ticker", "")).upper()
+        metric = row.get("metric", "")
+        unit = row.get("unit", "")
+        if not ticker or not metric or not unit:
+            continue
+        key = (ticker, metric, unit)
+        item = groups.setdefault(key, {"ticker": ticker, "metric": metric, "unit": unit,
+                                       "actual": [], "forecast": []})
+        item["actual"].append({"period": str(row.get("period", "")),
+                                "value": row.get("actual_value"),
+                                "date": row.get("actual_date", "")})
+    for row in preds:
+        if row.get("forecast_value") is None:
+            continue
+        ticker = str(row.get("ticker", "")).upper()
+        metric = row.get("metric", "")
+        unit = row.get("unit", "")
+        if not ticker or not metric or not unit:
+            continue
+        key = (ticker, metric, unit)
+        item = groups.setdefault(key, {"ticker": ticker, "metric": metric, "unit": unit,
+                                       "actual": [], "forecast": []})
+        item["forecast"].append({"period": str(row.get("forecast_period", "")),
+                                  "value": row.get("forecast_value"),
+                                  "scenario": row.get("scenario", ""),
+                                  "version": row.get("forecast_version", "v1"),
+                                  "date": row.get("analysis_date", "")})
+    for item in groups.values():
+        actual_latest = {}
+        for row in item["actual"]:
+            key = row["period"]
+            if key not in actual_latest or row.get("date", "") >= actual_latest[key].get("date", ""):
+                actual_latest[key] = row
+        item["actual"] = list(actual_latest.values())
+        forecast_latest = {}
+        for row in item["forecast"]:
+            key = (row["period"], row["scenario"])
+            old = forecast_latest.get(key)
+            version = str(row.get("version", "v1"))
+            old_version = str(old.get("version", "v1")) if old else ""
+            if old is None or (row.get("date", ""), version) >= (old.get("date", ""), old_version):
+                forecast_latest[key] = row
+        item["forecast"] = list(forecast_latest.values())
+    return sorted(groups.values(), key=lambda x: (x["ticker"], x["metric"], x["unit"]))
+
+
 def build_decisions(decs):
     h = ['<table><thead><tr><th>Ticker</th><th>日期</th><th>动作</th>'
          '<th class="num">决策价</th><th class="num">赔率</th><th>理由</th></tr></thead><tbody>']
@@ -639,6 +702,8 @@ def main():
     a = ap.parse_args()
 
     preds = load_jsonl(os.path.join(DATA, "predictions.jsonl"))
+    actuals = load_jsonl(os.path.join(DATA, "actuals.jsonl"))
+    chart_data = build_chart_data(preds, actuals)
     decs = load_jsonl(os.path.join(DATA, "decisions.jsonl"))
     analyses = latest_by(load_jsonl(os.path.join(DATA, "analyses.jsonl")))
 
@@ -732,6 +797,7 @@ def main():
 <button data-t="board" onclick="tab('board')">总览</button>
 <button data-t="doc" onclick="tab('doc')">公司档案 <span class="nav-count">%d</span></button>
 <button data-t="pred" onclick="tab('pred')">预测账本 <span class="nav-count">%d</span></button>
+<button data-t="chart" onclick="tab('chart')">预测曲线</button>
 <button data-t="dec" onclick="tab('dec')">决策记录 <span class="nav-count">%d</span></button>
 <button data-t="defect" onclick="tab('defect')">缺陷登记册</button>
 <button data-t="method" onclick="tab('method')">方法论</button>
@@ -769,6 +835,12 @@ def main():
 <div class="bar"><input id="q-pred" aria-label="搜索预测记录" placeholder="搜索 ticker / 指标…" oninput="filt('pred')">
 <span class="pill" id="c-pred"></span></div>
 %s
+</section>
+<section id="s-chart"><div class="board-intro"><div><div class="eyebrow">Forecast versus actual</div><h2>预测 vs 实际</h2><p>实线表示已经登记的实际值，虚线表示当时记录的 Bull/Base/Bear 预测。只有同一 ticker、指标和单位的数据会放在同一张图中。</p></div></div>
+<div class="bar"><label for="chart-key" class="sr-only">选择曲线</label><select id="chart-key" aria-label="选择预测曲线"></select><span class="pill" id="chart-note"></span></div>
+<div class="chart-panel"><svg id="forecast-chart" role="img" aria-label="预测与实际值曲线图" viewBox="0 0 1000 460"></svg></div>
+<div id="chart-legend" class="chart-legend"></div>
+<div class="notice chart-notice">图表只展示账本中已经写入的数据。缺少实际值不代表预测正确；它只表示尚未录入可验证结果。</div>
 </section>
 <section id="s-dec"><div class="board-intro"><div><div class="eyebrow">Decision history</div><h2>决策记录</h2><p>投资动作以时间顺序留痕，后续观点变化应追加记录。</p></div></div>
 <p class="muted">赔率 &lt;1:1 时不应建仓。决策记录为 append-only。</p>%s</section>
@@ -811,7 +883,8 @@ L4 量纲合理性</pre>
 </main>
 <footer>Alpha Radar · 本页由 <code>py scripts/build_site.py</code> 生成 · 只读快照，不含任何写操作
 %s</footer>
-<script>%s
+<script>var CHART_DATA=%s;
+%s
 /* [D-76] 显示设置：字号 + 高对比度，存 localStorage */
 (function(){
   var FS_DEFAULT=19, FS_MIN=15, FS_MAX=32;
@@ -835,6 +908,28 @@ L4 量纲合理性</pre>
     if(localStorage.getItem('ar_hc')==='1'){document.documentElement.classList.add('hc');}
   }catch(e){}
 })();
+function escChart(s){return String(s??'').replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c];});}
+function drawChart(item){
+  var svg=document.getElementById('forecast-chart'), legend=document.getElementById('chart-legend');
+  if(!svg||!item)return;
+  var actual=item.actual||[], forecast=item.forecast||[], points={}, values=[];
+  actual.forEach(function(x){points[x.period]=true;values.push(Number(x.value));});
+  forecast.forEach(function(x){points[x.period]=true;values.push(Number(x.value));});
+  var periods=Object.keys(points).sort(function(a,b){return String(a).localeCompare(String(b),undefined,{numeric:true});});
+  var W=1000,H=460,L=78,R=28,T=34,B=66, pw=W-L-R,ph=H-T-B;
+  values=values.filter(Number.isFinite); if(!periods.length||!values.length){svg.innerHTML='<text x="500" y="220" text-anchor="middle" fill="currentColor">暂无可绘制数据</text>';legend.innerHTML='';return;}
+  var min=Math.min.apply(null,values),max=Math.max.apply(null,values),span=max-min||Math.abs(max)||1;min-=span*.12;max+=span*.12;
+  var x=function(p){return L+(periods.indexOf(p)/Math.max(1,periods.length-1))*pw;}, y=function(v){return T+(max-v)/(max-min)*ph;};
+  var out=['<title>'+escChart(item.ticker+' '+item.metric+' 预测与实际')+'</title>','<desc>实际值使用实线，预测情景使用虚线。</desc>'];
+  for(var i=0;i<5;i++){var v=min+(max-min)*i/4, yy=y(v);out.push('<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" class="chart-grid"/><text x="'+(L-10)+'" y="'+(yy+5)+'" text-anchor="end" class="chart-label">'+escChart(fmtChart(v,item.unit))+'</text>');}
+  periods.forEach(function(p,i){var xx=x(p);out.push('<text x="'+xx+'" y="'+(H-24)+'" text-anchor="middle" class="chart-label">'+escChart(p)+'</text>');});
+  var colors={Bull:'#b34a37',Base:'#155d82',Bear:'#6c5a9e'};
+  ['Bull','Base','Bear'].forEach(function(sc){var rows=forecast.filter(function(z){return z.scenario===sc;}).sort(function(a,b){return periods.indexOf(a.period)-periods.indexOf(b.period);});if(!rows.length)return;var path=rows.map(function(z,i){return (i?'L':'M')+x(z.period)+' '+y(Number(z.value));}).join(' ');out.push('<path d="'+path+'" fill="none" stroke="'+colors[sc]+'" stroke-width="4" stroke-dasharray="10 8"/>');rows.forEach(function(z){out.push('<circle cx="'+x(z.period)+'" cy="'+y(Number(z.value))+'" r="5" fill="'+colors[sc]+'"/>');});});
+  var ar=actual.slice().sort(function(a,b){return periods.indexOf(a.period)-periods.indexOf(b.period);}), ap=ar.map(function(z,i){return (i?'L':'M')+x(z.period)+' '+y(Number(z.value));}).join(' ');if(ap){out.push('<path d="'+ap+'" fill="none" stroke="var(--acc-strong)" stroke-width="5"/>');ar.forEach(function(z){out.push('<circle cx="'+x(z.period)+'" cy="'+y(Number(z.value))+'" r="6" fill="var(--acc-strong)"/>');});}
+  svg.innerHTML=out.join('');legend.innerHTML='<span><i class="actual"></i>实际值（Actual）</span><span><i class="dashed" style="color:#b34a37"></i>Bull</span><span><i class="dashed" style="color:#155d82"></i>Base</span><span><i class="dashed" style="color:#6c5a9e"></i>Bear</span>';
+}
+function fmtChart(v,u){if(u==='USD'&&Math.abs(v)>=1e9)return (v/1e9).toFixed(1)+'B';if(u==='USD'&&Math.abs(v)>=1e6)return (v/1e6).toFixed(1)+'M';return Number(v).toFixed(2);}
+function initChart(){var sel=document.getElementById('chart-key');if(!sel)return;CHART_DATA.forEach(function(item,i){var o=document.createElement('option');o.value=i;o.textContent=item.ticker+' · '+item.metric+' · '+item.unit;sel.appendChild(o);});var note=document.getElementById('chart-note');function change(){var item=CHART_DATA[Number(sel.value)];if(item){note.textContent=(item.actual||[]).length+' 个实际值 · '+(item.forecast||[]).length+' 个预测值';drawChart(item);}}sel.addEventListener('change',change);change();}
 function showDoc(t){
   tab('doc');
   document.getElementById('docgrid').style.display='none';
@@ -870,6 +965,7 @@ function showDocList(){
         build_preds(preds), build_decisions(decs), defects,
         ("<h2>最近一次门禁</h2><pre>%s</pre>" % esc("\n".join(gates))) if gates else "",
         ("<br>⚠️ 含持仓" if holds else ""),
+        json.dumps(chart_data, ensure_ascii=False).replace("</", "<\\/"),
         JS)
 
     # ── 安全断言
