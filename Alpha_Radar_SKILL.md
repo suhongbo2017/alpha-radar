@@ -127,6 +127,9 @@ py scripts/alpha_scenario.py NVDA --json
 
 # 一键自动数据流程、交叉校验、规则粗筛和人工待办报告
 py scripts/alpha_one.py NVDA
+
+# 本地浏览器工作台（仅监听 127.0.0.1）
+py scripts/alpha_web.py
 # 结果写入 data/runs/；不自动生成研究结论或写正式预测/决策
 # 可选：--force --offline --no-cross --no-report --no-draft
 

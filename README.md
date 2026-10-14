@@ -250,6 +250,16 @@ py scripts/alpha_one.py NVDA --offline     # 不请求行情，只使用缓存
 py scripts/alpha_one.py NVDA --no-cross    # 跳过外部源交叉校验
 py scripts/alpha_one.py NVDA --no-report   # 只保存 JSON，不生成运行 Markdown
 py scripts/alpha_one.py NVDA --no-draft    # 不生成研究草稿
+
+### 浏览器入口（本地工作台）
+
+命令行适合脚本和自动化；日常手动运行可使用本地页面：
+
+```powershell
+py scripts/alpha_web.py
+```
+
+程序会打开 `http://127.0.0.1:8765/`。页面可以输入 ticker、选择强制刷新/离线/交叉校验等选项，启动 `alpha_one.py` 并查看阶段状态。服务只监听本机回环地址，按 `Ctrl+C` 停止；它不会让 GitHub Pages 执行任何命令，也不会自动写入正式预测、估值或组合决策。
 ```
 
 每次运行的 JSON、Markdown 报告和研究草稿保存在 `data/runs/`。自动完成的数据步骤会记录命令、结果和数据缺口；报告还会列出需要人工完成的原文核对、业务/护城河分析、管理层判断、情景假设和估值桥。`*_research_draft.md` 只是待填写交接文档，不会进入 `analysis/`，也不会被当作正式档案。
