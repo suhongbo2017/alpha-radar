@@ -39,11 +39,17 @@ class AlphaOneTests(unittest.TestCase):
                 json_file = next(os.path.join(alpha_one.RUNS, f) for f in files if f.endswith(".json"))
                 with open(json_file, encoding="utf-8") as f:
                     data = json.load(f)
-                md_files = [os.path.join(alpha_one.RUNS, f) for f in files if f.endswith(".md")]
+                md_files = [os.path.join(alpha_one.RUNS, f) for f in files
+                            if f.endswith(".md") and "research_draft" not in f]
                 report = ""
                 if md_files:
                     with open(md_files[0], encoding="utf-8") as f:
                         report = f.read()
+                draft_text = ""
+                if data.get("research_draft"):
+                    with open(data["research_draft"], encoding="utf-8") as f:
+                        draft_text = f.read()
+                data["draft_text"] = draft_text
                 return rc, data, report
             finally:
                 alpha_one.ROOT, alpha_one.RUNS = old_root, old_runs
@@ -56,12 +62,15 @@ class AlphaOneTests(unittest.TestCase):
         self.assertIn("TTM 自由现金流", data["data_gaps"])
         self.assertTrue(data["manual_prompts"])
         self.assertIn("需要人工完成的研究判断", report)
+        self.assertTrue(data["research_draft"].endswith("_research_draft.md"))
+        self.assertIn("不得直接登记正式预测", data["draft_text"])
         self.assertIn("规则情景", report)
         self.assertIn("不得直接照抄规则情景", report)
 
     def test_offline_skips_sec_fetch(self):
-        rc, data, _ = self.invoke(["XYZ", "--offline", "--no-report"])
+        rc, data, _ = self.invoke(["XYZ", "--offline", "--no-report", "--no-draft"])
         self.assertEqual(rc, 0)
+        self.assertIsNone(data["research_draft"])
         self.assertTrue(data["stages"][0]["skipped"])
         self.assertEqual(len(data["stages"]), 5)
 

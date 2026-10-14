@@ -248,10 +248,11 @@ py scripts/alpha_one.py NVDA
 py scripts/alpha_one.py NVDA --force       # 强制刷新 SEC 数据
 py scripts/alpha_one.py NVDA --offline     # 不请求行情，只使用缓存
 py scripts/alpha_one.py NVDA --no-cross    # 跳过外部源交叉校验
-py scripts/alpha_one.py NVDA --no-report   # 只保存 JSON，不生成 Markdown
+py scripts/alpha_one.py NVDA --no-report   # 只保存 JSON，不生成运行 Markdown
+py scripts/alpha_one.py NVDA --no-draft    # 不生成研究草稿
 ```
 
-每次运行的 JSON 和 Markdown 报告保存在 `data/runs/`。自动完成的数据步骤会记录命令、结果和数据缺口；报告还会列出需要人工完成的原文核对、业务/护城河分析、管理层判断、情景假设和估值桥。
+每次运行的 JSON、Markdown 报告和研究草稿保存在 `data/runs/`。自动完成的数据步骤会记录命令、结果和数据缺口；报告还会列出需要人工完成的原文核对、业务/护城河分析、管理层判断、情景假设和估值桥。`*_research_draft.md` 只是待填写交接文档，不会进入 `analysis/`，也不会被当作正式档案。
 
 该命令只做数据自动化和规则粗筛，不会自动创建研究级档案，也不会写入正式预测、Fair Value 或组合决策。规则情景不是投资结论；只有完成研究并通过研究快照资格校验后，才可登记正式预测。
 

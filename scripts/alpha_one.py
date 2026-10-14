@@ -55,6 +55,106 @@ def parse_json_output(output):
     return None
 
 
+def write_research_draft(ticker, run_at, metrics, scenario, path):
+    """Create an explicit, non-qualifying handoff document for human research."""
+    def value(key):
+        item = metrics.get(key)
+        return "" if item is None else str(item)
+
+    text = """# %s（待人工完成）— Alpha Radar 研究草稿
+
+> 这是自动数据流程生成的研究草稿，不是正式 Alpha Radar 档案。
+> 不得直接登记正式预测、Fair Value 或组合决策。
+> 运行时间：%s
+> 数据状态：rule-screened
+> 规则情景：仅作低置信度筛选，不是内在价值。
+
+## 0. 一句话结论
+
+> 待人工研究后填写。
+
+## 1. Business
+
+- Business Model：待填写
+- Revenue Sources：待填写
+- Customers / 集中度：待填写
+- Market / TAM：待填写
+- Competitors：待填写
+
+## 2. Fundamental（自动填充，需核对原文）
+
+| 指标 | 自动值 | 备注 |
+|---|---:|---|
+| TTM 截止日 | %s | 需核对 10-K/10-Q |
+| TTM Revenue | %s | SEC companyfacts |
+| TTM Gross Margin | %s | SEC companyfacts |
+| TTM Operating Margin | %s | SEC companyfacts |
+| TTM FCF | %s | OCF - CapEx |
+| TTM FCF Margin | %s | SEC companyfacts |
+| ROIC | %s | 需核对投入资本和税率 |
+| Net Debt / EBITDA | %s | 需核对现金、短投和租赁 |
+| Shares Outstanding | %s | 需核对稀释口径 |
+| Current Price | %s | 行情快照 |
+
+## 3. Moat and Management
+
+- 护城河证据：待填写
+- 护城河趋势：待填写
+- 管理层资本配置：待填写
+- 股权激励与稀释：待填写
+- 关键反证：待填写
+
+## 4. Forecast
+
+自动规则情景仅作筛选参考，不能直接复制为正式预测。
+
+```json
+%s
+```
+
+- Bull 假设及概率：待填写
+- Base 假设及概率：待填写
+- Bear 假设及概率：待填写
+- 收入、利润、FCF、稀释股数和终值倍数桥接：待填写
+
+## 5. Valuation
+
+- 估值方法：待填写
+- 2027 / 2030 Fair Value：待填写
+- 每股价值推导：待填写
+- Margin of Safety：待填写
+- 失效条件：待填写
+
+## 6. Decision
+
+- Current Action：待填写
+- 价格触发条件：待填写
+- 组合层面影响：待填写
+
+## 7. Evidence Checklist
+
+- [ ] 最近 10-K/10-Q 原文已核对
+- [ ] TTM、FY、币种、债务和租赁口径已记录
+- [ ] 业务、竞争格局和护城河证据已记录
+- [ ] Bull/Base/Bear 概率完整且合计 100%%
+- [ ] 估值桥可从收入追溯到每股价值
+- [ ] 研究报告已保存到 `analysis/%s_AlphaRadar.md`
+- [ ] 已运行 `py scripts/research_snapshot.py generate`
+- [ ] 快照状态为 `verified` 且档案等级为 `research`
+
+## Appendix
+
+- 自动运行报告：`%s`
+- 数据源与限制：待填写
+""" % (ticker, run_at, value("ttm_period"), value("ttm_revenue"),
+       value("gross_margin_pct"), value("op_margin_pct"), value("ttm_fcf"),
+       value("fcf_margin_pct"), value("roic_pct"), value("net_debt_ebitda"),
+       value("shares"), value("price"), json.dumps(scenario, ensure_ascii=False, indent=2),
+       ticker, path)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+
+
 def main():
     ap = argparse.ArgumentParser(description="Alpha Radar 一键数据分析与粗筛")
     ap.add_argument("ticker", help="股票代码，例如 NVDA")
@@ -62,6 +162,7 @@ def main():
     ap.add_argument("--offline", action="store_true", help="只用现有行情缓存，不请求行情")
     ap.add_argument("--no-cross", action="store_true", help="跳过外部交叉校验")
     ap.add_argument("--no-report", action="store_true", help="不生成 Markdown 运行报告")
+    ap.add_argument("--no-draft", action="store_true", help="不生成研究草稿")
     a = ap.parse_args()
 
     ticker = a.ticker.upper().strip()
@@ -157,6 +258,12 @@ def main():
     os.makedirs(RUNS, exist_ok=True)
     stamp = started.strftime("%Y%m%d_%H%M%S")
     json_path = os.path.join(RUNS, "%s_%s.json" % (ticker, stamp))
+    draft_path = None
+    if status == "rule-screened" and not a.no_draft:
+        draft_path = os.path.join(RUNS, "%s_%s_research_draft.md" % (ticker, stamp))
+        write_research_draft(ticker, result["run_at"], metrics_data, scenario_data,
+                             draft_path)
+    result["research_draft"] = draft_path
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
@@ -185,6 +292,8 @@ def main():
     print("结果：%s" % json_path)
     if md_path:
         print("报告：%s" % md_path)
+    if draft_path:
+        print("研究草稿：%s" % draft_path)
     for s in stages:
         mark = "跳过" if s.get("skipped") else ("通过" if s.get("returncode", 0) == 0 else "失败")
         print("  %-12s %s" % (mark, s["name"]))
