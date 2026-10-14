@@ -35,6 +35,7 @@ TOOLS = [
     ("scripts/verify_data.py", "verify_data.py"),
     ("scripts/alpha_portfolio.py", "alpha_portfolio.py"),
     ("scripts/alpha_scenario.py", "alpha_scenario.py"),
+    ("scripts/alpha_one.py", "alpha_one.py"),
     ("scripts/pages_build.py", "pages_build.py"),
 ]
 

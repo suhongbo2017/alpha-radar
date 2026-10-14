@@ -125,6 +125,11 @@ py scripts/alpha_quote.py NVDA --estimates --json
 py scripts/alpha_scenario.py NVDA
 py scripts/alpha_scenario.py NVDA --json
 
+# 一键自动数据流程、交叉校验、规则粗筛和人工待办报告
+py scripts/alpha_one.py NVDA
+# 结果写入 data/runs/；不自动生成研究结论或写正式预测/决策
+# 可选：--force --offline --no-cross --no-report
+
 # [D-13] 持仓与组合雷达
 py scripts/alpha_portfolio.py sync                 # 从券商 API 拉取持仓快照
 py scripts/alpha_portfolio.py sync --dry-run       # 只看字段，不写盘

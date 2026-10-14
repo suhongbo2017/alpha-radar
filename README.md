@@ -234,6 +234,27 @@ py scripts/alpha_quote.py MSFT --proxy http://127.0.0.1:7897
 
 行情获取顺序是 Yahoo 直连、代理和缓存回退。缓存文件位于 `data/quotes/<TICKER>.json`，使用缓存时必须关注 `fetched_at`、`market_time` 和数据源字段，不能把旧价格当作实时价格。
 
+### 一键自动分析
+
+输入一个 ticker，自动完成 SEC 数据获取、行情快照、一手指标计算、多层交叉校验、规则化情景和结果归档：
+
+```powershell
+py scripts/alpha_one.py NVDA
+```
+
+常用选项：
+
+```powershell
+py scripts/alpha_one.py NVDA --force       # 强制刷新 SEC 数据
+py scripts/alpha_one.py NVDA --offline     # 不请求行情，只使用缓存
+py scripts/alpha_one.py NVDA --no-cross    # 跳过外部源交叉校验
+py scripts/alpha_one.py NVDA --no-report   # 只保存 JSON，不生成 Markdown
+```
+
+每次运行的 JSON 和 Markdown 报告保存在 `data/runs/`。自动完成的数据步骤会记录命令、结果和数据缺口；报告还会列出需要人工完成的原文核对、业务/护城河分析、管理层判断、情景假设和估值桥。
+
+该命令只做数据自动化和规则粗筛，不会自动创建研究级档案，也不会写入正式预测、Fair Value 或组合决策。规则情景不是投资结论；只有完成研究并通过研究快照资格校验后，才可登记正式预测。
+
 ### 分析师一致预期
 
 ```powershell
