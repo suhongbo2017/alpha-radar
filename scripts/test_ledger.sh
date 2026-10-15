@@ -89,7 +89,7 @@ EOF
 
 # ---------- T5 P1-7: 估值类不计分 ----------
 fresh
-$L predict --ticker T --scenario Base --metric FairValue --period FY2030 --value 65 --unit USD >/dev/null
+$L predict --ticker T --scenario Base --metric FairValue --period FY2030 --value 65 --unit USD --version v1 >/dev/null
 $L actual  --ticker T --metric FairValue --period FY2030 --value 70 --unit USD >/dev/null
 out=$($L report --ticker T)
 echo "$out" | grep -q "不计分（估值类）1 条" && ok "T5 估值类计数正确" || ng "T5 估值类计数错误"
@@ -118,6 +118,7 @@ $L report >/dev/null 2>&1 && ok "T8 空库 report 不崩" || ng "T8 空库崩溃
 $L predict --ticker T --scenario Base --metric EPS --period Q3FY2027 --value 1.5 --unit USD 2>&1 | grep -q '"forecast_period": "Q32027"' && ok "T8 Q3FY2027 -> Q32027" || ng "T8 期间归一错误"
 $L predict --ticker T --scenario Base --metric EPS --period 2028Q1 --value 1.6 --unit USD 2>&1 | grep -q '"forecast_period": "Q12028"' && ok "T8 2028Q1 -> Q12028" || ng "T8 期间归一错误"
 $L predict --ticker T --scenario Base --metric EPS --period 2027H1 --value 1.7 --unit USD 2>&1 | grep -q '"period_type": "half_year"' && echo "$($L predict --ticker T --scenario Base --metric EPS --period 2027H1 --value 1.7 --unit USD --allow-duplicate 2>&1)" | grep -q '"horizon_type": "operating_checkpoint"' && ok "T8 2027H1 自动分类" || ng "T8 半年节点分类错误"
+$L predict --ticker DATE --scenario Base --metric EPS --period 2030 --value 1.8 --unit USD 2>&1 | grep -Eq '"forecast_version": "[0-9]{4}-[0-9]{2}-[0-9]{2}"' && ok "T8 默认版本使用日期" || ng "T8 默认日期版本错误"
 $L predict --ticker T --scenario Base --metric Revenue --period FY2030 --value 1 --unit USD --prob 1.5 >/dev/null 2>&1 && ng "T8 prob 未校验" || ok "T8 prob 越界被拒"
 $L predict --ticker T --scenario Base --metric 毛利率 --period FY2031 --value 38.9 --unit '%' >/dev/null 2>&1 && ok "T8 百分号单位可写" || ng "T8 百分号单位失败"
 $L export >/dev/null && ok "T8 export 正常" || ng "T8 export 失败"

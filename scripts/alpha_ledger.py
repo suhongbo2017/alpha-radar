@@ -20,6 +20,7 @@ import os
 import subprocess
 import sys
 import datetime as dt
+import re
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -313,6 +314,18 @@ def fmt(v, unit=""):
     return (u + " " + s).strip()
 
 
+def version_sort_key(version):
+    """Sort legacy vN and readable date versions without rewriting history."""
+    s = str(version or "v1").strip()
+    m = re.match(r"^(\d{4}-\d{2}-\d{2})(?:-r(\d+))?$", s)
+    if m:
+        return (2, m.group(1), int(m.group(2) or 1))
+    m = re.match(r"^[vV](\d+)$", s)
+    if m:
+        return (1, "", int(m.group(1)))
+    return (0, s, 0)
+
+
 def pct_err(actual, forecast):
     if forecast in (None, 0):
         return None
@@ -354,7 +367,7 @@ def cmd_predict(a):
         "dossier_grade": dossier_grade,
         "ticker": a.ticker.upper(),
         "analysis_date": a.date or dt.date.today().isoformat(),
-        "forecast_version": a.version,
+        "forecast_version": a.version or (a.date or dt.date.today().isoformat()),
         "scenario": a.scenario,
         "metric": metric,
         "metric_kind": kind,
@@ -511,8 +524,7 @@ def cmd_report(a):
         if cur is None:
             latest[k] = v
         else:
-            a_, b_ = str(cur).lower().lstrip("v"), str(v).lower().lstrip("v")
-            if b_.isdigit() and (not a_.isdigit() or int(b_) > int(a_)):
+            if version_sort_key(v) > version_sort_key(cur):
                 latest[k] = v
 
     L = []
@@ -991,7 +1003,8 @@ def main():
     q.add_argument("--scenario", default="Base", choices=["Bear", "Base", "Bull"])
     q.add_argument("--prob", type=float, default=None, help="该情景概率 0-1，如 0.45")
     q.add_argument("--confidence", default="Medium", choices=["Low", "Medium", "High"])
-    q.add_argument("--version", default="v1")
+    q.add_argument("--version", default=None,
+                   help="版本标签，默认使用分析日期 YYYY-MM-DD；同日修订可用 YYYY-MM-DD-r2")
     q.add_argument("--date", default=None, help="分析日期 (默认今天)")
     q.add_argument("--thesis", default="")
     q.add_argument("--basis", default="", help="预测依据 / 数据来源")
