@@ -153,6 +153,10 @@ py scripts/alpha_fetch.py MSFT --no-extract
 
 # 同时下载近期申报清单
 py scripts/alpha_fetch.py MSFT --submissions
+
+# 归档已分析标的的 SEC 申报原文（按 accession number 去重）
+py scripts/alpha_archive.py --once
+py scripts/alpha_archive.py --ticker MSFT --forms 10-K,10-Q,8-K
 ```
 
 输出文件包括：
@@ -160,6 +164,10 @@ py scripts/alpha_fetch.py MSFT --submissions
 - `analysis/sec/company_tickers.json`：ticker 到 CIK 的映射缓存。
 - `analysis/sec/msft_facts.json`：SEC 原始 companyfacts，通常不提交 Git。
 - `analysis/sec/msft.txt`：`extract2.py` 生成的结构化阅读视图。
+- `analysis/sec/archive/<TICKER>/<ACCESSION>/`：10-K、10-Q、8-K 原文、主文档和 SEC `index.json`，按申报编号保存，默认不提交 Git。
+- `data/filing_archive.jsonl`：归档索引，记录表单、申报日期、报告期、URL、本地路径和 SHA-256；同一 `ticker + accession_number` 不重复追加。
+
+`alpha_archive.py` 只归档真实 SEC 申报文件，不把抓取结果自动写入 `actuals.jsonl`，也不自动修改预测。检测失败会保留警告并返回非零状态，便于后台调度重试。
 
 `alpha_fetch.py` 的默认缓存有效期为 24 小时。下载成功不代表数据已经适合写进研究结论；必须阅读申报原文并运行校验。
 

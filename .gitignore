@@ -8,6 +8,8 @@ analysis/sec/*_facts.json
 analysis/sec/company_tickers.json
 analysis/sec/*_submissions.json
 analysis/sec/*.txt
+# SEC 10-K/10-Q/8-K 原文归档（本地审计材料，索引仍可提交）
+analysis/sec/archive/
 
 # ── 派生产物（可由脚本重新生成，不必进版本库）────────────
 data/prediction_ledger.csv
