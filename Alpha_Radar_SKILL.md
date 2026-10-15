@@ -813,6 +813,7 @@ py scripts/alpha_portfolio.py check   # 只列冲突
 py scripts/alpha_ledger.py metrics
 
 # 记录预测（建议三情景都记，并填概率；--prob 0-1）
+# 未指定 --version 时，默认使用分析日期 YYYY-MM-DD
 py scripts/alpha_ledger.py predict --ticker APH --scenario Base --metric Revenue \
     --period FY2030 --value 45e9 --unit USD --prob 0.45 --confidence Medium \
     --thesis "AI datacom + CommScope 并表" --basis "10-Q Q2 2026 + 一致预期"
@@ -843,9 +844,14 @@ py scripts/alpha_ledger.py list --ticker APH
 # 预测 vs 实际 报告（--price 用于算决策回报，可重复；--save/--out）
 py scripts/alpha_ledger.py report --ticker APH --price APH=92.5 --save --out review_APH.md
 
-# 修订预测：必须升版本，同版本改数会被拒绝
+# 修订预测：必须升版本，同版本改数会被拒绝；默认版本为分析日期 YYYY-MM-DD
 py scripts/alpha_ledger.py predict --ticker APH --scenario Base --metric Revenue \
-    --period FY2030 --value 60e9 --unit USD --version v2 --thesis "上调：AI CapEx 超预期"
+    --period FY2030 --value 60e9 --unit USD --version 2026-10-15-r2 --thesis "上调：AI CapEx 超预期"
+
+# 分阶段预测：经营指标可用半年节点，估值终值仍建议使用年度节点
+py scripts/alpha_ledger.py predict --ticker APH --scenario Base --metric Revenue \
+    --period 2027H1 --period-type half_year --horizon-type operating_checkpoint \
+    --value 22e9 --unit USD --prob 0.45
 
 # 导出 CSV 便于人工审阅
 py scripts/alpha_ledger.py export
@@ -855,7 +861,7 @@ py scripts/alpha_ledger.py export
 
 | 子命令 | 关键选项 |
 |---|---|
-| `predict` | `--ticker` `--metric` `--period` `--value` `--unit` `--scenario` `--prob` `--confidence` `--version` `--date` `--thesis` `--basis` `--informational` |
+| `predict` | `--ticker` `--metric` `--period` `--period-type` `--horizon-type` `--value` `--unit` `--scenario` `--prob` `--confidence` `--version` `--date` `--thesis` `--basis` `--informational` |
 | `actual` | `--ticker` `--metric` `--period` `--value` `--unit` `--date` `--source` `--fx` `--attribution` |
 | `decision` | `--ticker` `--action` `--price` `--currency` `--weight` `--prev-weight` `--odds` `--fair-value` `--thesis` `--reason` `--date` |
 | `decisions` | `--ticker` |
