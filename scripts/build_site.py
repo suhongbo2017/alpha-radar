@@ -656,6 +656,8 @@ def build_chart_data(preds, actuals):
         item = groups.setdefault(key, {"ticker": ticker, "metric": metric, "unit": unit,
                                        "actual": [], "forecast": []})
         item["forecast"].append({"period": str(row.get("forecast_period", "")),
+                                  "period_type": row.get("period_type", ""),
+                                  "horizon_type": row.get("horizon_type", ""),
                                   "value": row.get("forecast_value"),
                                   "scenario": row.get("scenario", ""),
                                   "version": row.get("forecast_version", "v1"),

@@ -85,6 +85,10 @@ def main():
             problems.append("predictions #%d 指标 '%s' 不在词表中" % (i, r["metric"]))
         if not isinstance(r["forecast_value"], (int, float)):
             problems.append("predictions #%d forecast_value 非数值" % i)
+        if r.get("period_type") not in (None, "half_year", "quarter", "fiscal_year", "custom"):
+            problems.append("predictions #%d period_type 非法: %s" % (i, r.get("period_type")))
+        if r.get("horizon_type") not in (None, "operating_checkpoint", "valuation_terminal"):
+            problems.append("predictions #%d horizon_type 非法: %s" % (i, r.get("horizon_type")))
         status = r.get("prediction_status")
         if status == "formal":
             snap_path = os.path.join(SNAPSHOTS, "%s.json" % r["ticker"])

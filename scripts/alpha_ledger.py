@@ -229,14 +229,27 @@ def load(path):
 
 
 def norm_period(s):
-    """FY2030 / 2030 / FY30 -> 2030；Q3FY2027 / 2027Q3 -> Q32027"""
+    """Normalize annual, quarterly, and half-year periods."""
     s = str(s).upper().replace("FY", "").replace(" ", "").strip()
     if len(s) == 2 and s.isdigit():
         s = "20" + s
-    # 2027Q3 -> Q32027
-    if len(s) == 6 and s[:4].isdigit() and s[4] == "Q":
+    # 2027Q3 -> Q32027 / 2027H1 -> H12027
+    if len(s) == 6 and s[:4].isdigit() and s[4] in ("Q", "H"):
         s = s[4:] + s[:4]
     return s
+
+
+def period_type(p):
+    p = norm_period(p)
+    if len(p) == 6 and p[0] in ("Q", "H") and p[1].isdigit() and p[2:].isdigit():
+        return "quarter" if p[0] == "Q" else "half_year"
+    if len(p) == 4 and p.isdigit():
+        return "fiscal_year"
+    return "custom"
+
+
+def horizon_type(metric, p):
+    return "valuation_terminal" if metric in ("FairValue", "Target_Price") else "operating_checkpoint"
 
 
 def period_end(p):
@@ -244,11 +257,13 @@ def period_end(p):
     Q32027 -> 2027-09-30   ;   2030 -> 2030-12-31
     """
     p = norm_period(p)
-    if len(p) == 6 and p[0] == "Q" and p[1].isdigit() and p[2:].isdigit():
-        q, y = int(p[1]), int(p[2:])
-        if 1 <= q <= 4:
-            m, d = {1: (3, 31), 2: (6, 30), 3: (9, 30), 4: (12, 31)}[q]
+    if len(p) == 6 and p[0] in ("Q", "H") and p[1].isdigit() and p[2:].isdigit():
+        n, y = int(p[1]), int(p[2:])
+        if p[0] == "Q" and 1 <= n <= 4:
+            m, d = {1: (3, 31), 2: (6, 30), 3: (9, 30), 4: (12, 31)}[n]
             return "%04d-%02d-%02d" % (y, m, d)
+        if p[0] == "H" and 1 <= n <= 2:
+            return "%04d-%02d-%02d" % (y, 6 if n == 1 else 12, 30 if n == 1 else 31)
     if len(p) == 4 and p.isdigit():
         return "%s-12-31" % p
     return None
@@ -344,6 +359,8 @@ def cmd_predict(a):
         "metric": metric,
         "metric_kind": kind,
         "forecast_period": norm_period(a.period),
+        "period_type": period_type(a.period) if a.period_type == "auto" else a.period_type,
+        "horizon_type": horizon_type(metric, a.period) if a.horizon_type == "auto" else a.horizon_type,
         "forecast_value": value,
         "unit": norm_unit_checked(a.unit, "predict"),
         "probability": a.prob,
@@ -945,7 +962,7 @@ def cmd_export(a):
     preds = load(PRED)
     out = os.path.join(DATA, "prediction_ledger.csv")
     keys = ["ticker", "analysis_date", "forecast_version", "scenario", "metric", "metric_kind",
-            "forecast_period", "forecast_value", "unit", "probability", "confidence", "thesis"]
+            "forecast_period", "period_type", "horizon_type", "forecast_value", "unit", "probability", "confidence", "thesis"]
     with open(out, "w", encoding="utf-8-sig") as f:
         f.write(",".join(keys) + "\n")
         for r in preds:
@@ -966,7 +983,9 @@ def main():
     q = sub.add_parser("predict", help="追加一条预测 (永不覆盖，改数必须升版本)")
     q.add_argument("--ticker", required=True)
     q.add_argument("--metric", required=True, help="见 `metrics` 子命令")
-    q.add_argument("--period", required=True, help="FY2030 / 2030 / Q3FY2027")
+    q.add_argument("--period", required=True, help="FY2030 / 2030 / 2027H1 / Q3FY2027")
+    q.add_argument("--period-type", choices=["auto", "half_year", "quarter", "fiscal_year", "custom"], default="auto")
+    q.add_argument("--horizon-type", choices=["auto", "operating_checkpoint", "valuation_terminal"], default="auto")
     q.add_argument("--value", type=float, required=True)
     q.add_argument("--unit", default="USD", help="USD/TWD/HKD/CNY/%%/X ...")
     q.add_argument("--scenario", default="Base", choices=["Bear", "Base", "Bull"])
