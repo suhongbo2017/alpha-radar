@@ -87,9 +87,18 @@ def snapshot_for(path):
     text = path.read_text(encoding="utf-8")
     try:
         metrics = run_metrics(ticker)
-        usable = bool(metrics.get("ttm_period") not in (None, "?", "") and metrics.get("ttm_revenue") is not None)
+        has_ttm = bool(metrics.get("ttm_period") not in (None, "?", "") and metrics.get("ttm_revenue") is not None)
+        # A financial-company report may have a TTM value while the generic
+        # industrial-company verifier has hard source mismatches. Such a
+        # report must not become formally qualified until its metric adapter
+        # is repaired and independently verified.
+        adapter_blocked = "未通过通用数据校验" in text or "数据校验未通过" in text
+        usable = has_ttm and not adapter_blocked
         status = "verified" if usable else "blocked"
-        error = None if usable else "缺少真实 TTM 截止日或营业收入"
+        if adapter_blocked:
+            error = "报告明确标注为数据校验未通过，等待金融机构口径适配"
+        else:
+            error = None if usable else "缺少真实 TTM 截止日或营业收入"
         if not usable:
             metrics = {k: v for k, v in metrics.items() if k in ("ticker", "entity")}
     except Exception as e:

@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "ticker": "SOFI",
+  "status": "verified",
+  "generated_at": "2026-10-15T00:16:18+00:00",
+  "report": {
+    "path": "analysis/SOFI_AlphaRadar.md",
+    "sha256": "4b5a8842b01a908643935fbb5461626bced3588417ebe432ccbcd8b30611fc44",
+    "grade": "rule",
+    "assertions": {
+      "price": 14.22
+    }
+  },
+  "qualification": {
+    "data_status": "verified",
+    "formal_predictions": false,
+    "formal_valuation": false,
+    "portfolio_decisions": false
+  },
+  "data": {
+    "ticker": "SOFI",
+    "entity": "SoFi Technologies, Inc.",
+    "ttm_period": "2026-06-30",
+    "ttm_revenue": 610162000,
+    "ttm_gross_profit": -84141000,
+    "ttm_op_income": null,
+    "ttm_net_income": 636264000,
+    "ttm_ocf": -8502490000,
+    "ttm_capex": 290499000,
+    "ttm_fcf": -8792989000,
+    "gross_margin_pct": -13.789944309871805,
+    "op_margin_pct": null,
+    "net_margin_pct": 104.27788030064147,
+    "fcf_margin_pct": -1441.0908906159348,
+    "cash_conversion_pct": -1381.971791583368,
+    "revenue_growth_ttm_pct": 9.151633977574392,
+    "fcf_growth_ttm_pct": 191.08840650333298,
+    "cash": 3126237000.0,
+    "equity": 11076227000,
+    "debt": 3300544000,
+    "net_debt": 174307000.0,
+    "ebitda_ttm": null,
+    "net_debt_ebitda": null,
+    "shares": 1351990000,
+    "shares_date": "2026-06-30",
+    "price": 14.22,
+    "market_cap": 19225297800.0,
+    "tax_rate": 0.13755449044655058,
+    "nopat": null,
+    "invested_capital": 11250534000.0,
+    "roic_pct": null
+  },
+  "error": null
+}
