@@ -75,10 +75,153 @@ def load_jsonl(path):
 
 
 def latest_by(rows, key="ticker"):
-    d = {}
-    for r in sorted(rows, key=lambda x: (x.get(key, ""), x.get("analysis_date", ""))):
-        d[r.get(key, "").upper()] = r
-    return d
+    """Select the latest record, merging same-day append-only supplements.
+
+    Alpha runs may append a price/action record and a valuation record on the
+    same date. Picking only the last row silently drops fields, so same-day
+    non-null fields are merged while later dates still win.
+    """
+    grouped = {}
+    for r in rows:
+        ticker = str(r.get(key, "")).upper()
+        if not ticker:
+            continue
+        grouped.setdefault(ticker, []).append(r)
+    out = {}
+    for ticker, records in grouped.items():
+        dates = [str(r.get("analysis_date", "")) for r in records]
+        latest_date = max(dates) if dates else ""
+        selected = [r for r in records if str(r.get("analysis_date", "")) == latest_date]
+        merged = {}
+        for record in selected:
+            for field, value in record.items():
+                if value is not None and value != "":
+                    merged[field] = value
+        merged[key] = ticker
+        out[ticker] = merged
+    return out
+
+
+def load_quote_prices():
+    """Load cached prices only; never turns a quote into a research analysis."""
+    qdir = os.path.join(DATA, "quotes")
+    prices = {}
+    if not os.path.isdir(qdir):
+        return prices
+    for path in glob.glob(os.path.join(qdir, "*.json")):
+        try:
+            row = json.load(open(path, encoding="utf-8"))
+            ticker = str(row.get("ticker") or os.path.basename(path)[:-5]).upper()
+            if row.get("price") is not None:
+                prices[ticker] = {"price": row["price"],
+                                  "fetched_at": row.get("fetched_at", ""),
+                                  "source": row.get("source", "cache")}
+        except (OSError, ValueError, TypeError):
+            continue
+    return prices
+
+
+def load_latest_runs():
+    """Return the newest automatic data snapshot for each ticker."""
+    latest = {}
+    for path in glob.glob(os.path.join(DATA, "runs", "*.json")):
+        try:
+            row = json.load(open(path, encoding="utf-8"))
+            ticker = str(row.get("ticker", "")).upper()
+            if not ticker:
+                continue
+            old = latest.get(ticker)
+            if old is None or str(row.get("run_at", "")) > str(old.get("run_at", "")):
+                latest[ticker] = row
+        except (OSError, ValueError, TypeError):
+            continue
+    return latest
+
+
+def load_estimates():
+    estimates = {}
+    for path in glob.glob(os.path.join(DATA, "estimates", "*.json")):
+        try:
+            row = json.load(open(path, encoding="utf-8"))
+            ticker = str(row.get("ticker") or os.path.basename(path)[:-5]).upper()
+            if ticker:
+                estimates[ticker] = row
+        except (OSError, ValueError, TypeError):
+            continue
+    return estimates
+
+
+def fmt_metric(value, kind="number"):
+    if value is None:
+        return "—"
+    if kind == "money":
+        value = float(value)
+        if abs(value) >= 1e12:
+            return "%.2fT" % (value / 1e12)
+        if abs(value) >= 1e9:
+            return "%.2fB" % (value / 1e9)
+        if abs(value) >= 1e6:
+            return "%.1fM" % (value / 1e6)
+        return "%.2f" % value
+    if kind in ("pct", "multiple", "price"):
+        try:
+            value = float(str(value).replace(",", "").replace("%", "").rstrip("xX"))
+        except (TypeError, ValueError):
+            return "—"
+    if kind == "pct":
+        return "%.1f%%" % value
+    if kind == "multiple":
+        return "%.2fx" % value
+    if kind == "price":
+        return "%.2f" % value
+    return str(value)
+
+
+def build_snapshots(runs, estimates, prices):
+    """Render verified-source data snapshots, explicitly separate from forecasts."""
+    headers = ["Ticker", "状态", "现价", "数据截点", "TTM收入", "营业利润率",
+               "净利润率", "TTM FCF", "FCF利润率", "净债务/EBITDA", "ROIC",
+               "P/E", "P/FCF", "目标价", "评级", "数据缺口"]
+    out = ['<table><thead><tr>']
+    for header in headers:
+        out.append('<th class="num">%s</th>' % header if header not in ("Ticker", "状态", "数据缺口")
+                   else '<th>%s</th>' % header)
+    out.append('</tr></thead><tbody>')
+    status_labels = {"rule-screened": "已筛选", "blocked": "阻断", "failed": "校验失败"}
+    for ticker in sorted(set(runs) | set(prices)):
+        run = runs.get(ticker, {})
+        metrics = run.get("metrics") or {}
+        estimate = estimates.get(ticker, {})
+        quote = prices.get(ticker, {})
+        pfcf = None
+        if price := (quote.get("price") if quote.get("price") is not None else metrics.get("price")):
+            if metrics.get("shares") and metrics.get("ttm_fcf"):
+                pfcf = price * metrics["shares"] / metrics["ttm_fcf"]
+        status = run.get("status") or "仅行情"
+        price = quote.get("price") if quote.get("price") is not None else metrics.get("price")
+        target = estimate.get("target_mean")
+        try:
+            target = float(target) if target is not None else None
+        except (TypeError, ValueError):
+            target = None
+        gaps = run.get("data_gaps") or []
+        gap_text = ", ".join(gaps[:3]) if gaps else "—"
+        values = [
+            ticker, status_labels.get(status, status), fmt_metric(price, "price"),
+            metrics.get("ttm_period") or "—", fmt_metric(metrics.get("ttm_revenue"), "money"),
+            fmt_metric(metrics.get("op_margin_pct"), "pct"), fmt_metric(metrics.get("net_margin_pct"), "pct"),
+            fmt_metric(metrics.get("ttm_fcf"), "money"), fmt_metric(metrics.get("fcf_margin_pct"), "pct"),
+            fmt_metric(metrics.get("net_debt_ebitda"), "multiple"), fmt_metric(metrics.get("roic_pct"), "pct"),
+            fmt_metric(estimate.get("forward_pe"), "multiple"), fmt_metric(pfcf, "multiple"),
+            fmt_metric(target, "price"), str(estimate.get("recommendation") or "—"), gap_text,
+        ]
+        out.append('<tr data-status="%s" data-txt="%s">' % (html.escape(status), html.escape(" ".join(map(str, values)).lower())))
+        for i, value in enumerate(values):
+            cls = "num" if i in (2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13) else ""
+            out.append('<td class="%s">%s</td>' % (cls, html.escape(str(value))))
+        out.append('</tr>')
+    out.append('</tbody></table>')
+    return '<div class="tw">%s</div>' % "".join(out)
 
 
 def grade_of(text):
@@ -540,7 +683,7 @@ function sortTbl(sec,idx,num){
 window.addEventListener('DOMContentLoaded',function(){
   var h=(location.hash||'').replace('#','');
   tab(document.getElementById('s-'+h)?h:'board');
-  ['board','doc','pred'].forEach(filt);
+  ['board','doc','pred','snapshot'].forEach(filt);
   initChart();
 });
 """
@@ -567,7 +710,9 @@ def build_board(analyses, prices, holds):
         an, t = r["an"], r["t"]
         g = ("%.1f" % an["fundamental_score"]) if an.get("fundamental_score") is not None else "—"
         od = ("%.2f" % an["odds"]) if an.get("odds") is not None else "—"
-        px = ("%.2f" % an["price"]) if an.get("price") is not None else "—"
+        quote = prices.get(t, {}) if prices else {}
+        current_price = quote.get("price") if quote.get("price") is not None else an.get("price")
+        px = ("%.2f" % current_price) if current_price is not None else "—"
         act = an.get("action") or "—"
         cls = "ok" if act in ("Buy", "StrongBuy", "Core", "Starter") else "warn" if act in ("Trim", "Exit") else ""
         h.append("<tr><td><b>%s</b></td>" % t)
@@ -708,6 +853,10 @@ def main():
     chart_data = build_chart_data(preds, actuals)
     decs = load_jsonl(os.path.join(DATA, "decisions.jsonl"))
     analyses = latest_by(load_jsonl(os.path.join(DATA, "analyses.jsonl")))
+    prices = load_quote_prices()
+    runs = load_latest_runs()
+    estimates = load_estimates()
+    snapshots = build_snapshots(runs, estimates, prices)
 
     # ── 持仓：默认不读
     # [D-73] 默认读【只含标的】的清单（可公开）；--include-holdings 才读含数量的本地快照
@@ -799,6 +948,7 @@ def main():
 <button data-t="board" onclick="tab('board')">总览</button>
 <button data-t="doc" onclick="tab('doc')">公司档案 <span class="nav-count">%d</span></button>
 <button data-t="pred" onclick="tab('pred')">预测账本 <span class="nav-count">%d</span></button>
+<button data-t="snapshot" onclick="tab('snapshot')">数据快照</button>
 <button data-t="chart" onclick="tab('chart')">预测曲线</button>
 <button data-t="dec" onclick="tab('dec')">决策记录 <span class="nav-count">%d</span></button>
 <button data-t="defect" onclick="tab('defect')">缺陷登记册</button>
@@ -838,7 +988,12 @@ def main():
 <span class="pill" id="c-pred"></span></div>
 %s
 </section>
-<section id="s-chart"><div class="board-intro"><div><div class="eyebrow">Forecast versus actual</div><h2>预测 vs 实际</h2><p>实线表示已经登记的实际值，虚线表示当时记录的 Bull/Base/Bear 预测。只有同一 ticker、指标和单位的数据会放在同一张图中。</p></div></div>
+<section id="s-snapshot"><div class="board-intro"><div><div class="eyebrow">Verified data snapshot</div><h2>数据快照</h2><p>这里展示自动流程获取的最新行情、财务指标和一致预期。它是研究事实层，不是预测列表，也不自动产生估值或投资决策。</p></div></div>
+<div class="bar"><input id="q-snapshot" aria-label="搜索数据快照" placeholder="搜索 ticker / 指标 / 状态…" oninput="filt('snapshot')"><select id="g-snapshot" aria-label="按数据状态筛选" onchange="filt('snapshot')"><option value="">全部状态</option><option value="rule-screened">已筛选</option><option value="blocked">阻断</option><option value="failed">校验失败</option><option value="">仅行情</option></select><span class="pill" id="c-snapshot"></span></div>
+<div class="notice">数值保留原始数据截点；`—` 表示该来源未提供或尚未通过对应口径验证。状态为“阻断/校验失败”的标的仅供研究，不得直接登记正式预测。</div>
+%s
+</section>
+<section id="s-chart"><div class="board-intro"><div class="eyebrow">Forecast versus actual</div><h2>预测 vs 实际</h2><p>实线表示已经登记的实际值，虚线表示当时记录的 Bull/Base/Bear 预测。只有同一 ticker、指标和单位的数据会放在同一张图中。</p></div>
 <div class="bar"><label for="chart-key" class="sr-only">选择曲线</label><select id="chart-key" aria-label="选择预测曲线"></select><span class="pill" id="chart-note"></span></div>
 <div class="chart-panel"><svg id="forecast-chart" role="img" aria-label="预测与实际值曲线图" viewBox="0 0 1000 460"></svg></div>
 <div id="chart-legend" class="chart-legend"></div>
@@ -956,13 +1111,14 @@ function showDocList(){
          else ('<span class="pill ok">仅含持仓标的 · 不含数量 · 可公开</span>' if holds
                else '<span class="pill ok">不含持仓数据 · 可公开</span>')),
         len(docs), len(preds), len(decs),
-        ('<div class="warnband">🔴 <b>本页含持仓数量</b>（仓位% / 盈亏%）。'
+        ('<div class="warnband">🔴 <b>本页含持仓数量</b>（仓位%% / 盈亏%%）。'
          '仓库是<b>公开</b>的 —— <b>不要部署到公网</b>。'
          '要生成可公开版本，去掉 <code>--include-holdings</code> 重新构建。</div>'
          if (holds and any(v.get("weight_pct") is not None for v in holds.values())) else ''),
         len(docs), n_doc["报告级"], n_doc["研究级"], n_doc["规则级"],
         len(odds_ok), len(preds),
-        build_board(analyses, None, holds),
+        build_board(analyses, prices, holds),
+        snapshots,
         "".join(cards), "".join(details),
         build_preds(preds), build_decisions(decs), defects,
         ("<h2>最近一次门禁</h2><pre>%s</pre>" % esc("\n".join(gates))) if gates else "",
