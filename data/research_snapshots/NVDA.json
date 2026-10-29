@@ -2,10 +2,10 @@
   "schema_version": 1,
   "ticker": "NVDA",
   "status": "verified",
-  "generated_at": "2026-10-13T09:14:57+00:00",
+  "generated_at": "2026-10-29T01:57:00+00:00",
   "report": {
     "path": "analysis/NVDA_AlphaRadar.md",
-    "sha256": "f56ee115f2a11946ab11e2edd7852072a9357f629811a1259b7391e060fb1074",
+    "sha256": "9f3564a494c3aed4db1c54db925dd452025f301093f56daa5d41817a81b60d50",
     "grade": "research",
     "assertions": {
       "price": 214.13,

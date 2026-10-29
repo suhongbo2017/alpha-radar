@@ -55,7 +55,14 @@ def fetch_json(url, proxy=None, timeout=25):
         return None
 
 
-def get_quote(ticker, proxy, offline=False):
+def get_quote(ticker, proxy, offline=False, post=False):
+    """post=True 时，若盘后/盘前有成交，则用 fulldayPrice 作为 price，
+    并把常规收盘价单独存为 regular_close 以便审计。
+
+    为什么需要这个开关：财报在收盘后发布，常规收盘价已经不是
+    「当前可成交价」。此时若仍用 regularMarketPrice，赔率会算错。
+    默认关闭 —— 其它标的的既有快照不受影响。
+    """
     t = ticker.upper()
     cache = os.path.join(QDIR, "%s.json" % t)
     if offline:
@@ -87,8 +94,13 @@ def get_quote(ticker, proxy, offline=False):
     if r:
         m = r[0].get("meta", {})
         closes = [c for c in ((r[0].get("indicators") or {}).get("quote") or [{}])[0].get("close", []) if c]
+        regular = m.get("regularMarketPrice")
+        fullday = m.get("fulldayPrice")
+        use_post = bool(post) and m.get("hasPrePostMarketData") and fullday
         out.update({
-            "price": m.get("regularMarketPrice"),
+            "price": fullday if use_post else regular,
+            "regular_close": regular,
+            "price_basis": "post" if use_post else "regular",
             "prev_close": m.get("chartPreviousClose") or m.get("previousClose"),
             "currency": m.get("currency"),
             "exchange": m.get("fullExchangeName"),
@@ -209,12 +221,14 @@ def main():
     ap.add_argument("--offline", action="store_true")
     ap.add_argument("--estimates", action="store_true",
                     help="[D-68] 取分析师一致预期（目标价 / EPS / 收入预测）")
+    ap.add_argument("--post", action="store_true",
+                    help="用盘后/盘前成交价作为现价（财报盘后发布时用）")
     a = ap.parse_args()
 
     if a.estimates:
         return cmd_estimates(a)
 
-    q, src = get_quote(a.ticker, a.proxy, a.offline)
+    q, src = get_quote(a.ticker, a.proxy, a.offline, a.post)
     if not q:
         print("✗ 无法取得行情：%s" % src)
         print("  提示: 本机直连 Yahoo 不可达，需要本地代理。")
@@ -228,6 +242,8 @@ def main():
     p = q.get("price")
     print("%s  %s" % (q["ticker"], q.get("exchange") or ""))
     print("  价格        %s %s" % (p, q.get("currency") or ""))
+    if q.get("price_basis") == "post":
+        print("  口径        盘后价（常规收盘 %s）" % q.get("regular_close"))
     print("  前收        %s" % q.get("prev_close"))
     print("  行情时间    %s" % q.get("market_time"))
     print("  52周区间    %s – %s" % (q.get("week52_low"), q.get("week52_high")))

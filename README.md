@@ -686,6 +686,18 @@ py scripts/build_site.py
 
 SEC、Yahoo Finance 和券商接口各自受其服务条款约束。不要把需要登录、包含个人持仓或包含凭据的文件部署到公开站点或提交到公开仓库。
 
+### 一条命令：行情 → 快照 → 站点
+
+```powershell
+py scripts/alpha_quote.py GOOGL --post          # 1. 刷新报价（--post 用盘后价，财报盘后发布时用）
+py scripts/pages_build.py --refresh --with-gates # 2. 重生研究快照 + 构建站点 + 全部门禁
+```
+
+`site/index.html` 会带上最新档案内容。**`site/` 不入库**（D-75），由本地或 CI 构建。
+
+> `--refresh` 只用于本地：它会让 `data/research_snapshots/` 跟着档案走。
+> **CI 不用 `--refresh`**，否则 G9 永远变绿、门禁失去意义。
+
 ### 重估赔率审计
 
 当行情变化但尚未修订正式预测时，可以快速重算价格敏感性指标：

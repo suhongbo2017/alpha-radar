@@ -22,6 +22,10 @@ CI 里的调用（.github/workflows/pages.yml）:
     py scripts/pages_build.py                 # 构建 + 安全断言
     py scripts/pages_build.py --with-gates    # 再跑全部门禁（CI 用这个）
     py scripts/pages_build.py --strict        # 任一失败即以非零退出（CI 用）
+    py scripts/pages_build.py --refresh       # 先重生研究快照，再构建（本地发布用）
+
+注意：**CI 不使用 --refresh**。让 CI 重生快照会让 G9 永远变绿，
+门禁就失去意义。快照只在本地「确认数据已更新」时重生，并与代码一起提交。
 """
 import argparse
 import os
@@ -59,8 +63,21 @@ def main():
                     help="同时跑全部 8 道门禁（CI 用）")
     ap.add_argument("--strict", action="store_true",
                     help="任一失败即以非零退出")
+    ap.add_argument("--refresh", action="store_true",
+                    help="先重生研究快照再构建（本地发布用；CI 不要用，否则 G9 永远绿）")
     a = ap.parse_args()
     ok = True
+
+    # ── 0. 可选：重生研究快照
+    if a.refresh:
+        step(0, "重生研究快照 → data/research_snapshots/")
+        r = run([sys.executable, "scripts/research_snapshot.py", "generate"])
+        changed = [l for l in (r.stdout or "").splitlines() if "跳过" not in l]
+        print("   " + "\n   ".join(changed[-6:] or ["（无）"]))
+        if r.returncode != 0:
+            print("   ✗ 快照生成失败")
+            print((r.stderr or "")[-800:])
+            return 1 if a.strict else 0
 
     # ── 1. 构建站点
     step(1, "构建站点 → site/index.html")

@@ -107,6 +107,7 @@ py scripts/alpha_metrics.py APH --score-inputs   # 直接输出 alpha_score.py �
 py scripts/pages_build.py                  # 构建 + 安全断言
 py scripts/pages_build.py --with-gates     # 再跑全部 8 道门禁（CI 用这个）
 py scripts/pages_build.py --strict         # 任一失败即非零退出
+py scripts/pages_build.py --refresh        # 先重生研究快照再构建（本地发布用）
 
 # [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
 py scripts/build_site.py                     # 默认：不含持仓（可公开）
@@ -164,6 +165,7 @@ py scripts/alpha_quote.py APH --json
 py scripts/alpha_quote.py APH --offline         # 只用缓存
 py scripts/alpha_quote.py APH --proxy http://127.0.0.1:7897
 py scripts/alpha_quote.py APH --estimates
+py scripts/alpha_quote.py APH --post            # 用盘后/盘前成交价（财报盘后发布时用）
 
 # 行情 / 估值 / 财务快照（注意：依赖 yfinance，可能 429 限流，见 D-29）
 py "C:/Users/Administrator/.pi/agent/skills/stock-analysis/scripts/stock_info.py" <TICKER>
@@ -1256,6 +1258,7 @@ D:/pi/select_stock/
 py scripts/pages_build.py                  # 构建 + 安全断言
 py scripts/pages_build.py --with-gates     # 再跑全部 8 道门禁（CI 用这个）
 py scripts/pages_build.py --strict         # 任一失败即非零退出
+py scripts/pages_build.py --refresh        # 先重生研究快照再构建（本地发布用）
 
 # [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
 py scripts/build_site.py                     # 默认：不含持仓（可公开）

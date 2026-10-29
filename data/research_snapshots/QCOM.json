@@ -2,10 +2,10 @@
   "schema_version": 1,
   "ticker": "QCOM",
   "status": "verified",
-  "generated_at": "2026-10-13T09:14:57+00:00",
+  "generated_at": "2026-10-29T01:57:01+00:00",
   "report": {
     "path": "analysis/QCOM_AlphaRadar.md",
-    "sha256": "543911e1d52bbfd7df3666b25a13e2af2c50ad6a119cafb287680edb6294b47e",
+    "sha256": "3d85cd2cf864d7b19f107a93ddb6703875b33fc011a8b90042bff92a57db9737",
     "grade": "rule",
     "assertions": {
       "price": 172.62,

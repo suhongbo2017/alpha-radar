@@ -1,7 +1,7 @@
 # QCOM（QUALCOMM Incorporated）— Alpha Radar
 
 > **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py QCOM --require-cross` → ❌ **0 错误**
-> **Current Price**：$175.50　｜　**市值**：187.61B
+> **Current Price**：$172.62　｜　**市值**：184.53B
 
 > ⚠️ **Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。**
 > 规则、参数与已知局限见 §6 与附录。**赔率因此是低置信度的。**

@@ -130,8 +130,21 @@ def generate():
         raise SystemExit("没有找到 analysis/*_AlphaRadar.md")
     for path in paths:
         snap = snapshot_for(path)
-        (OUT / (snap["ticker"] + ".json")).write_text(json.dumps(snap, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print("%-5s %-8s %s" % (snap["ticker"], snap["status"], (OUT / (snap["ticker"] + ".json")).relative_to(ROOT)))
+        dest = OUT / (snap["ticker"] + ".json")
+        # [D-85] 只改 generated_at 时不重写文件：否则每次 generate 都会
+        # 把 20 个已跟踪文件弄脏（与 D-72 同类的工作区污染）。
+        if dest.exists():
+            try:
+                old = json.loads(dest.read_text(encoding="utf-8"))
+                a = {k: v for k, v in old.items() if k != "generated_at"}
+                b = {k: v for k, v in snap.items() if k != "generated_at"}
+                if a == b:
+                    print("%-5s %-8s %s（内容未变，跳过）" % (snap["ticker"], snap["status"], dest.relative_to(ROOT)))
+                    continue
+            except Exception:
+                pass
+        dest.write_text(json.dumps(snap, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print("%-5s %-8s %s" % (snap["ticker"], snap["status"], dest.relative_to(ROOT)))
 
 
 def validate():

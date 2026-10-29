@@ -2,13 +2,13 @@
   "schema_version": 1,
   "ticker": "GOOGL",
   "status": "verified",
-  "generated_at": "2026-10-13T09:14:56+00:00",
+  "generated_at": "2026-10-29T02:00:30+00:00",
   "report": {
     "path": "analysis/GOOGL_AlphaRadar.md",
-    "sha256": "698ba171ee352db3c5feddb968bb1cee348be8089e74ffec128bf13d71953c4a",
+    "sha256": "55b47f127c0bf07b62bad2a959457cc91742cb9ba053272c8bdf641813414d8d",
     "grade": "research",
     "assertions": {
-      "price": 351.66,
+      "price": 293.11,
       "ttm_revenue": 445870000000.0,
       "ttm_fcf": 53270000000.0
     }
@@ -45,8 +45,8 @@
     "net_debt_ebitda": -0.7989949170202111,
     "shares": 12309000000,
     "shares_date": "2026-06-30",
-    "price": 351.66,
-    "market_cap": 4328582940000.0005,
+    "price": 293.11,
+    "market_cap": 3607890990000.0,
     "tax_rate": 0.183995001152809,
     "nopat": 120465185969.81311,
     "invested_capital": 501681000000.0,
