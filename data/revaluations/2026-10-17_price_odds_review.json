@@ -1,0 +1,52 @@
+{
+  "record_type": "price_odds_revaluation",
+  "as_of": "2026-10-17T08:35:44+08:00",
+  "status": "append_only_review",
+  "scope": "all_system_tickers",
+  "method": {
+    "weighted_value_source": "data/analyses.jsonl latest usable weighted_value",
+    "bear_value_source": "data/analyses.jsonl latest usable bear_value",
+    "price_source": "data/quotes/*.json",
+    "upside_formula": "(weighted_value / price - 1) * 100",
+    "downside_formula": "(1 - bear_value / price) * 100",
+    "odds_formula": "(weighted_value - price) / (price - bear_value)",
+    "interpretation": "weighted value and bear value are preserved operating/valuation assumptions; only price-dependent outputs are recalculated",
+    "write_policy": "This review does not write predictions, actuals, FairValue, portfolio decisions, or holdings data."
+  },
+  "summary": {
+    "total_tickers": 25,
+    "calculated": 9,
+    "blocked": 16,
+    "fresh_quote_validated": 0,
+    "conditional_quote_calculations": 9,
+    "formal_prediction_records_created": 0,
+    "decision_records_created": 0
+  },
+  "records": [
+    {"ticker":"AMD","status":"blocked","reason":"rule-screened only; no formal weighted/Bear valuation pair","price":605.53,"currency":"USD","quote_fetched_at":"2026-10-14T11:32:35","quote_source":"cache(fallback)"},
+    {"ticker":"APH","status":"conditional","reason":"valuation pair available; quote is cached and stale relative to review time","price":87.24,"currency":"USD","quote_market_time":"2026-10-10T04:00:03","quote_fetched_at":"2026-10-12T08:45:26","quote_source":"cache(fallback)","weighted_value":125.2,"bear_value":46.0,"upside_pct":43.51,"downside_pct":47.27,"odds":0.92},
+    {"ticker":"ASX","status":"blocked","reason":"only Base FairValue is available; no Bear value for downside/odds","price":46.43,"currency":"USD","quote_market_time":"2026-10-10T04:00:02","quote_source":"cache(fallback)"},
+    {"ticker":"AVGO","status":"blocked","reason":"no formal weighted/Bear valuation pair in the analysis ledger","price":346.25,"currency":"USD","quote_market_time":"2026-10-15T04:00:01","quote_source":"cache(fallback)"},
+    {"ticker":"CRM","status":"conditional","reason":"valuation pair available; quote is cached and stale relative to review time","price":229.13,"currency":"USD","quote_market_time":"2026-10-10T04:00:03","quote_fetched_at":"2026-10-12T14:32:00","quote_source":"cache(fallback)","weighted_value":415.0,"bear_value":142.0,"upside_pct":81.12,"downside_pct":38.03,"odds":2.133},
+    {"ticker":"GOOGL","status":"conditional","reason":"valuation pair available; quote is cached and stale relative to review time","price":351.66,"currency":"USD","quote_market_time":"2026-10-10T04:00:00","quote_fetched_at":"2026-10-12T17:07:22","quote_source":"cache(fallback)","weighted_value":506.0,"bear_value":147.0,"upside_pct":43.89,"downside_pct":58.2,"odds":0.754},
+    {"ticker":"INTU","status":"conditional","reason":"valuation pair available; quote is cached and stale relative to review time","price":302.75,"currency":"USD","quote_market_time":"2026-10-10T04:00:01","quote_fetched_at":"2026-10-12T10:05:53","quote_source":"cache(fallback)","weighted_value":405.8,"bear_value":153.0,"upside_pct":34.04,"downside_pct":49.46,"odds":0.688},
+    {"ticker":"ITRI","status":"conditional","reason":"valuation pair available; quote is cached and stale relative to review time","price":85.58,"currency":"USD","quote_market_time":"2026-10-10T04:00:01","quote_fetched_at":"2026-10-12T09:48:18","quote_source":"cache(fallback)","weighted_value":126.3,"bear_value":41.0,"upside_pct":47.58,"downside_pct":52.09,"odds":0.913},
+    {"ticker":"KTOS","status":"blocked","reason":"rule-generated scenario only; no formal valuation pair","price":42.36,"currency":"USD","quote_market_time":"2026-10-10T04:00:01","quote_source":"cache(fallback)"},
+    {"ticker":"MSFT","status":"conditional","reason":"valuation pair available; quote is cached and stale relative to review time","price":535.07,"currency":"USD","quote_market_time":"2026-10-10T04:00:01","quote_fetched_at":"2026-10-12T14:31:56","quote_source":"cache(fallback)","weighted_value":962.0,"bear_value":440.0,"upside_pct":79.79,"downside_pct":17.77,"odds":4.491},
+    {"ticker":"MU","status":"blocked","reason":"failed research run and unresolved quote adjustment/timeline anomaly; no validated formal valuation","price":914.13,"currency":"USD","quote_market_time":"2026-10-15T04:00:01","quote_source":"cache(fallback)"},
+    {"ticker":"NFLX","status":"blocked","reason":"rule-generated scenario only; no formal weighted/Bear valuation pair","price":70.3,"currency":"USD","quote_market_time":"2026-10-10T04:00:00","quote_source":"cache(fallback)"},
+    {"ticker":"NOC","status":"blocked","reason":"failed research run and unresolved SEC/Yahoo operating-income mismatch","price":495.69,"currency":"USD","quote_market_time":"2026-10-15T04:00:02","quote_source":"cache(fallback)"},
+    {"ticker":"NOW","status":"conditional","reason":"valuation pair available; quote is stale and snapshot drift is already known","price":140.86,"currency":"USD","quote_market_time":"2026-10-10T04:00:03","quote_fetched_at":"2026-10-12T14:31:52","quote_source":"cache(fallback)","weighted_value":221.0,"bear_value":82.0,"upside_pct":56.89,"downside_pct":41.79,"odds":1.362},
+    {"ticker":"NVO","status":"blocked","reason":"IFRS/ADR/currency normalization remains unresolved","price":38.12,"currency":"USD","quote_market_time":"2026-10-15T04:00:02","quote_source":"cache(fallback)"},
+    {"ticker":"NVDA","status":"conditional","reason":"price refreshed from Yahoo on review date, but latest daily close is null; quote requires manual market-data confirmation","price":214.13,"currency":"USD","quote_market_time":"2026-10-17T04:00:00","quote_fetched_at":"2026-10-17T08:35:44","quote_source":"yahoo direct","weighted_value":427.0,"bear_value":78.0,"upside_pct":99.41,"downside_pct":63.57,"odds":1.564},
+    {"ticker":"NVTS","status":"blocked","reason":"rule-generated scenario only; no formal valuation pair","price":10.78,"currency":"USD","quote_market_time":"2026-10-10T04:00:00","quote_source":"cache(fallback)"},
+    {"ticker":"OKLO","status":"blocked","reason":"rule-screened/insufficient formal valuation; no validated weighted/Bear pair","price":34.7,"currency":"USD","quote_market_time":"2026-10-10T04:00:03","quote_source":"cache(fallback)"},
+    {"ticker":"ORCL","status":"conditional","reason":"valuation pair available; quote is cached and stale relative to review time","price":141.4,"currency":"USD","quote_market_time":"2026-10-10T04:03:26","quote_fetched_at":"2026-10-12T15:45:19","quote_source":"cache(fallback)","weighted_value":344.0,"bear_value":67.0,"upside_pct":143.28,"downside_pct":52.62,"odds":2.723},
+    {"ticker":"QCOM","status":"blocked","reason":"preliminary research only; latest debt/cash/goodwill/intangible confirmation remains pending","price":172.62,"currency":"USD","quote_market_time":"2026-10-15T04:00:01","quote_source":"cache(fallback)"},
+    {"ticker":"RKLB","status":"blocked","reason":"rule-generated scenario only; no formal valuation pair","price":68.21,"currency":"USD","quote_market_time":"2026-10-10T04:00:00","quote_source":"cache(fallback)"},
+    {"ticker":"SKHY","status":"blocked","reason":"no usable quote and no formal valuation","price":null,"currency":null,"quote_source":"none"},
+    {"ticker":"SOFI","status":"blocked","reason":"bank-specific adapter is incomplete; generic revenue validation is invalid","price":14.22,"currency":"USD","quote_market_time":"2026-10-15T04:00:00","quote_source":"cache(fallback)"},
+    {"ticker":"SPCX","status":"blocked","reason":"no reliable ordinary-equity quote/valuation data","price":162.57,"currency":"USD","quote_market_time":"2026-10-10T04:00:00","quote_source":"cache(fallback)"},
+    {"ticker":"UMC","status":"blocked","reason":"no formal weighted/Bear valuation pair in the analysis ledger","price":22.96,"currency":"USD","quote_market_time":"2026-10-10T04:00:02","quote_source":"cache(fallback)"}
+  ]
+}

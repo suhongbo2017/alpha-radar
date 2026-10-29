@@ -90,6 +90,7 @@ $env:ALPHA_SEC_UA = "alpha-radar research (contact: you@example.com)"
 │   ├── analyses.jsonl               # Alpha Radar 分析结论
 │   ├── quotes/                      # 行情缓存
 │   ├── estimates/                   # 分析师一致预期缓存
+│   ├── revaluations/                # 价格敏感性审计（追加式，不改预测）
 │   ├── positions.example.json       # 持仓快照格式示例
 │   └── positions.json               # 本地持仓，禁止公开提交
 ├── scripts/
@@ -684,3 +685,16 @@ py scripts/build_site.py
 仓库当前未声明统一开源许可证。发布或复用前请先确认代码、研究文本、第三方数据和生成产物的授权边界。
 
 SEC、Yahoo Finance 和券商接口各自受其服务条款约束。不要把需要登录、包含个人持仓或包含凭据的文件部署到公开站点或提交到公开仓库。
+
+### 重估赔率审计
+
+当行情变化但尚未修订正式预测时，可以快速重算价格敏感性指标：
+
+```powershell
+# 需要手动脚本或 agent 生成，产出示例见 data/revaluations/
+# 输入：data/analyses.jsonl 的 weighted_value/bear_value + 最新报价
+# 输出：上行/下行/赔率（不写入 predictions/decisions）
+```
+
+这类审计属于**追加式研究记录**，应提交到 `data/revaluations/` 以便追溯"当时认为赔率如何"，但**不改写已登记的预测或决策**。
+
