@@ -8,7 +8,7 @@
     "sha256": "f56ee115f2a11946ab11e2edd7852072a9357f629811a1259b7391e060fb1074",
     "grade": "research",
     "assertions": {
-      "price": 229.28,
+      "price": 214.13,
       "ttm_revenue": 302970000000.0,
       "ttm_fcf": 127010000000.0
     }
@@ -45,8 +45,8 @@
     "net_debt_ebitda": 0.054271461647769616,
     "shares": 24285000000,
     "shares_date": "2026-07-26",
-    "price": 229.28,
-    "market_cap": 5568064800000.0,
+    "price": 214.13,
+    "market_cap": 5200147050000.0,
     "tax_rate": 0.16045320205621064,
     "nopat": 165876816790.93597,
     "invested_capital": 239907000000.0,

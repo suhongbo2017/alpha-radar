@@ -8,7 +8,7 @@
     "sha256": "543911e1d52bbfd7df3666b25a13e2af2c50ad6a119cafb287680edb6294b47e",
     "grade": "rule",
     "assertions": {
-      "price": 175.5,
+      "price": 172.62,
       "ttm_revenue": 44070000000.0,
       "roic_pct": 104.4,
       "net_debt_ebitda": 0.27
@@ -46,8 +46,8 @@
     "net_debt_ebitda": 0.2691427117781735,
     "shares": 1069000000,
     "shares_date": "2026-06-28",
-    "price": 175.5,
-    "market_cap": 187609500000.0,
+    "price": 172.62,
+    "market_cap": 184530780000.0,
     "tax_rate": 0.17409917945058864,
     "nopat": 8440706386.014984,
     "invested_capital": 8083000000.0,

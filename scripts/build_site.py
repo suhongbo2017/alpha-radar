@@ -198,6 +198,7 @@ def build_snapshots(runs, estimates, prices):
             if metrics.get("shares") and metrics.get("ttm_fcf"):
                 pfcf = price * metrics["shares"] / metrics["ttm_fcf"]
         status = run.get("status") or "仅行情"
+        status_filter = status if run.get("status") else "market-only"
         price = quote.get("price") if quote.get("price") is not None else metrics.get("price")
         target = estimate.get("target_mean")
         try:
@@ -215,7 +216,7 @@ def build_snapshots(runs, estimates, prices):
             fmt_metric(estimate.get("forward_pe"), "multiple"), fmt_metric(pfcf, "multiple"),
             fmt_metric(target, "price"), str(estimate.get("recommendation") or "—"), gap_text,
         ]
-        out.append('<tr data-status="%s" data-txt="%s">' % (html.escape(status), html.escape(" ".join(map(str, values)).lower())))
+        out.append('<tr data-status="%s" data-txt="%s">' % (html.escape(status_filter), html.escape(" ".join(map(str, values)).lower())))
         for i, value in enumerate(values):
             cls = "num" if i in (2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13) else ""
             out.append('<td class="%s">%s</td>' % (cls, html.escape(str(value))))
@@ -664,7 +665,8 @@ function filt(sec){
   var n=0;
   rows.forEach(function(r){
     var t=r.dataset.txt||r.textContent.toLowerCase();
-    var ok=(!q||t.indexOf(q)>=0)&&(!g||r.dataset.grade===g);
+    var attr=r.dataset.grade||r.dataset.status||'';
+    var ok=(!q||t.indexOf(q)>=0)&&(!g||attr===g);
     r.style.display=ok?'':'none'; if(ok)n++;
   });
   var c=document.getElementById('c-'+sec); if(c)c.textContent=n+' 项';
@@ -989,7 +991,7 @@ def main():
 %s
 </section>
 <section id="s-snapshot"><div class="board-intro"><div><div class="eyebrow">Verified data snapshot</div><h2>数据快照</h2><p>这里展示自动流程获取的最新行情、财务指标和一致预期。它是研究事实层，不是预测列表，也不自动产生估值或投资决策。</p></div></div>
-<div class="bar"><input id="q-snapshot" aria-label="搜索数据快照" placeholder="搜索 ticker / 指标 / 状态…" oninput="filt('snapshot')"><select id="g-snapshot" aria-label="按数据状态筛选" onchange="filt('snapshot')"><option value="">全部状态</option><option value="rule-screened">已筛选</option><option value="blocked">阻断</option><option value="failed">校验失败</option><option value="">仅行情</option></select><span class="pill" id="c-snapshot"></span></div>
+<div class="bar"><input id="q-snapshot" aria-label="搜索数据快照" placeholder="搜索 ticker / 指标 / 状态…" oninput="filt('snapshot')"><select id="g-snapshot" aria-label="按数据状态筛选" onchange="filt('snapshot')"><option value="">全部状态</option><option value="rule-screened">已筛选</option><option value="blocked">阻断</option><option value="failed">校验失败</option><option value="market-only">仅行情</option></select><span class="pill" id="c-snapshot"></span></div>
 <div class="notice">数值保留原始数据截点；`—` 表示该来源未提供或尚未通过对应口径验证。状态为“阻断/校验失败”的标的仅供研究，不得直接登记正式预测。</div>
 %s
 </section>
@@ -1118,9 +1120,8 @@ function showDocList(){
         len(docs), n_doc["报告级"], n_doc["研究级"], n_doc["规则级"],
         len(odds_ok), len(preds),
         build_board(analyses, prices, holds),
-        snapshots,
         "".join(cards), "".join(details),
-        build_preds(preds), build_decisions(decs), defects,
+        build_preds(preds), snapshots, build_decisions(decs), defects,
         ("<h2>最近一次门禁</h2><pre>%s</pre>" % esc("\n".join(gates))) if gates else "",
         ("<br>⚠️ 含持仓" if holds else ""),
         json.dumps(chart_data, ensure_ascii=False).replace("</", "<\\/"),
