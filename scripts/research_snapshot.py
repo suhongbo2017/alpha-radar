@@ -31,7 +31,19 @@ def report_grade(text):
 
 
 def sha256(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """报告内容哈希 —— **必须先归一换行**。
+
+    [D-98] 原实现直接 sha256(read_bytes())。.gitattributes 声明 `* text=auto eol=lf`，
+    但 Windows 工作区里有些 .md 实际存成了 CRLF（写入工具的锅）。于是：
+      · 本地（CRLF）哈希 = 7cf97f…，与快照一致 → G9 绿
+      · CI / 新克隆（LF）哈希 = 5d0f94…，与快照不一致 → G9 红
+    **同一份提交，本地绿、CI 红** —— 而 workflow 注释还写着“本地通过，CI 必通过”。
+
+    修法：哈希基于“归一后的文本内容”（CRLF→LF），而不是字节原样。
+    这样换行策略不再影响结论；真内容变了仍然会红。
+    注：改动后快照里的 sha 需重生一次（它是派生数据，用 generate 重生，不手改 —— D-85）。
+    """
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def run_metrics(ticker):
@@ -150,6 +162,7 @@ def generate():
 
 def validate():
     problems = []
+    degraded = []          # [D-97] 无 SEC facts → 只校验结构/哈希，不重推指标
     paths = sorted(ANALYSIS.glob("*_AlphaRadar.md"))
     for path in paths:
         ticker = path.stem.replace("_AlphaRadar", "").upper()
@@ -172,6 +185,14 @@ def validate():
         try:
             current = run_metrics(ticker)
         except Exception as e:
+            # [D-97] SEC 原始 facts 被 .gitignore 排除 → CI/新克隆里根本没有。
+            # 这时的正确行为不是把整个门禁跳过（那就连下面的哈希校验也一起没了），
+            # 而是【逐标的降级】：结构 + 报告哈希照旧校验，只跳过“重新推指标”这一层，并说出来。
+            if not (ANALYSIS / "sec" / (ticker.lower() + "_facts.json")).exists():
+                print("⏭ %s: 本环境无 SEC facts（analysis/sec/%s_facts.json），"
+                      "只校验了结构 + 报告哈希，未重推指标" % (ticker, ticker.lower()))
+                degraded.append(ticker)
+                continue
             problems.append("%s: 当前指标无法生成: %s" % (ticker, e))
             continue
         old = snap.get("data", {})
@@ -191,6 +212,10 @@ def validate():
         print("__SNAPSHOT_FAIL__")
         return 1
     print("✅ 研究快照一致：%d 份" % len(paths))
+    if degraded:
+        # 这句必须在 PASS 之前 —— 它说明这次 PASS 覆盖了什么、没覆盖什么
+        print("⚠ %d 份只校验了结构/哈希（无 facts，未重推指标）：%s"
+              % (len(degraded), ", ".join(degraded)))
     print("__SNAPSHOT_PASS__")
     return 0
 

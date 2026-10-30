@@ -110,6 +110,7 @@ def main():
             print("   ✓ 无数量类字段")
 
     # ── 3. 可选：全部门禁
+    n_skip = 0
     if a.with_gates:
         step(3, "全部 10 道门禁")
         r = run([sys.executable, "scripts/gates.py", "--all"])
@@ -117,9 +118,13 @@ def main():
         for l in lines:
             print("   " + l)
         n_pass = sum(1 for l in lines if "__GATE_PASS__" in l)
+        n_skip = sum(1 for l in lines if "__GATE_SKIP__" in l)
         n_total = len(lines)
-        print("   通过 %d / %d" % (n_pass, n_total))
-        if n_pass != n_total:
+        print("   通过 %d / 跳过 %d / 共 %d" % (n_pass, n_skip, n_total))
+        if n_skip:
+            # [D-97] SKIP 不是通过：必须在汇总里单独列出来，否则它就变成了隐藏的绿灯
+            print("   ⏭  跳过 %d 道（本环境缺少外部输入，非断言失败；本地需补上后重跑）" % n_skip)
+        if n_pass + n_skip != n_total:
             print("   ✗ 有门禁未通过")
             for l in (r.stdout or "").splitlines()[-25:]:
                 if "✗" in l:
@@ -127,8 +132,14 @@ def main():
             ok = False
 
     print("\n" + "=" * 58)
-    print("  %s" % ("✅ 可以部署（本地验证已通过，CI 只会多一步上传）" if ok
-                    else "❌ 存在失败项 —— 不要部署"))
+    if not ok:
+        print("  ❌ 存在失败项 —— 不要部署")
+    elif n_skip:
+        print("  ⚠️ 可构建，但 %d 道门禁在本环境【跳过】而非通过" % n_skip)
+        print("     若这是 CI：属预期（runner 没有 SEC facts / 未安装 skill 副本）")
+        print("     若这是本地：先补上输入再重跑 —— 不要拿跳过当绿灯")
+    else:
+        print("  ✅ 可以部署（10 道门禁全过，CI 只会多一步上传）")
     print("=" * 58)
     return 0 if ok else 1
 

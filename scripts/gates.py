@@ -50,6 +50,55 @@ GATES = [
 EXPECTED_FILE = os.path.join(ROOT, "scripts", "expected_fail.json")
 
 
+# ── [D-97] 环境缺失 → SKIP（不是豁免，也不是通过）
+# 起因：workflow 注释写着“本地跑通 ⟺ CI 必通过”，实测**从来没通过过**：
+#   · G2 要看 $HOME/.pi/agent/skills 下的副本 —— runner 上没有这个目录，不是漂移，是“未安装”
+#   · G7 要 analysis/sec/*_facts.json —— 被 .gitignore 排除，新建克隆里根本没有
+# 两个都是**环境输入缺失**，不是断言失败。把它们当失败，结果是 CI 永久红（与 D-96 同一个病）。
+#
+# 约束（防止 SKIP 变成后门）：
+#   1. 只有这里列出的“外部输入不存在”才允许 SKIP；断言失败一律 FAIL
+#   2. SKIP 必须在输出里写清楚【缺了什么/本地怎么补】，不许静默
+#   3. SKIP 计入汇总，且带 --strict 时**仍返回 0** —— 否则 CI 又变成永远红
+def _home():
+    """与 sync_skills.sh 用同一个口径。
+    Windows 上 os.path.expanduser("~") 会优先 USERPROFILE，**忽略 HOME** ——
+    而 sync_skills.sh 用的是 ${HOME:-...}。两边不一致会让 SKIP 判定在 git-bash 下失效。
+    """
+    return os.environ.get("HOME") or os.path.expanduser("~")
+
+
+ENV_SKIPS = {
+    "G2": {
+        "path": os.path.join(_home(), ".pi", "agent", "skills"),
+        "why": "本机未安装 Pi skill 副本（该目录不存在），无从比对漂移",
+        "fix": "bash scripts/sync_skills.sh",
+    },
+    "G7": {
+        "path": os.path.join(ROOT, "analysis", "sec"),
+        "why": "本环境没有 SEC 原始 facts（analysis/sec/*_facts.json 不入 Git）",
+        "fix": "py scripts/alpha_fetch.py <TICKER> ...（本地必须跑通 G7）",
+        "need_glob": "*_facts.json",
+    },
+}
+
+
+def env_skip_reason(gid):
+    """→ (reason, fix) 或 None。只接受“输入确实不存在”，不做模糊判断。"""
+    spec = ENV_SKIPS.get(gid)
+    if not spec:
+        return None
+    p = spec["path"]
+    if spec.get("need_glob"):
+        import glob
+        if glob.glob(os.path.join(p, spec["need_glob"])):
+            return None
+        return (spec["why"], spec["fix"])
+    if os.path.exists(p):
+        return None
+    return (spec["why"], spec["fix"])
+
+
 def load_expected(gid):
     """读取某道门禁的已知失败豁免。没有文件/没有该门禁 → []"""
     try:
@@ -166,6 +215,12 @@ def run_one(gid):
     name = gate_name(gid)
     cmd = gate_cmd(gid)
     print("─── %s  %s ───" % (gid, name))
+    skip = env_skip_reason(gid)
+    if skip:
+        print("  ⏭  SKIP：%s" % skip[0])
+        print("     补上后本地必须跑通：%s" % skip[1])
+        print("__GATE_SKIP__ %s" % gid)
+        return 0
     if not cmd:
         print("__GATE_FAIL__ %s (unknown gate)" % gid)
         return 1
@@ -242,9 +297,15 @@ def main():
         return run_one(args[1])
     if args[0] == "--all":
         rc = 0
+        counts = {"PASS": 0, "SKIP": 0, "FAIL": 0}
         for g, _ in GATES:
-            rc |= run_one(g)
-        print("─── 汇总: %s ───" % ("全部通过" if rc == 0 else "存在失败"))
+            skipped = env_skip_reason(g) is not None   # 先问，因为 SKIP 也是 0 退出码
+            rc_g = run_one(g)
+            counts["SKIP" if skipped else ("PASS" if rc_g == 0 else "FAIL")] += 1
+            rc |= rc_g
+        print("─── 汇总: %d 通过 / %d 跳过 / %d 失败 → %s ───" % (
+            counts["PASS"], counts["SKIP"], counts["FAIL"],
+            "全部通过" if rc == 0 else "存在失败"))
         return rc
     print("用法: gates.py [--all|--only <ID>|--list]")
     return 2

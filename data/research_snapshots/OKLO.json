@@ -2,10 +2,10 @@
   "schema_version": 1,
   "ticker": "OKLO",
   "status": "blocked",
-  "generated_at": "2026-10-13T09:14:57+00:00",
+  "generated_at": "2026-10-30T09:20:38+00:00",
   "report": {
     "path": "analysis/OKLO_AlphaRadar.md",
-    "sha256": "315e05cc5e5ea32eccc67f4c33fe59594c263082bd308be3dbe3ffa50f70f8ea",
+    "sha256": "929243b37628cca554b805bf1ced1bdb71afeac1841d2e3fe094bb5b533985d4",
     "grade": "rule",
     "assertions": {
       "price": 34.7,

@@ -2,10 +2,10 @@
   "schema_version": 1,
   "ticker": "SKHY",
   "status": "blocked",
-  "generated_at": "2026-10-13T09:14:58+00:00",
+  "generated_at": "2026-10-30T09:20:39+00:00",
   "report": {
     "path": "analysis/SKHY_AlphaRadar.md",
-    "sha256": "c56517a0d98aa9b3b479009e4702bdb46fe057688442944fc866f795a3e9c682",
+    "sha256": "79a928bae023e6dcecb144286b7149bd9a6b2ed569e3c15a5b39b8d1bf2881d3",
     "grade": "rule",
     "assertions": {
       "ttm_revenue": null

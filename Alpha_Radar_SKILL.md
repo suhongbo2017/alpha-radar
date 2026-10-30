@@ -119,6 +119,11 @@ py scripts/pages_build.py --refresh        # 先重生研究快照再构建（�
 #     ② 表内的项本次不再失败   → 豁免已过期，必须删除（防腐烂）
 #     ③ 绑定的缺陷不存在/已修好 → 豁免无效，必须删除
 
+# 环境跳过：[D-97] G2（无 Pi skill 副本）/ G7（无 analysis/sec/*_facts.json）在 CI 上打 __GATE_SKIP__
+#   · SKIP ≠ PASS：汇总里单独计数（通过 8 / 跳过 2 / 共 10）
+#   · 只允许「输入确实不存在」这一种情形，且必须打印缺了什么 + 本地怎么补
+#   · 本地/新环境补上输入后必须跑成 PASS；G9 不整道跳过，改为逐标的降级（哈希照验）
+
 # [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
 py scripts/build_site.py                     # 默认：不含持仓（可公开）
 py scripts/build_site.py --include-holdings  # 🔴 含持仓，不要公开
