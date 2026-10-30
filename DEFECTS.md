@@ -1865,6 +1865,21 @@ HOME=/c/tmp/fakehome python scripts/pages_build.py --with-gates --strict ; echo 
 > **元教训**：**文档里的“等价性声明”必须被 CI 的真实结果反证过一次，否则它只是愿望。**
 > 而“跳过”一旦能在汇总里隐身，就变成了另一种常红 —— 只是这次红在了别处。
 
+**后续（同一天，实测推进）**：修完 D-97/D-98/D-99 后，第 11 次运行（`2244090`）的
+**门禁步骤首次通过**（step 4 `Build + verify` = success），失败点变成了 step 5：
+
+```
+HttpError: Not Found — .../pages#get-a-apiname-pages-site
+Get Pages site failed. Please verify that the repository has Pages enabled …
+```
+
+`GET /repos/suhongbo2017/alpha-radar/pages` → **404**：**仓库根本没有启用 GitHub Pages**。
+这是仓库设置（Settings → Pages → Source = GitHub Actions），不是代码问题，也无法用代码绕过。
+
+> 也就是说：**CI 从来不是"红着的门禁"，而是"红着的配置 + 红着的门禁"叠在一起。**
+> 前 9 次连门禁都没过，所以这一层从未暴露。
+> 未能确认的：第 1–10 次具体是哪道门禁红（旧 job log 需 admin 权限，本轮才加上 annotation）。
+
 ---
 
 ## D-98 G9 的报告哈希对行尾敏感 → 同一份提交本地绿、CI 红（S1）
