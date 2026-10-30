@@ -105,9 +105,19 @@ py scripts/alpha_metrics.py APH --score-inputs   # 直接输出 alpha_score.py �
 
 # [D-75] 站点构建的【唯一入口】—— 本地与 CI 共用同一条路径
 py scripts/pages_build.py                  # 构建 + 安全断言
-py scripts/pages_build.py --with-gates     # 再跑全部 8 道门禁（CI 用这个）
+py scripts/pages_build.py --with-gates     # 再跑全部 10 道门禁（CI 用这个）
 py scripts/pages_build.py --strict         # 任一失败即非零退出
 py scripts/pages_build.py --refresh        # 先重生研究快照再构建（本地发布用）
+
+# 门禁清单（10 道）
+#   G1 账本回归 / G2 skill 同步 / G3 数据完整性 / G4 语法 / G5 文档-CLI 漂移
+#   G6 账本已固化 / G7 一手数据多层校验 / G8 站点安全 / G9 研究快照 / G10 缺陷册自洽
+#
+# 已知失败豁免：scripts/expected_fail.json
+#   每项必须绑定一个**仍未关闭**的缺陷 ID。三种情况会立刻变红：
+#     ① 出现了不在表内的失败   → 新问题，必须处理，不许加进豁免表
+#     ② 表内的项本次不再失败   → 豁免已过期，必须删除（防腐烂）
+#     ③ 绑定的缺陷不存在/已修好 → 豁免无效，必须删除
 
 # [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
 py scripts/build_site.py                     # 默认：不含持仓（可公开）
@@ -147,12 +157,19 @@ py scripts/alpha_portfolio.py check                # 只列持仓与分析的冲
 py scripts/alpha_portfolio.py analysis --ticker APH --score 84.6 --odds 0.92 --action Watch --price 87.24
 ```
 
+> **[D-93] 赔率必须声明口径 `--odds-basis`。** 两种口径不是同一个量：
+> `rule-engine` = `alpha_scenario.py` 按「市值规模 + TTM 增速 + 杠杆 + 是否烧钱」规则算出，可复算、不含行业判断；
+> `analyst` = bottom-up 研究给的人工研判，含行业与竞争判断、**不可复算**。
+> 实测同一批标的两种口径相差 3~6 倍（MSFT 4.49 vs 0.72）。
+> 站点总览因此**分表展示、绝不跨口径排序** —— 把两者排进同一个序是没有意义的。
+> 老记录没有该字段时，按档案等级派生：规则级 → `rule-engine`，其余 → `analyst`。
+
 **`alpha_portfolio.py` 选项速查：**
 
 | 子命令 | 关键选项 |
 |---|---|
 | `sync` | `--url` `--user` `--password` `--proxy` `--dry-run` `--as-of` `--full` |
-| `analysis` | `--ticker` `--score` `--lifecycle` `--moat` `--roic` `--wacc` `--net-debt-ebitda` `--odds` `--weighted` `--bear` `--action` `--price` `--valuation-pct` `--dossier` `--date` |
+| `analysis` | `--ticker` `--score` `--lifecycle` `--moat` `--roic` `--wacc` `--net-debt-ebitda` `--odds` `--odds-basis` `--weighted` `--bear` `--action` `--price` `--valuation-pct` `--dossier` `--date` |
 | `buy` / `sell` | `--ticker` `--shares` `--price` `--date` `--fee` `--currency` `--note` |
 | `cash` | `--amount` |
 | `holdings` / `board` / `check` | 无选项 |
@@ -863,6 +880,14 @@ py scripts/alpha_ledger.py predict --ticker APH --scenario Base --metric Revenue
     --period 2027H1 --period-type half_year --horizon-type operating_checkpoint \
     --value 22e9 --unit USD --prob 0.45
 
+# [D-94] 单点预测（无区间）：锚定一致预期的 1-2 年核对点用 --point
+# 语义：隐含 scenario=Base、不带概率、必须给 --basis（否则无法追溯锚点）。
+# 为什么允许：三情景的意义是「区间」；为凑格式而硬造 Bear/Bull 等于发明三个数字。
+# 限制：终局估值（FairValue / Target_Price）禁止单点 —— 那里区间才是核心。
+py scripts/alpha_ledger.py predict --ticker NVDA --metric EPS --period FY2027 \
+    --value 9.31 --unit USD --point --confidence Low \
+    --thesis "一致预期 FY2027 摊薄 EPS" --basis "一致预期（alpha_quote.py --estimates, 2026-10-30）"
+
 # 导出 CSV 便于人工审阅
 py scripts/alpha_ledger.py export
 ```
@@ -871,7 +896,7 @@ py scripts/alpha_ledger.py export
 
 | 子命令 | 关键选项 |
 |---|---|
-| `predict` | `--ticker` `--metric` `--period` `--period-type` `--horizon-type` `--value` `--unit` `--scenario` `--prob` `--confidence` `--version` `--date` `--thesis` `--basis` `--informational` |
+| `predict` | `--ticker` `--metric` `--period` `--period-type` `--horizon-type` `--value` `--unit` `--scenario` `--prob` `--point` `--confidence` `--version` `--date` `--thesis` `--basis` `--informational` |
 | `actual` | `--ticker` `--metric` `--period` `--value` `--unit` `--date` `--source` `--fx` `--attribution` |
 | `decision` | `--ticker` `--action` `--price` `--currency` `--weight` `--prev-weight` `--odds` `--fair-value` `--thesis` `--reason` `--date` |
 | `decisions` | `--ticker` |
@@ -886,7 +911,7 @@ py scripts/alpha_ledger.py export
 |---|---|---|
 | 1. 主评分 | Base Case vs 实际 | ✅ **唯一计分区** |
 | 2. 概率加权预测 vs 实际 | Σ(概率×预测值)，[D-08] | ❌ 参考 |
-| 3. 情景区间命中 | 实际落在哪一段、是否出区间 | ❌ 独立统计 |
+| 3. 情景区间命中 | 实际落在哪一段、是否出区间（单点预测不计入） | ❌ 独立统计 |
 | 4. 历史版本对照 | v1 / v2 / … 各自 vs 实际 | ❌ |
 | 5. 估值输出对照 | FairValue / Target_Price | ❌ 弱可验证 |
 | 6. 预测能力 | 按 Ticker+Metric+币种分组 | ✅ 汇总 |
@@ -1264,9 +1289,19 @@ D:/pi/select_stock/
 │   ├── verify_data.py                # [G7] 四层数据校验（含外部交叉）
 │   ├── alpha_portfolio.py            # [D-75] 站点构建的【唯一入口】—— 本地与 CI 共用同一条路径
 py scripts/pages_build.py                  # 构建 + 安全断言
-py scripts/pages_build.py --with-gates     # 再跑全部 8 道门禁（CI 用这个）
+py scripts/pages_build.py --with-gates     # 再跑全部 10 道门禁（CI 用这个）
 py scripts/pages_build.py --strict         # 任一失败即非零退出
 py scripts/pages_build.py --refresh        # 先重生研究快照再构建（本地发布用）
+
+# 门禁清单（10 道）
+#   G1 账本回归 / G2 skill 同步 / G3 数据完整性 / G4 语法 / G5 文档-CLI 漂移
+#   G6 账本已固化 / G7 一手数据多层校验 / G8 站点安全 / G9 研究快照 / G10 缺陷册自洽
+#
+# 已知失败豁免：scripts/expected_fail.json
+#   每项必须绑定一个**仍未关闭**的缺陷 ID。三种情况会立刻变红：
+#     ① 出现了不在表内的失败   → 新问题，必须处理，不许加进豁免表
+#     ② 表内的项本次不再失败   → 豁免已过期，必须删除（防腐烂）
+#     ③ 绑定的缺陷不存在/已修好 → 豁免无效，必须删除
 
 # [D-70] 静态站点（只读快照，可离线打开 / 可上 GitHub Pages）
 py scripts/build_site.py                     # 默认：不含持仓（可公开）
