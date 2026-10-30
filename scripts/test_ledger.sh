@@ -14,7 +14,10 @@ ng()   { echo "  ✗ $1"; fail=$((fail+1)); }
 # 而 mkdir -p 仍然成功 → 残留的旧预测会触发"版本冲突" → 写预测的用例全部拿到空输出。
 # 实测该残留会让 T1/T2/T4/T7/T8 失败，且是间歇性的（取决于是否有残留进程持锁）。
 # flaky 的门禁比没有门禁更糟 —— 它会训练人忽略红灯。
-RUN_DIR="/c/tmp/ar_reg_$$"
+# [D-95] 实测 2 次运行出现“全程突然变红”（T1/T2/T4/T7/T8 集体拿到空输出），
+# 随后连续 9 次全绿、无法复现。仅 PID 命名在 Windows 上有 PID 复用与文件锁残留的先例，
+# 所以目录名再加随机变量，至少排除“两个进程共用同一临时库”。
+RUN_DIR="/c/tmp/ar_reg_$$_$RANDOM"
 fresh(){
   export ALPHA_RADAR_HOME="$RUN_DIR"
   rm -rf "$RUN_DIR" 2>/dev/null
@@ -183,6 +186,30 @@ $L attribute --ticker T --metric Revenue --period FY2028 --attribution Margin --
 out=$($L report --ticker T)
 echo "$out" | grep -q "## 7. 误差归因分布" && ok "T12 报告含第 7 节" || ng "T12 缺第 7 节"
 echo "$out" | grep -q "Demand" && echo "$out" | grep -q "Margin" && ok "T12 两类归因均统计" || ng "T12 归因聚合不全"
+
+# ---------- T14 [D-94] 单点预测 vs 三情景的口径 ----------
+# 起因：8 条锚定一致预期的核对点是单情景的，而 G3 只接受三情景齐全 100%。
+# 当时的两个选择都是错的：硬造 Bear/Bull（发明数字）或降级 informational（等于不核对）。
+# 断言的重点：单点【必须显式声明】，不能靠“只有 Base”隐式成立 ——
+# 否则任何忘写概率的三情景预测都会被当成合法的单点预测而放行。
+fresh
+$L predict --ticker P --metric EPS --period FY2027 --value 9.31 --unit USD \
+  --point --confidence Low --thesis t --basis "一致预期" 2>&1 \
+  | grep -q '"scenario_set": "point"' && ok "T14 --point 写成 scenario_set=point" || ng "T14 --point 未落盘"
+$L predict --ticker P --metric EPS --period FY2028 --value 1 --unit USD --prob 0.45 2>&1 \
+  | grep -q '"scenario_set": "tri"' && ok "T14 普通预测默认 tri" || ng "T14 默认口径错误"
+if $L predict --ticker P --metric EPS --period FY2029 --value 1 --unit USD --point --prob 0.45 >/dev/null 2>&1; then
+  ng "T14 --point 与 --prob 应互斥"; else ok "T14 --point 与 --prob 互斥"; fi
+if $L predict --ticker P --metric EPS --period FY2029 --value 1 --unit USD --point --scenario Bull >/dev/null 2>&1; then
+  ng "T14 --point 只允许 Base"; else ok "T14 --point 只允许 Base"; fi
+if $L predict --ticker P --metric FairValue --period FY2029 --value 100 --unit USD --point >/dev/null 2>&1; then
+  ng "T14 终局估值不得单点"; else ok "T14 终局估值不得单点"; fi
+# 报告第 3 节：单点预测不得被当成“区间”统计（否则几乎每条都是“超出区间”的假警报）
+$L actual --ticker P --metric EPS --period FY2027 --value 9.0 --unit USD >/dev/null
+out=$($L report --ticker P)
+echo "$out" | grep -q "组单点预测" && ok "T14 报告显式跳过单点预测" || ng "T14 报告未声明单点跳过"
+if echo "$out" | sed -n '/## 3\./,/## 4\./p' | grep -q "⚠️ \*\*是\*\*"; then
+  ng "T14 单点预测被当成区间产生假警报"; else ok "T14 单点预测不产生区间假警报"; fi
 
 # ---------- T13 alpha_score.py ----------
 S="$PY scripts/alpha_score.py"

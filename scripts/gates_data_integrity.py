@@ -133,18 +133,42 @@ def main():
             warnings.append("decisions #%d: %s 在赔率 %.2f:1 时选了 %s（违反赔率纪律，已如实留痕）"
                             % (i, r["ticker"], r["odds"], r["action"]))
 
-    # 正式预测的三情景概率必须完整且合计 100%；历史 legacy/informational 不阻断
+    # 正式预测的情景口径：要么三情景齐全且概率合计 100%，要么显式声明为单点预测。
+    # [D-94] 原来的断言只有前一种，于是锚定一致预期的 1-2 年核对点被逼成两种坏选择：
+    #   ① 硬造 Bear/Bull → 发明三个数字（比缺字段更糟）
+    #   ② 降级 informational → 不算分，等于不打算核对
+    # 现规则：单点合法，但必须可追溯（source_basis）、不得带概率、不得用于终局估值。
     formal_groups = {}
     for r in preds:
         if r.get("prediction_status") == "formal":
             k = (r.get("ticker"), r.get("metric"), _al.norm_period(r.get("forecast_period", "")),
                  r.get("forecast_version", "v1"))
             formal_groups.setdefault(k, []).append(r)
+    legacy_points = []
+    point_total = 0
     for k, rows in formal_groups.items():
         scenarios = {r.get("scenario") for r in rows}
         probs = [r.get("probability") for r in rows]
+        declared = {r.get("scenario_set") for r in rows}
+        is_point = (len(rows) == 1 and scenarios == {"Base"}
+                    and declared <= {"point", None} and probs == [None])
+        if is_point:
+            point_total += 1
+            r0 = rows[0]
+            if not (r0.get("source_basis") or "").strip():
+                problems.append("单点预测缺 source_basis（无法追溯锚点，无法复核）: %s" % (k,))
+            if r0.get("horizon_type") == "valuation_terminal" or \
+               r0.get("metric") in ("FairValue", "Target_Price"):
+                problems.append("终局估值不允许单点预测（必须给 Bull/Base/Bear 区间）: %s" % (k,))
+            if any(r.get("scenario_set") is None for r in rows):
+                legacy_points.append(k)      # D-94 之前的旧记录，字段不存在
+            continue
         if scenarios != {"Bull", "Base", "Bear"} or any(p is None for p in probs) or abs(sum(probs) - 1.0) > 0.001:
             problems.append("formal 情景概率不完整或不合计 100%%: %s scenarios=%s probs=%s" % (k, sorted(scenarios), probs))
+    if point_total:
+        print("  单点预测（无区间）: %d 组%s" % (
+            point_total,
+            "（其中 %d 组为 D-94 之前的旧记录，靠隐含规则认定）" % len(legacy_points) if legacy_points else ""))
 
     # 版本内数值冲突
     seen = {}

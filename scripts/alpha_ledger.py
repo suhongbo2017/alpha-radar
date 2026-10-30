@@ -353,6 +353,20 @@ def cmd_predict(a):
     if a.prob is not None and not (0 < a.prob <= 1):
         die("--prob 应为 0-1 之间的小数（如 0.45）")
 
+    # ── [D-94] 口径必须显式声明：三情景 vs 单点
+    # 三情景存在的意义是「区间」——用来判断实际落在哪、以及防止事后择优（D-01）。
+    # 但一个锚定一致预期的 1-2 年短期核对点，本来就没有区间可言；
+    # 为了满足格式而硬造 Bear/Bull，等于发明三个数字（比缺字段更糟）。
+    # 所以：单点预测合法，但必须声明，且不得出现在终局估值上（那里区间是核心）。
+    if a.point:
+        if a.scenario != "Base":
+            die("--point 是单点预测，只能是 Base 情景（它给的是点估计，不是区间）")
+        if a.prob is not None:
+            die("--point 与 --prob 互斥：单点预测没有概率分布，写概率会产生假的三情景")
+        if kind == "valuation" or horizon_type(metric, a.period) == "valuation_terminal":
+            die("%s 属于终局估值，必须用 Bull/Base/Bear 三情景给区间；单点预测无法表达估值的不确定性" % metric)
+    scenario_set = "point" if a.point else "tri"
+
     value = a.value
     data_status, formal_allowed, dossier_grade = prediction_qualification(a.ticker)
     if not formal_allowed and not a.informational:
@@ -369,6 +383,7 @@ def cmd_predict(a):
         "analysis_date": a.date or dt.date.today().isoformat(),
         "forecast_version": a.version or (a.date or dt.date.today().isoformat()),
         "scenario": a.scenario,
+        "scenario_set": scenario_set,
         "metric": metric,
         "metric_kind": kind,
         "forecast_period": norm_period(a.period),
@@ -635,11 +650,17 @@ def cmd_report(a):
     L.append("|---|---|---|---:|---:|---:|---:|---|---|")
     hit_in, hit_total, sec2_rows = 0, 0, 0
     sec2_printed = 0
+    skipped_point = 0            # [D-94] 单点预测：无区间可言，不参与命中率
     for k in sorted(latest):
         t, m, p = k
         v = latest[k]
         rows = by_ver[(t, m, p, v)]
         sec2_rows += 1
+        if len(rows) == 1 and rows[0].get("scenario") == "Base":
+            # 单点预测：把点估计当区间（vals[0]==vals[-1]）会让几乎每一条都标成「超出区间」，
+            # 那是假警报，不是发现。它的准确度已在第 1 节 Base 计分里。
+            skipped_point += 1
+            continue
         if (t, m, p) in mismatch:
             d = {r["scenario"]: r["forecast_value"] for r in rows}
             u = rows[0]["unit"]
@@ -675,6 +696,10 @@ def cmd_report(a):
     if hit_total:
         L.append("**区间命中率：%d/%d = %.0f%%** —— 低于 70%% 说明三情景设置过窄（Bear 不够悲观 / Bull 不够乐观）。"
                  % (hit_in, hit_total, 100.0 * hit_in / hit_total))
+    if skipped_point:
+        L.append("")
+        L.append("> 另有 **%d 组单点预测**（只有 Base、无区间）未计入上表 —— 它们没有牛熊边界，"
+                 "把点当区间统计只会引发假警报。其误差在第 1 节计分。" % skipped_point)
     L.append("")
 
     # ---- 4. 历史版本对照
@@ -973,7 +998,7 @@ def cmd_export(a):
     ensure()
     preds = load(PRED)
     out = os.path.join(DATA, "prediction_ledger.csv")
-    keys = ["ticker", "analysis_date", "forecast_version", "scenario", "metric", "metric_kind",
+    keys = ["ticker", "analysis_date", "forecast_version", "scenario", "scenario_set", "metric", "metric_kind",
             "forecast_period", "period_type", "horizon_type", "forecast_value", "unit", "probability", "confidence", "thesis"]
     with open(out, "w", encoding="utf-8-sig") as f:
         f.write(",".join(keys) + "\n")
@@ -1002,6 +1027,9 @@ def main():
     q.add_argument("--unit", default="USD", help="USD/TWD/HKD/CNY/%%/X ...")
     q.add_argument("--scenario", default="Base", choices=["Bear", "Base", "Bull"])
     q.add_argument("--prob", type=float, default=None, help="该情景概率 0-1，如 0.45")
+    q.add_argument("--point", action="store_true",
+                   help="单点预测（无区间）：隐含 scenario=Base、不带概率。"
+                        "用于锚定一致预期的短期核对点；终局估值禁止使用")
     q.add_argument("--confidence", default="Medium", choices=["Low", "Medium", "High"])
     q.add_argument("--version", default=None,
                    help="版本标签，默认使用分析日期 YYYY-MM-DD；同日修订可用 YYYY-MM-DD-r2")
