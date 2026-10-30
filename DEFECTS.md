@@ -1878,7 +1878,17 @@ Get Pages site failed. Please verify that the repository has Pages enabled …
 
 > 也就是说：**CI 从来不是"红着的门禁"，而是"红着的配置 + 红着的门禁"叠在一起。**
 > 前 9 次连门禁都没过，所以这一层从未暴露。
-> 未能确认的：第 1–10 次具体是哪道门禁红（旧 job log 需 admin 权限，本轮才加上 annotation）。
+
+**闭环（同日）**：用户启用 Pages 源（GitHub Actions）后触发第 12 次运行 `6f83edc` ——
+**build + deploy 全部 success**，站点上线：
+
+```
+https://suhongbo2017.github.io/alpha-radar/   → HTTP 200，524 KB
+内容抽查：20 份档案、两张赔率口径表（rule-engine / analyst）、无持仓数量字段
+```
+
+> 未能确认的（保留）：第 1–10 次具体是哪道门禁红 —— 旧 job log 需 admin 权限，
+> 本轮才加上 annotation。**“现在绿了”不等于“知道当时为什么红”。**
 
 ---
 
