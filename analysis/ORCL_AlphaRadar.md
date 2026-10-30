@@ -1,6 +1,6 @@
 # ORCL（Oracle Corporation）— Alpha Radar（研究级）
 
-> **Analysis Date**：2026-10-12　｜　**Current Price**：**$141.40**　｜　**市值 $424.2B**
+> **Analysis Date**：2026-10-12　｜　**Current Price**：**$141.40**　｜　**市值 $427.6B**
 > **数据校验**：`verify_data.py ORCL --require-cross` → **❌ 0 错误**
 > **一致预期**：`alpha_quote.py ORCL --estimates` → 41 位分析师，buy
 > **Fiscal Year**：⚠️ **5 月结束**

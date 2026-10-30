@@ -1,7 +1,7 @@
 # RKLB（Rocket Lab Corp）— Alpha Radar
 
 > **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py RKLB --require-cross` → ❌ **0 错误**
-> **Current Price**：$68.21　｜　**市值**：42.95B
+> **Current Price**：$68.21　｜　**市值**：40.80B
 
 > ⚠️ **Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。**
 > 规则、参数与已知局限见 §6 与附录。**赔率因此是低置信度的。**
@@ -36,7 +36,7 @@ TTM 收入 +52.5%；但净现金 $2.27B 靠持续融资维持。
 | ROIC | -15.8% |
 | Net Debt | -2.27B |
 | Net Debt / EBITDA | 14.01x |
-| 股数 | 629.7M |
+| 股数 | 598.2M |
 
 ## 3. Moat
 

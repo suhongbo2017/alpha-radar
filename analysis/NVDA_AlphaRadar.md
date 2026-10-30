@@ -1,6 +1,6 @@
 # NVDA（NVIDIA Corporation）— Alpha Radar（研究级）
 
-> **Analysis Date**：2026-10-12　｜　**Current Price**：**$214.13**　｜　**市值 $5.20T**（24,285M 股）
+> **Analysis Date**：2026-10-12　｜　**Current Price**：**$214.13**　｜　**市值 $5.16T**（24,100M 股）
 > **数据校验**：`verify_data.py NVDA --require-cross` → **❌ 0 错误**
 > **一致预期**：`alpha_quote.py NVDA --estimates` → 59 位分析师，strong_buy
 > **Fiscal Year**：⚠️ **1 月结束**（52/53 周财年，季末逐年漂移）
@@ -45,7 +45,7 @@
 | FCF（TTM） | **$127.01B** | 42% 利润率 |
 | **ROIC** | **69.1%** | NOPAT $165.88B / 投入资本 $239.91B |
 | Net Debt | $10.92B | 净杠杆 **0.05x** |
-| 股数 | 24,285M | |
+| 股数 | 24,100M | |
 | **P/E（TTM）** | **28.9x** | |
 | **P/E（FY2028E $15.91）** | **14.4x** | ← **核心矛盾所在** |
 | P/FCF（TTM） | 43.8x | |

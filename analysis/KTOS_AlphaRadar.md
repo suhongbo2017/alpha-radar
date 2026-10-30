@@ -1,7 +1,7 @@
 # KTOS（Kratos Defense & Security Solutions）— Alpha Radar
 
 > **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py KTOS --require-cross` → ❌ **0 错误**
-> **Current Price**：$42.36　｜　**市值**：8.05B
+> **Current Price**：$42.36　｜　**市值**：7.94B
 
 > ⚠️ **Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。**
 > 规则、参数与已知局限见 §6 与附录。**赔率因此是低置信度的。**
@@ -36,7 +36,7 @@ TTM 收入 $1.52B（+25.5%）；净现金 $548M。
 | ROIC | 1.0% |
 | Net Debt | -0.55B |
 | Net Debt / EBITDA | -6.67x |
-| 股数 | 190.1M |
+| 股数 | 187.6M |
 
 ## 3. Moat
 

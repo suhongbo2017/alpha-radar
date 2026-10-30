@@ -1,7 +1,7 @@
 # GOOGL（Alphabet Inc.）— Alpha Radar（研究级）
 
 > **Analysis Date**：2026-10-12（初版）｜**修订**：2026-10-29（Q3 2026 财报后）
-> **Current Price**：**$293.11**（10/28 盘后；常规收盘 $324.89）｜**市值 $3.60T**（12,294M 股）
+> **Current Price**：**$293.11**（10/28 盘后；常规收盘 $324.89）｜**市值 $3.58T**（12,230M 股，2026-06-30 XBRL 口径）
 > **最新财报**：Q3 2026（截至 2026-09-30），2026-10-28 发布 8-K 快报
 > **数据校验**：`verify_data.py GOOGL --require-cross` → **❌ 0 错误**（SEC XBRL 口径截至 2026-06-30；10-Q 尚未入库）
 > **一致预期**：`alpha_quote.py GOOGL --estimates` → 54 位分析师，strong_buy（财报后未全面更新）

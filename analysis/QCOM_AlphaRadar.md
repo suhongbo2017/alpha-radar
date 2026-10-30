@@ -1,7 +1,7 @@
 # QCOM（QUALCOMM Incorporated）— Alpha Radar
 
 > **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py QCOM --require-cross` → ❌ **0 错误**
-> **Current Price**：$172.62　｜　**市值**：184.53B
+> **Current Price**：$172.62　｜　**市值**：182.46B
 
 > ⚠️ **Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。**
 > 规则、参数与已知局限见 §6 与附录。**赔率因此是低置信度的。**
@@ -36,7 +36,7 @@
 | ROIC | 104.4% |
 | Net Debt | 3.17B |
 | Net Debt / EBITDA | 0.27x |
-| 股数 | 1069.0M |
+| 股数 | 1,057.0M |
 
 ## 3. Moat
 

@@ -95,9 +95,18 @@ DEBT_TAGS = DEBT_TOTAL_TAGS + DEBT_PART_TAGS   # 兼容旧引用
 FINLEASE_COMBINED = ["FinanceLeaseLiability"]
 FINLEASE_PARTS = ["FinanceLeaseLiabilityNoncurrent", "FinanceLeaseLiabilityCurrent"]
 # 经营租赁单独列示，**不计入净债务**（为了与 EBITDA 口径一致），作为备忘项
-SHARE_TAGS = ["WeightedAverageNumberOfDilutedSharesOutstanding",
-              "WeightedAverageNumberOfSharesOutstandingBasic",
-              "CommonStockSharesOutstanding", "EntityCommonStockSharesOutstanding"]
+# [D-88] 股数必须分两组：
+#   流通股（instant）  —— 市值 = 现价 × 流通股数，用这个
+#   加权平均（duration）—— 只是 EPS 的分母，是【期间假设值】，绝不能用来算市值
+#
+# 实测（2026-10-30）：原实现把加权平均排在第一位，21 家公司里 16 家市值偏差 ≥0.5%，
+# 最大 NVTS +28.6%、SOFI +5.7%、APH +4.6%、NFLX +2.2%。
+# 多类别股本（GOOGL A/B/C、NFLX A/B）在 XBRL 里已合计成一个无维度的合并值，可直接用。
+SHARE_TAGS_OUTSTANDING = ["CommonStockSharesOutstanding",           # 期末流通股（首选）
+                          "EntityCommonStockSharesOutstanding"]     # 申报封面日流通股
+SHARE_TAGS_AVG = ["WeightedAverageNumberOfDilutedSharesOutstanding",  # 仅作兜底
+                  "WeightedAverageNumberOfSharesOutstandingBasic"]
+SHARE_TAGS = SHARE_TAGS_OUTSTANDING + SHARE_TAGS_AVG                  # 兼容旧引用
 
 
 def _minus1y(d):
@@ -580,19 +589,51 @@ def main():
 
     # ---- 增长率
     # ---- 股数与市值（估值倍数要用）
-    sh, sh_d, sh_src = None, None, None
-    for _t in SHARE_TAGS:
+    sh, sh_d, sh_src, sh_basis = None, None, None, None
+
+    # ① 优先：期末流通股（instant fact）
+    #
+    # 两条护栏，都是实测踩出来的：
+    #   a) 按 tag 优先级逐组取，组内取最新 —— 不能跨 tag 取 max(end)，
+    #      否则申报封面日（2026-10-23）会压过期末日（2026-09-30）。
+    #   b) 新鲜度：股数日期必须距离 TTM 期末 ≤120 天。
+    #      NVTS 曾在 companyfacts 里只剩 2024-08-02 的封面股数，
+    #      不设护栏就会把两年前的股数当成现值（市值少算 24%）。
+    best = None
+    for _t in SHARE_TAGS_OUTSTANDING:
+        cand = None
         for _u, _items in (F.tax.get(_t, {}).get("units", {}) or {}).items():
-            rows = {it["end"]: it["val"] for it in _items if "start" not in it}
-            if not rows:
-                rows = {it["end"]: it["val"] for it in _items
-                        if "start" in it and 80 <= days(it["start"], it["end"]) <= 100}
-            if rows:
-                k = max(rows)
-                if sh_d is None or k > sh_d:
-                    sh, sh_d, sh_src = rows[k], k, _t
-        if sh_src:
+            for it in _items:
+                if "start" in it:
+                    continue
+                if cand is None or it["end"] > cand[1]:
+                    cand = (it["val"], it["end"], _t)
+        if cand:
+            if q_end and q_end != "?":
+                try:
+                    # 只拒「比期末旧」的股数；比期末新是正常的（封面日/后续申报）
+                    if days(cand[1], q_end) > 120:
+                        continue        # 太旧，换下一个 tag / 走兜底
+                except Exception:
+                    pass
+            best = cand
             break
+    if best:
+        sh, sh_d, sh_src = best
+        sh_basis = "outstanding"
+
+    # ② 兜底：季度加权平均（严格 85-95 天，排除 YTD）
+    if not sh:
+        for _t in SHARE_TAGS_AVG:
+            for _u, _items in (F.tax.get(_t, {}).get("units", {}) or {}).items():
+                rows = {it["end"]: it["val"] for it in _items
+                        if "start" in it and 85 <= days(it["start"], it["end"]) <= 95}
+                if rows:
+                    k = max(rows)
+                    sh, sh_d, sh_src = rows[k], k, _t
+                    sh_basis = "diluted-avg-quarter"
+            if sh:
+                break
     px = None
     try:
         _qp = os.path.join(ROOT, "data", "quotes", "%s.json" % a.ticker.upper())
@@ -647,7 +688,8 @@ def main():
         "cash": cash, "equity": eq, "debt": debt, "net_debt": net_debt,
         "ebitda_ttm": ebitda,
         "net_debt_ebitda": (net_debt / ebitda) if (net_debt is not None and ebitda) else None,
-        "shares": sh, "shares_date": sh_d, "price": px, "market_cap": mc,
+        "shares": sh, "shares_date": sh_d, "shares_src": sh_src,
+        "shares_basis": sh_basis, "price": px, "market_cap": mc,
         "tax_rate": rate, "nopat": nopat, "invested_capital": ic, "roic_pct": roic,
         "annual": {"end": rd, "revenue": rv, "gross_profit": gp, "op_income": op,
                    "net_income": ni, "ocf": ocf, "capex": cx},

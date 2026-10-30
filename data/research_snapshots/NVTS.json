@@ -2,7 +2,7 @@
   "schema_version": 1,
   "ticker": "NVTS",
   "status": "verified",
-  "generated_at": "2026-10-13T09:14:57+00:00",
+  "generated_at": "2026-10-30T07:34:54+00:00",
   "report": {
     "path": "analysis/NVTS_AlphaRadar.md",
     "sha256": "7cf97fc15228ed04b10fb14457c7db4da839c48865c062db5ac7f06940e251fb",
@@ -46,6 +46,7 @@
     "net_debt_ebitda": 1.2905680220641105,
     "shares": 240643000,
     "shares_date": "2026-06-30",
+    "shares_basis": "diluted-avg-quarter",
     "price": 10.78,
     "market_cap": 2594131540.0,
     "tax_rate": 0.0,

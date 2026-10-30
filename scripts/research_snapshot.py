@@ -107,7 +107,8 @@ def snapshot_for(path):
             "ttm_net_income", "ttm_ocf", "ttm_capex", "ttm_fcf", "gross_margin_pct", "op_margin_pct",
             "net_margin_pct", "fcf_margin_pct", "cash_conversion_pct", "revenue_growth_ttm_pct",
             "fcf_growth_ttm_pct", "cash", "equity", "debt", "net_debt", "ebitda_ttm", "net_debt_ebitda",
-            "shares", "shares_date", "price", "market_cap", "tax_rate", "nopat", "invested_capital", "roic_pct")
+            "shares", "shares_date", "shares_basis", "price", "market_cap",
+            "tax_rate", "nopat", "invested_capital", "roic_pct")
     return {
         "schema_version": 1, "ticker": ticker, "status": status,
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
