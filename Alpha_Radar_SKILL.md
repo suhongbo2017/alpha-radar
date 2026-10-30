@@ -158,6 +158,14 @@ py scripts/alpha_portfolio.py analysis --ticker APH --score 84.6 --odds 0.92 --a
 | `holdings` / `board` / `check` | 无选项 |
 
 ```bash
+# 多源交叉校验（第二、第三个外部源，见 D-88 的发现过程）
+py scripts/alpha_source.py list                          # 列出可用源与独立性
+py scripts/alpha_source.py fetch GOOGL                   # 多源并排（TTM / 年度）
+py scripts/alpha_source.py fetch GOOGL --source nasdaq --json
+py scripts/alpha_source.py cross GOOGL                   # 与引擎逐项比对
+py scripts/alpha_source.py cross GOOGL --source stockanalysis
+py scripts/alpha_source.py selftest GOOGL                # 故障注入：确认校验器真会红
+
 # 行情快照（示例用法）
 # 行情快照（[D-29] yfinance 的备选源；本机直连 Yahoo 不可达，需本地代理）
 py scripts/alpha_quote.py APH

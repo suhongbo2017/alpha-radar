@@ -97,6 +97,7 @@ $env:ALPHA_SEC_UA = "alpha-radar research (contact: you@example.com)"
 │   ├── alpha_fetch.py               # SEC 数据下载
 │   ├── alpha_metrics.py              # 一手财务指标计算
 │   ├── verify_data.py                # 多层数据校验
+│   ├── alpha_source.py               # 多源交叉校验（第二/第三外部源）
 │   ├── alpha_quote.py               # 行情和一致预期
 │   ├── alpha_scenario.py            # 规则化 Bull/Base/Bear
 │   ├── alpha_score.py               # 评分、仓位、快速筛查
@@ -685,6 +686,29 @@ py scripts/build_site.py
 仓库当前未声明统一开源许可证。发布或复用前请先确认代码、研究文本、第三方数据和生成产物的授权边界。
 
 SEC、Yahoo Finance 和券商接口各自受其服务条款约束。不要把需要登录、包含个人持仓或包含凭据的文件部署到公开站点或提交到公开仓库。
+
+### 多源交叉校验
+
+单一外部源（Yahoo）错了你无法知道。`alpha_source.py` 补上第二、第三个源：
+
+```powershell
+py scripts/alpha_source.py list              # 可用源与各自的独立性
+py scripts/alpha_source.py cross ITRI        # 与引擎逐项比对
+py scripts/alpha_source.py selftest ITRI     # 故障注入：确认校验器真会变红
+```
+
+| 源 | 覆盖 | 独立性 |
+|---|---|---|
+| SEC + `alpha_metrics.py` | 年度 + 季度 XBRL（基准） | 主源 |
+| Yahoo | TTM trailing | 高（独立聚合管道） |
+| stockanalysis.com | TTM + 年度 + 分部 | 中（上游同源，解析不同） |
+| Nasdaq API | 年度 4 年 | 中（同上） |
+
+判定分四种：`MATCH` / `DEFINITIONAL`（口径可精确解释）/ `MISMATCH`（硬错误）/ `UNCOMPARABLE`（日期不同，按 D-38 不跨期比）。
+另有 `FRESHNESS`：第三方已有更新期 → **该更新档案了**，这是信号不是错误。
+
+> 诚实说明：后三个源的上游都是公司申报文件，所以它们**不是**独立证据，
+> 只是独立的解析/聚合路径。能抓住"我算错了"，抓不住"公司报错了"。
 
 ### 一条命令：行情 → 快照 → 站点
 

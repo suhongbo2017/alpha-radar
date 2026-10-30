@@ -44,7 +44,7 @@ OUT = os.path.join(ROOT, "site", "index.html")
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 # 复用 build_site.py 的禁用字段表，避免两处维护
-from build_site import FORBIDDEN  # noqa: E402
+from build_site import FORBIDDEN, FORBIDDEN_RE  # noqa: E402
 
 
 def step(n, title):
@@ -96,6 +96,7 @@ def main():
     else:
         h = open(OUT, encoding="utf-8").read()
         leaks = [f for f in FORBIDDEN if f in h]
+        leaks += [p for p in FORBIDDEN_RE if re.search(p, h)]
         kb = os.path.getsize(OUT) / 1024
         n_doc = h.count('class="dossier"')
         n_hold = h.count('pill">持有<')

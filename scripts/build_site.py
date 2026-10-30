@@ -51,8 +51,28 @@ ANALYSIS = os.path.join(ROOT, "analysis")
 # 文档正文里合法地会提到它（D-73 的说明写明了"positions.json 仅本地"），
 # 那是说明文字，不是数据泄漏 —— 把它当禁用词会产生假警报（实测踩过）。
 # 真正的保护是：① 下面这些**字段名**；② 默认代码路径根本不读那个文件。
+# [D-90] 安全断言要盯【数据形态】，不要盯【英文单词出现过没有】。
+#
+# 两次实测踩坑：
+#   ① 裸词 "shares" 被列为禁用 → 文档里讲"股数"就让构建中止
+#   ② 收紧成 '"qty"' 后 → 文档里提到这个字段名（带双引号）又中止
+# 两次都是假警报，而假警报会训练人放宽检查（比没有检查更糟，见 D-73）。
+#
+# 正确判据：**键 + 数值** 才算泄漏。散文里出现字段名不带数值，不会命中。
+# 真实持仓 schema：positions.json 用 qty / avg_cost / market_value / unrealized_pnl。
 FORBIDDEN = ["market_value", "cost_basis", "unrealized_pnl",
-             "realized_pnl", "avg_cost", '"qty"', "shares"]
+             "realized_pnl", "avg_cost"]
+
+# 键值形态（含 HTML 转义与单引号变体）
+FORBIDDEN_RE = [
+    r'"qty"\s*:\s*[-0-9]',
+    r"&quot;qty&quot;\s*:\s*[-0-9]",
+    r"'qty'\s*:\s*[-0-9]",
+    r'"shares"\s*:\s*[-0-9]',
+    r"&quot;shares&quot;\s*:\s*[-0-9]",
+    r'"market_value"\s*:\s*[-0-9"]',
+    r'"avg_cost"\s*:\s*[-0-9"]',
+]
 
 RULE_MARK = "Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。"
 
@@ -1129,9 +1149,14 @@ function showDocList(){
 
     # ── 安全断言
     if not a.include_holdings:
-        for bad in ("market_value", "cost_basis", "unrealized_pnl", "avg_cost", "shares"):
+        # 复用上面的 FORBIDDEN / FORBIDDEN_RE，不要在这里再写一份 —— 两份清单会漂移
+        for bad in FORBIDDEN:
             if bad in htmlout:
                 print("✗ 构建中止：输出中含持仓字段 '%s'" % bad)
+                return 1
+        for pat in FORBIDDEN_RE:
+            if re.search(pat, htmlout):
+                print("✗ 构建中止：输出中含持仓键值形态 %s" % pat)
                 return 1
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
