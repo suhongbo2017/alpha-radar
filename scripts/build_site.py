@@ -711,11 +711,61 @@ window.addEventListener('DOMContentLoaded',function(){
 """
 
 
-def build_board(analyses, prices, holds):
-    rows = []
-    for t, an in sorted(analyses.items(), key=lambda kv: -(kv[1].get("odds") or -1)):
-        h = holds.get(t) if holds else None
-        rows.append({"t": t, "an": an, "h": h})
+def odds_basis_of(ticker, an, grades):
+    """这条赔率是「规则引擎算的」还是「人工研判的」。
+
+    [2C] 记录里有 odds_basis 就用它；老记录没有，就按档案等级派生：
+      规则级 → rule-engine（alpha_scenario 生成，可复算）
+      其他   → analyst（bottom-up 人工研判，不可复算）
+
+    为什么要分：实测同一张表里 MSFT 记录 4.49、引擎 0.72（6.2 倍），
+    ORCL 2.71 / 0.65（4.2 倍）。**不是同一把尺子，不能同序排列。**
+    """
+    b = (an or {}).get("odds_basis")
+    if b:
+        return b
+    return "rule-engine" if (grades or {}).get(ticker) == "规则级" else "analyst"
+
+
+_BASIS_LABEL = {
+    "rule-engine": ("引擎口径（可复算）",
+                    "由 alpha_scenario.py 按「市值规模 + TTM 增速 + 杠杆 + 是否烧钱」规则生成。"
+                    "可用同一命令复算，但不含任何行业判断。"),
+    "analyst": ("人工研判口径（不可复算）",
+                "由 bottom-up 研究给出，含行业与竞争判断。无法用脚本复算，"
+                "也不与引擎口径可比 —— 因此单独成表。"),
+    "unknown": ("未标注口径", "记录里没有口径信息，且无法从档案等级推断。"),
+}
+
+
+def build_board(analyses, prices, holds, grades=None):
+    """总览：按 odds_basis 分表，**绝不跨口径排序**。"""
+    buckets = {}
+    for t, an in analyses.items():
+        buckets.setdefault(odds_basis_of(t, an, grades), []).append((t, an))
+
+    parts = []
+    for basis in ("rule-engine", "analyst", "unknown"):
+        items = buckets.get(basis)
+        if not items:
+            continue
+        title, note = _BASIS_LABEL[basis]
+        # 只在同一口径内按赔率排序
+        items.sort(key=lambda kv: -(kv[1].get("odds") or -1))
+        rows = [{"t": t, "an": an, "h": (holds or {}).get(t)} for t, an in items]
+        parts.append(
+            '<div class="board-group" style="margin:26px 0">'
+            '<div class="eyebrow">odds_basis = %s</div>'
+            '<h3>%s　<span class="nav-count">%d</span></h3>'
+            '<p class="sub">%s</p>%s</div>'
+            % (esc(basis), esc(title), len(items), esc(note),
+               _board_table(rows, holds, prices)))
+    if not parts:
+        return '<p class="sub">暂无分析结论。</p>'
+    return "".join(parts)
+
+
+def _board_table(rows, holds, prices=None):
     head = ["Ticker", "基本面", "赔率", "现价", "分析动作", "档案"]
     granular = bool(holds) and any(v.get("weight_pct") is not None for v in holds.values())
     if holds:
@@ -782,10 +832,12 @@ def build_preds(preds):
             return "%.1fM" % (v / 1e6)
         return "%.2f" % v
     for p in sorted(preds, key=lambda x: (x["ticker"], x["metric"], x["forecast_period"])):
+        # [D-94] 单点预测（无区间）与三情景里的 Base 不是同一个东西，不能长得一样
+        scen = p["scenario"] + ("·单点" if p.get("scenario_set") == "point" else "")
         h.append('<tr><td><b>%s</b></td><td>%s</td><td>%s</td><td>%s</td>'
                  '<td class="num" data-v="%s">%s</td><td>%s</td><td class="num">%s</td>'
                  '<td>%s</td><td class="cell-note">%s</td></tr>' % (
-                     p["ticker"], p["metric"], p["forecast_period"], p["scenario"],
+                     p["ticker"], p["metric"], p["forecast_period"], scen,
                      p["forecast_value"], n(p["forecast_value"], p.get("unit", "")),
                      p.get("unit", ""),
                      ("%.0f%%" % (p["probability"] * 100)) if p.get("probability") else "—",
@@ -911,6 +963,7 @@ def main():
     for f in sorted(glob.glob(os.path.join(ANALYSIS, "*_AlphaRadar.md"))):
         docs.append(parse_dossier(f))
     docs.sort(key=lambda d: ({"报告级": 0, "研究级": 1, "规则级": 2}[d["grade"]], d["ticker"]))
+    doc_grades = {d["ticker"]: d["grade"] for d in docs}
 
     # ── 门禁
     gates = None
@@ -1139,7 +1192,7 @@ function showDocList(){
          if (holds and any(v.get("weight_pct") is not None for v in holds.values())) else ''),
         len(docs), n_doc["报告级"], n_doc["研究级"], n_doc["规则级"],
         len(odds_ok), len(preds),
-        build_board(analyses, prices, holds),
+        build_board(analyses, prices, holds, doc_grades),
         "".join(cards), "".join(details),
         build_preds(preds), snapshots, build_decisions(decs), defects,
         ("<h2>最近一次门禁</h2><pre>%s</pre>" % esc("\n".join(gates))) if gates else "",

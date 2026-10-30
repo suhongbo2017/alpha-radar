@@ -278,13 +278,17 @@ def cmd_cash(a):
 
 
 def cmd_analysis(a):
+    # [2C] 赔率必须显式声明口径。否则总览会把「规则引擎按市值+增速+杠杆算出的数」
+    # 与「人工 bottom-up 研判的数」排在同一个序里 —— 实测 MSFT 两者相差 6.2 倍
+    # （记录 4.49 vs 引擎 0.72）。这是 D-43 的复发形态。
     if a.odds is not None and a.odds < 0:
         die("--odds 不能为负")
     rec = {"record_type": "analysis", "ticker": a.ticker.upper(),
            "analysis_date": a.date or dt.date.today().isoformat(),
            "price": a.price, "fundamental_score": a.score, "lifecycle": a.lifecycle,
            "roic": a.roic, "wacc": a.wacc, "net_debt_ebitda": a.net_debt_ebitda,
-           "odds": a.odds, "weighted_value": a.weighted, "bear_value": a.bear,
+           "odds": a.odds, "odds_basis": a.odds_basis,
+           "weighted_value": a.weighted, "bear_value": a.bear,
            "action": a.action, "moat": a.moat,
            "dossier": a.dossier or "analysis/%s_AlphaRadar.md" % a.ticker.upper(),
            "logged_at": dt.datetime.now().isoformat(timespec="seconds")}
@@ -592,6 +596,9 @@ def main():
     q.add_argument("--wacc", type=float, default=None)
     q.add_argument("--net-debt-ebitda", dest="net_debt_ebitda", type=float, default=None)
     q.add_argument("--odds", type=float, default=None, help="一致口径赔率（上行/下行）")
+    q.add_argument("--odds-basis", choices=["rule-engine", "analyst"], default=None,
+                   help="赔率口径：rule-engine=alpha_scenario 生成（可复算）／"
+                        "analyst=人工 bottom-up 研判（不可复算）。两者禁止混排")
     q.add_argument("--weighted", type=float, default=None, help="概率加权价值")
     q.add_argument("--bear", type=float, default=None, help="Bear 情景价值")
     q.add_argument("--action", default=None,
