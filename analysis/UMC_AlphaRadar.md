@@ -1,5 +1,9 @@
 # UMC（United Microelectronics（联电，NYSE ADR））— Alpha Radar
 
+> 🔴 **数据已过期（2026-10-29 核查）**：SEC companyfacts 里 UMC **只有 IFRS 年报（20-F）数据**，
+> 没有季度中期数据，且最新的 20-F 尚未包含 FY2025 → 本档案 TTM 停留在 **2024-12-31**，
+> 落后实际约 **7 个季度**。Yahoo 显示最近季末已到 **2026-09-30**。
+> **在此数据基础上得出的任何 ROIC / 增速 / 估值结论都不应被采信。** 已登记为 **D-86**。
 > **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py UMC --require-cross` → ❌ **0 错误**
 > **Current Price**：$22.96　｜　**市值**：289.02B
 

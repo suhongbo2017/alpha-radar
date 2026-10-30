@@ -1,5 +1,9 @@
 # ASX（ASE Technology Holding（日月光投控，NYSE ADR））— Alpha Radar
 
+> 🔴 **数据已过期（2026-10-29 核查）**：SEC companyfacts 里 ASX **只有 IFRS 年报（20-F）数据**，
+> 没有任何季度中期数据（`ifrs-full` 最新期止于 FY2025）。Yahoo 显示其最近季末已到 **2026-06-30**，
+> 但本项目的取数管道（SEC）取不到 → **本档案的 TTM 永久落后实际一个季度以上**。
+> 已登记为 **D-86**。要做真正的季度更新，需要接入台湾 MOPS 或公司 IR 月营收数据。
 > **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py ASX --require-cross` → ❌ **0 错误**
 > **Current Price**：$46.43　｜　**市值**：206.48B
 

@@ -2,10 +2,10 @@
   "schema_version": 1,
   "ticker": "SOFI",
   "status": "verified",
-  "generated_at": "2026-10-15T00:16:18+00:00",
+  "generated_at": "2026-10-30T04:06:01+00:00",
   "report": {
     "path": "analysis/SOFI_AlphaRadar.md",
-    "sha256": "4b5a8842b01a908643935fbb5461626bced3588417ebe432ccbcd8b30611fc44",
+    "sha256": "5a5b772fc97ef443f65007e60da767d9aec1b212ca24b37c8ec8588f76c7d8f4",
     "grade": "rule",
     "assertions": {
       "price": 14.22

@@ -2,10 +2,10 @@
   "schema_version": 1,
   "ticker": "ASX",
   "status": "verified",
-  "generated_at": "2026-10-13T09:14:55+00:00",
+  "generated_at": "2026-10-30T04:05:58+00:00",
   "report": {
     "path": "analysis/ASX_AlphaRadar.md",
-    "sha256": "bd6412bef9aeef34bd08700bacd6231558d26834bda2206bf6d6ef635520de16",
+    "sha256": "aee33e9f3e5a1e9c5e01a2efc7a0b8dc94c0c3bebf6a7c1c2bd5c7628a30ca60",
     "grade": "rule",
     "assertions": {
       "price": 46.43,
