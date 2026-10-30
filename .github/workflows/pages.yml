@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 与本地完全相同的命令（--with-gates 会跑全部 9 道门禁）
+      # 与本地完全相同的命令（--with-gates 会跑全部 10 道门禁）
       - name: Build + verify（与本地同一脚本）
         run: python3 scripts/pages_build.py --with-gates --strict
 

@@ -20,6 +20,7 @@
         __GATE_FAIL__ <ID>
     编排器用 `herdr pane wait-output --regex "__GATE_(PASS|FAIL)__ <ID>"` 等待。
 """
+import json
 import os
 import shutil
 import subprocess
@@ -43,7 +44,66 @@ GATES = [
     ("G7", "一手数据多层校验"),
     ("G8", "站点安全构建"),
     ("G9", "研究快照一致性"),
+    ("G10", "缺陷册自洽"),
 ]
+
+EXPECTED_FILE = os.path.join(ROOT, "scripts", "expected_fail.json")
+
+
+def load_expected(gid):
+    """读取某道门禁的已知失败豁免。没有文件/没有该门禁 → []"""
+    try:
+        with open(EXPECTED_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception:
+        return []
+    return data.get(gid) or []
+
+
+def defect_open(defect_id):
+    """该缺陷是否仍未关闭（决定豁免是否还有效）。读 DEFECTS.md 主表。"""
+    try:
+        sys.path.insert(0, os.path.join(ROOT, "scripts"))
+        from defect_stats import status_of
+        st = status_of(defect_id)
+        if st is None:
+            return None            # 找不到这条缺陷
+        return "已修复" not in st
+    except Exception:
+        return None
+
+
+def apply_expected(gid, failures):
+    """把实际失败与豁免表对齐。
+
+    返回 (unexpected, expected_hit, expired, unknown_defect)
+      unexpected    : 失败但不在豁免表 → 必须红
+      expected_hit  : 失败且在豁免表，且绑定的缺陷仍未关闭 → 允许
+      expired       : 在豁免表里，但本次已不再失败 → 豁免过期，必须红（防腐烂）
+      unknown_defect: 在豁免表里，但绑定的缺陷 ID 不存在或已修好 → 必须红
+    """
+    exp = load_expected(gid)
+    by_target = {e["target"].upper(): e for e in exp}
+    failures = {f.upper() for f in failures}
+
+    unexpected, expected_hit, expired, unknown = [], [], [], []
+    for f in sorted(failures):
+        e = by_target.get(f)
+        if not e:
+            unexpected.append(f)
+            continue
+        open_ = defect_open(e.get("defect", ""))
+        if open_ is True:
+            expected_hit.append((f, e.get("defect")))
+        elif open_ is None:
+            unknown.append((f, e.get("defect")))
+        else:
+            unknown.append((f, e.get("defect")))    # 缺陷已修好 → 不该再豁免
+    for target, e in by_target.items():
+        if target not in failures:
+            expired.append((target, e.get("defect")))
+    return unexpected, expected_hit, expired, unknown
+
 
 BASH_CANDIDATES = [
     r"C:\Program Files\Git\bin\bash.exe",   # 会自行设好 PATH（含 coreutils）
@@ -87,6 +147,11 @@ def gate_cmd(gid):
         return [sys.executable, "scripts/verify_data.py", "--all", "--require-cross"]
     if gid == "G9":
         return [sys.executable, "scripts/research_snapshot.py", "validate"]
+    if gid == "G10":
+        # [D-92] 统计数字必须由主表生成。手写的统计行四个月内错了四项，
+        # 而它恰好是全册最容易被引用的一句。
+        # 该脚本自带哨兵。
+        return [sys.executable, "scripts/defect_stats.py", "--check"]
     return None
 
 
@@ -118,6 +183,36 @@ def run_one(gid):
 
     body = (r.stdout or "") + (r.stderr or "")
     lines = [l for l in body.splitlines() if l.strip()]
+
+    # ── [3B] 已知失败豁免：只豁免【具体 target + 已登记且未关闭的缺陷】
+    if load_expected(gid):
+        fails = [l.split("__VERIFY_FAIL__", 1)[1].strip()
+                 for l in lines if l.startswith("__VERIFY_FAIL__")]
+        fails = [f for f in fails if f.upper() != "ALL"]
+        unexpected, hit, expired, unknown = apply_expected(gid, fails)
+        for l in lines[-6:]:
+            print("  " + l)
+        ok = True
+        if hit:
+            print("  ⏭  已登记豁免 %d 项：%s" % (
+                len(hit), "、".join("%s(%s)" % x for x in hit)))
+        if unexpected:
+            ok = False
+            print("  ❌ 不在豁免表内的失败 %d 项：%s"
+                  % (len(unexpected), "、".join(unexpected)))
+            print("     → 这是【新问题】，必须处理；不要往 expected_fail.json 里加")
+        if unknown:
+            ok = False
+            print("  ❌ 豁免无效 %d 项：%s（绑定的缺陷不存在或已修复，请移除该豁免）"
+                  % (len(unknown), "、".join("%s→%s" % x for x in unknown)))
+        if expired:
+            ok = False
+            print("  ❌ 豁免已过期 %d 项：%s（本次已不失败，请从 expected_fail.json 删除）"
+                  % (len(expired), "、".join("%s→%s" % x for x in expired)))
+        print("__GATE_%s__ %s%s" % ("PASS" if ok else "FAIL", gid,
+                                    "" if ok else " (unexpected/expired)"))
+        return 0 if ok else 1
+
     # G6 自带哨兵：去掉它，避免重复输出
     own = [l for l in lines if l.startswith("__GATE_")]
     lines = [l for l in lines if not l.startswith("__GATE_")]

@@ -60,7 +60,7 @@ def run(cmd):
 def main():
     ap = argparse.ArgumentParser(description="站点构建唯一入口（本地与 CI 共用）")
     ap.add_argument("--with-gates", action="store_true",
-                    help="同时跑全部 8 道门禁（CI 用）")
+                    help="同时跑全部 10 道门禁（CI 用）")
     ap.add_argument("--strict", action="store_true",
                     help="任一失败即以非零退出")
     ap.add_argument("--refresh", action="store_true",
@@ -111,7 +111,7 @@ def main():
 
     # ── 3. 可选：全部门禁
     if a.with_gates:
-        step(3, "全部 8 道门禁")
+        step(3, "全部 10 道门禁")
         r = run([sys.executable, "scripts/gates.py", "--all"])
         lines = [l for l in (r.stdout or "").splitlines() if l.startswith("__GATE_")]
         for l in lines:
