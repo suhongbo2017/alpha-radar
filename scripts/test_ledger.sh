@@ -17,11 +17,22 @@ ng()   { echo "  ✗ $1"; fail=$((fail+1)); }
 # [D-95] 实测 2 次运行出现“全程突然变红”（T1/T2/T4/T7/T8 集体拿到空输出），
 # 随后连续 9 次全绿、无法复现。仅 PID 命名在 Windows 上有 PID 复用与文件锁残留的先例，
 # 所以目录名再加随机变量，至少排除“两个进程共用同一临时库”。
-RUN_DIR="/c/tmp/ar_reg_$$_$RANDOM"
+#
+# [D-99] 原路径硬编码 /c/tmp（git-bash 的 C:\tmp）→ **Linux runner 上建不出来**，
+# 而旧 fresh() 只检查“目录空不空”：目录根本不存在时 `ls -A` 也是空的，于是检查通过、
+# 之后每个用例都拿到空输出 → 整轮假失败（与 D-95 完全同一个形态）。
+# 现在：① 用平台中立的 ${TMPDIR:-/tmp}；② fresh() 先用探针文件确认【可写】，不可写就立刻停。
+TMPBASE="${TMPDIR:-/tmp}"
+RUN_DIR="$TMPBASE/ar_reg_$$_$RANDOM"
 fresh(){
   export ALPHA_RADAR_HOME="$RUN_DIR"
   rm -rf "$RUN_DIR" 2>/dev/null
-  mkdir -p "$RUN_DIR/data"
+  mkdir -p "$RUN_DIR/data" 2>/dev/null
+  if ! printf . > "$RUN_DIR/data/.probe" 2>/dev/null; then
+    echo "  ✗ 临时库不可写：$RUN_DIR —— 中止，否则每个用例都会拿到空输出而假失败"
+    exit 1
+  fi
+  rm -f "$RUN_DIR/data/.probe"
   if [ -n "$(ls -A "$RUN_DIR/data" 2>/dev/null)" ]; then
     echo "  ✗ 临时库未清空（$RUN_DIR/data 有残留）—— 中止，否则结果不可信"
     exit 1

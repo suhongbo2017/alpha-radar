@@ -29,8 +29,19 @@ jobs:
           python-version: '3.11'
 
       # 与本地完全相同的命令（--with-gates 会跑全部 10 道门禁）
+      # [D-97] 失败时把尾部日志打成 GitHub annotation：
+      #   之前每次 CI 红都只能看到“过程已以退出码 1 结束”，要查原因得登录看 job log。
+      #   annotation 可以通过 API / 提交页直接读到 —— 不让“看不到原因”成为常态。
       - name: Build + verify（与本地同一脚本）
-        run: python3 scripts/pages_build.py --with-gates --strict
+        run: |
+          set -o pipefail
+          python3 scripts/pages_build.py --with-gates --strict 2>&1 | tee /tmp/build.log || {
+            echo "::error::pages_build 失败，尾部 25 行（完整日志见 Job log）"
+            tail -25 /tmp/build.log | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+            exit 1
+          }
 
       - uses: actions/configure-pages@v5
 

@@ -128,6 +128,7 @@
 | D-95 | S3 | 回归测试临时目录只用 PID 命名，偶发整轮假失败（flaky） | ✅ 已修复 |
 | **D-97** | **S2** | CI 从未跑通过（G2/G7 依赖本机输入），workflow 注释却声称「本地通过 ⟺ CI 通过」 | ✅ 已修复 |
 | **D-98** | **S1** | G9 的报告哈希对行尾敏感 → 同一份提交本地绿、CI 红 | ✅ 已修复 |
+| **D-99** | **S2** | 回归测试硬编码 `/c/tmp` → Linux runner 上整轮假失败；且 CI 失败原因不可见 | ✅ 已修复 |
 | D-96 | S2 | G7 长期常红 → CI 事实停用，新问题被淹没在噪声里 | ✅ 已修复 |
 
 **统计（由 `scripts/defect_stats.py --write` 从主表生成，勿手改）**：
@@ -135,12 +136,14 @@
 | 等级 | 合计 | 已修复 | 未关闭 |
 |---|---:|---:|---:|
 | S1 | 33 | 32 | 1 |
-| S2 | 45 | 38 | 7 |
+| S2 | 46 | 39 | 7 |
 | S3 | 12 | 9 | 3 |
 | S4 | 6 | 5 | 1 |
-| **合计** | **96** | **84** | **12** |
+| **合计** | **97** | **85** | **12** |
 
 **未关闭明细**：D-13(S3)、D-18(S1)、D-28(S4)、D-29(S2)、D-36(S3)、D-37(S2)、D-51(S3)、D-82(S2)、D-83(S2)、D-84(S2)、D-86(S2)、D-87(S2)
+
+
 
 
 
@@ -1894,6 +1897,46 @@ HOME=/c/tmp/fakehome python scripts/pages_build.py --with-gates --strict ; echo 
 > **元教训**：**所有“文件指纹”都必须先定义“什么算内容”。**
 > 对字节取哈希，等于把编辑器、换行策略、编码都塞进了“内容”的定义里。
 
+---
+
+## D-99 回归测试硬编码 `/c/tmp` → Linux runner 整轮假失败，而失败原因看不见（S2）
+
+**发现方式**：修完 D-97 后 CI 仍然红（第 10 次）。无法下载日志（API 返回
+`Must have admin rights`），只能回去逐条推演“Linux 上哪些前提与 Windows 不同”。
+
+**根因（两层）**：
+
+1. `test_ledger.sh` 的临时库写成 `/c/tmp/ar_reg_$$_$RANDOM` —— 这是 **git-bash 对 `C:	mp` 的映射**。
+   在 ubuntu runner 上它是“根目录下的 `/c/tmp`”，普通用户**建不出来**。
+   而 `fresh()` 只检查“目录空不空”：目录不存在时 `ls -A` 也是空 → **检查通过**，
+   随后每个用例都拿到空输出 → **整轮假失败**。
+   这正好是 D-95 记录的形态（集体空输出、随环境不同而不同），
+   所以 D-95 的“根因未确认”现在有了一个可检的候选解释。
+
+2. **失败原因在 CI 侧不可见**：job log 需要 admin 权限才能通过 API 读取，
+   提交页只显示“过程已以退出码 1 结束”。不可诊断的红色等于不可修复的红色。
+
+**修复**：
+
+```bash
+TMPBASE="${TMPDIR:-/tmp}"          # 平台中立
+RUN_DIR="$TMPBASE/ar_reg_$$_$RANDOM"
+fresh(){
+  mkdir -p "$RUN_DIR/data" 2>/dev/null
+  printf . > "$RUN_DIR/data/.probe" || { echo "✗ 临时库不可写"; exit 1; }   # 先证明可写
+  ...
+}
+```
+
+```yaml
+# workflow：失败时把尾部 25 行打成 annotation（无需 admin 即可从 API 读到）
+python3 scripts/pages_build.py --with-gates --strict 2>&1 | tee /tmp/build.log || {
+  tail -25 /tmp/build.log | while IFS= read -r line; do echo "::error::$line"; done; exit 1; }
+```
+
+> **元教训**：**“看不到原因”比“原因没修”更致命。**
+> 一个只能看到 exit=1 的红色，会把人训练成“反正 CI 就是红的”—— 这就是 D-96 的入口。
+
 # 七、仍未处理（明确记账）
 
 | ID | 原因 | 计划 |
@@ -1905,7 +1948,7 @@ HOME=/c/tmp/fakehome python scripts/pages_build.py --with-gates --strict ; echo 
 | **D-84** | SOFI 银行收入口径，需专用适配器 | 需 alpha_metrics_bank.py |
 | **D-86** | ASX/UMC 只有 20-F 年报，SEC 无季度数据 | 需接 MOPS/IR 或降级 annual-only |
 | **D-87** | weighted_value 单位混用（每股 / 市值） | 加 value_basis 字段 + G3 断言 |
-| **D-95** | 回归测试偶发整轮假失败（形态已记录，根因未确认） | 再次出现时先落盘 `$RUN_DIR` 快照再定位 |
+| **D-95** | 回归测试偶发整轮假失败（形态已记录，根因未确认；D-99 提供了一个可检候选解释） | 再次出现时先落盘 `$RUN_DIR` 快照再定位 |
 | SOFI Q3 更新 | 8-K 已发，10-Q 未入 XBRL + D-84 阻断 | 等 D-84 修好 |
 | 决策版本机制 | 决策 append-only 但无 v1/v2 概念 | 暂不需要（记录已足够） |
 
