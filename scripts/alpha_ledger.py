@@ -370,8 +370,8 @@ def cmd_predict(a):
     value = a.value
     data_status, formal_allowed, dossier_grade = prediction_qualification(a.ticker)
     if not formal_allowed and not a.informational:
-        die("%s 当前档案不具备正式预测资格（data_status=%s, grade=%s）。\n"
-            "规则级/blocked 档案只能加 --informational 记录，不参与正式预测评分。"
+        die("%s 当前档案不具备正式预测资格（data_status=%s, 类型=%s）。\n"
+            "规则筛选档案只能加 --informational 记录，不参与正式预测评分。"
             % (a.ticker.upper(), data_status, dossier_grade))
 
     rec = {

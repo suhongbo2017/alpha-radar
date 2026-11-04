@@ -2,14 +2,13 @@
   "schema_version": 1,
   "ticker": "SPCX",
   "status": "blocked",
-  "generated_at": "2026-10-30T09:20:39+00:00",
+  "generated_at": "2026-11-04T13:32:34+00:00",
   "report": {
     "path": "analysis/SPCX_AlphaRadar.md",
-    "sha256": "c590c7407ba2efa2c40ef288384269316329b57598dfef12273a4cc19bfba622",
+    "sha256": "8f7ceb4b9b2659d736e691ffa1f0bd25e811e19b84485810b2b0678a5fbd4726",
     "grade": "rule",
     "assertions": {
-      "price": 162.57,
-      "ttm_revenue": null
+      "price": 132.27
     }
   },
   "qualification": {
@@ -20,7 +19,7 @@
   },
   "data": {
     "ticker": "SPCX",
-    "entity": "SPACE EXPLORATION TECHNOLOGIES CORP."
+    "entity": "Space Exploration Technologies Corp."
   },
   "error": "缺少真实 TTM 截止日或营业收入"
 }

@@ -2,13 +2,13 @@
   "schema_version": 1,
   "ticker": "SOFI",
   "status": "verified",
-  "generated_at": "2026-10-30T07:34:55+00:00",
+  "generated_at": "2026-11-04T13:32:33+00:00",
   "report": {
     "path": "analysis/SOFI_AlphaRadar.md",
-    "sha256": "5a5b772fc97ef443f65007e60da767d9aec1b212ca24b37c8ec8588f76c7d8f4",
+    "sha256": "9749f720a0afa0e020f76344652a0dbb07ece069d836dc2b48b59381b26ee70e",
     "grade": "rule",
     "assertions": {
-      "price": 14.22
+      "price": 16.945
     }
   },
   "qualification": {
@@ -44,8 +44,8 @@
     "shares": 1290312404,
     "shares_date": "2026-06-30",
     "shares_basis": "outstanding",
-    "price": 14.22,
-    "market_cap": 18348242384.88,
+    "price": 16.945,
+    "market_cap": 21864343685.78,
     "tax_rate": 0.13755449044655058,
     "nopat": null,
     "invested_capital": 11250534000.0,

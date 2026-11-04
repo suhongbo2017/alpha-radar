@@ -15,7 +15,7 @@
    `data/positions.json` —— 含数量/成本/盈亏，**仅本地**（gitignored），
    需 `--include-holdings` 才读，且页面会打红标。
 3. **不生成"分析"**。站点只呈现已经写好的档案，不调用 alpha_scenario.py 产生新的"报告"。
-   规则级结果会明确标注等级，不与研究级混淆。
+   规则筛选结果会明确标注等级，不与深度研究混淆。
 4. 零外部依赖（不引 CDN）—— 本机网络受限，且离线可用更重要。
 
 用法:
@@ -246,13 +246,13 @@ def build_snapshots(runs, estimates, prices):
 
 
 def grade_of(text):
-    """档案等级：报告级 / 研究级 / 规则级"""
+    """档案等级：基础分析 / 深度研究 / 规则筛选"""
     first = text.splitlines()[0] if text else ""
-    if "研究级" in first:
-        return "研究级"
+    if "深度研究" in first:
+        return "深度研究"
     if RULE_MARK in text:
-        return "规则级"
-    return "报告级"
+        return "规则筛选"
+    return "基础分析"
 
 
 def parse_dossier(path):
@@ -267,6 +267,46 @@ def parse_dossier(path):
     return {"ticker": ticker, "title": title, "grade": grade_of(text),
             "conclusion": concl[:400], "body": text, "path": path,
             "size": len(text)}
+
+
+def report_paths():
+    """Return reader-facing Markdown reports, excluding the directory index."""
+    return [f for f in sorted(glob.glob(os.path.join(ANALYSIS, "*.md")))
+            if os.path.basename(f).lower() != "readme.md"]
+
+
+def report_dossiers():
+    return [parse_dossier(f) for f in report_paths()]
+
+
+def render_report_page(dossier):
+    """Render one complete, offline-readable HTML report beside its Markdown source."""
+    title = html.escape(dossier["title"], quote=True)
+    ticker = html.escape(dossier["ticker"], quote=True)
+    markdown_name = os.path.basename(dossier["path"])
+    markdown_href = html.escape(markdown_name, quote=True)
+    body = md_to_html(dossier["body"])
+    return """<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>%s · Alpha Radar</title><style>%s</style><style>%s</style></head><body>
+<header><div class="brandrow"><div><div class="brandmark"><span class="mark">α</span><h1>Alpha Radar</h1></div>
+<div class="sub">%s · 独立研究报告</div></div>
+<div class="header-status"><a class="btn" href="../site/index.html">返回总览</a>
+<span class="g %s">%s</span></div></div></header>
+<main><article class="dossier"><div class="meta">Ticker: <b>%s</b> · 原始 Markdown: <a href="%s">%s</a></div>%s</article></main>
+<footer>Alpha Radar · 本页由 scripts/build_site.py 生成，可离线阅读。</footer>
+</body></html>""" % (title, CSS, A11Y_CSS, title, dossier["grade"], dossier["grade"],
+                  ticker, markdown_href, html.escape(markdown_name), body)
+
+
+def write_report_pages(docs):
+    """Keep adjacent HTML reports synchronized with the Markdown dossiers."""
+    for dossier in docs:
+        output = os.path.splitext(dossier["path"])[0] + ".html"
+        with open(output, "w", encoding="utf-8") as f:
+            f.write(render_report_page(dossier))
+    return len(docs)
 
 
 # ══════════════════════════════════════════════════════════
@@ -529,7 +569,7 @@ table{border-collapse:collapse;width:100%;font-size:13px;min-width:640px}th,td{p
 th{color:var(--mut);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;position:sticky;top:0;background:var(--surface);z-index:1}th[onclick]{cursor:pointer}th[onclick]:hover{color:var(--acc)}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}tbody tr:hover td{background:var(--surface-soft)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 19px;margin-bottom:13px;box-shadow:var(--shadow-sm)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}.grid .card{height:100%;margin:0;display:flex;flex-direction:column}.grid .card>div:last-child{margin-top:auto!important;padding-top:14px}
-.g{display:inline-block;font-size:10px;font-weight:750;padding:2px 7px;border-radius:5px;border:1px solid var(--line-strong);color:var(--mut);margin-left:7px;vertical-align:middle}.g.研究级{color:var(--acc);border-color:var(--acc)}.g.规则级{color:var(--warn);border-color:var(--warn)}.g.报告级{color:var(--ok);border-color:var(--ok)}
+.g{display:inline-block;font-size:10px;font-weight:750;padding:2px 7px;border-radius:5px;border:1px solid var(--line-strong);color:var(--mut);margin-left:7px;vertical-align:middle}.g.深度研究{color:var(--acc);border-color:var(--acc)}.g.规则筛选{color:var(--warn);border-color:var(--warn)}.g.基础分析{color:var(--ok);border-color:var(--ok)}
 .pill{display:inline-flex;align-items:center;min-height:24px;font-size:11px;font-weight:650;padding:2px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--mut);background:var(--surface)}
 .pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 48%,var(--line));background:var(--ok-soft)}.pill.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 48%,var(--line));background:var(--bad-soft)}.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 48%,var(--line));background:var(--warn-soft)}
 .btn{appearance:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);cursor:pointer;padding:7px 12px;border-radius:7px;font:inherit;font-size:12.5px;font-weight:650;box-shadow:var(--shadow-sm)}.btn:hover{border-color:var(--acc);color:var(--acc-strong);background:var(--acc-soft)}
@@ -704,7 +744,13 @@ function sortTbl(sec,idx,num){
 }
 window.addEventListener('DOMContentLoaded',function(){
   var h=(location.hash||'').replace('#','');
-  tab(document.getElementById('s-'+h)?h:'board');
+  var docHash=h.match(/^doc-([A-Za-z0-9_-]+)$/i);
+  if(docHash && document.getElementById('doc-'+docHash[1].toUpperCase())){
+    tab('doc');
+    showDoc(docHash[1].toUpperCase());
+  }else{
+    tab(document.getElementById('s-'+h)?h:'board');
+  }
   ['board','doc','pred','snapshot'].forEach(filt);
   initChart();
 });
@@ -807,7 +853,7 @@ def _board_table(rows, holds, prices=None):
             h.append('<td>%s</td>' % ('<span class="pill bad">🔴 冲突</span>' if conflict else
                                       ('<span class="pill ok">✅</span>' if r["h"] else
                                        '<span class="pill">未持有</span>')))
-        h.append('<td><a href="#%s" class="action-link" onclick="tab(\'doc\');showDoc(\'%s\');return false">查看 →</a></td></tr>' % (t, t))
+        h.append('<td><a href="#doc-%s" class="action-link" onclick="tab(\'doc\');showDoc(\'%s\');return false">查看 →</a></td></tr>' % (t, t))
     h.append("</tbody></table>")
     return '<div class="tw">%s</div>' % "".join(h)
 
@@ -959,11 +1005,10 @@ def main():
                                        if p.get("avg_cost") else None}
 
     # ── 档案
-    docs = []
-    for f in sorted(glob.glob(os.path.join(ANALYSIS, "*_AlphaRadar.md"))):
-        docs.append(parse_dossier(f))
-    docs.sort(key=lambda d: ({"报告级": 0, "研究级": 1, "规则级": 2}[d["grade"]], d["ticker"]))
-    doc_grades = {d["ticker"]: d["grade"] for d in docs}
+    all_reports = report_dossiers()
+    write_report_pages(all_reports)
+    docs = [d for d in all_reports if d["path"].endswith("_AlphaRadar.md")]
+    docs.sort(key=lambda d: ({"基础分析": 0, "深度研究": 1, "规则筛选": 2}[d["grade"]], d["ticker"]))
 
     # ── 门禁
     gates = None
@@ -991,7 +1036,7 @@ def main():
             '<div><b>%s</b><span class="g %s">%s</span></div>'
             '<div class="meta">%s</div>'
             '<div class="card-conclusion">%s</div>'
-            '<div style="margin-top:9px"><a href="#%s" class="action-link" onclick="tab(\'doc\');showDoc(\'%s\');return false">打开档案 →</a></div>'
+            '<div style="margin-top:9px"><a href="#doc-%s" class="action-link" onclick="tab(\'doc\');showDoc(\'%s\');return false">打开档案 →</a></div>'
             "</div>" % (d["grade"], esc(d["ticker"]), esc(d["title"]), esc(d["conclusion"][:120]),
                         d["ticker"], d["grade"], d["grade"],
                         esc(d["title"].split("（", 1)[-1].rstrip("）"))[:60],
@@ -1002,7 +1047,7 @@ def main():
 
     # ── 组合统计
     odds_ok = [t for t, x in analyses.items() if (x.get("odds") or 0) >= 1]
-    n_doc = {"报告级": 0, "研究级": 0, "规则级": 0}
+    n_doc = {"基础分析": 0, "深度研究": 0, "规则筛选": 0}
     for d in docs:
         n_doc[d["grade"]] += 1
 
@@ -1032,13 +1077,13 @@ def main():
 <main>
 <section id="s-board">
 <div class="board-intro"><div><div class="eyebrow">Research overview</div><h2>研究总览</h2><p>追踪公司评估、赔率与预测记录。这里展示已登记结论，不构成买卖建议。</p></div>
-<div class="intro-note">报告级、研究级与规则级结论采用不同证据标准。查看档案时请先确认等级和数据截点。</div></div>
+<div class="intro-note">基础分析、深度研究与规则筛选结论采用不同证据标准。查看档案时请先确认等级和数据截点。</div></div>
 %s
 <div class="kpi">
 <div><b>%d</b><span>已建档公司</span></div>
-<div><b>%d</b><span>报告级</span></div>
-<div><b>%d</b><span>研究级</span></div>
-<div><b>%d</b><span>规则级</span></div>
+<div><b>%d</b><span>基础分析</span></div>
+<div><b>%d</b><span>深度研究</span></div>
+<div><b>%d</b><span>规则筛选</span></div>
 <div><b>%d</b><span>赔率 ≥1</span></div>
 <div><b>%d</b><span>已登记预测</span></div>
 </div>
@@ -1052,7 +1097,7 @@ def main():
 <div class="bar">
 <input id="q-doc" aria-label="搜索公司档案" placeholder="搜索公司名 / 结论关键词…" oninput="filt('doc')">
 <select id="g-doc" aria-label="按档案等级筛选" onchange="filt('doc')">
-<option value="">全部等级</option><option>报告级</option><option>研究级</option><option>规则级</option>
+<option value="">全部等级</option><option>基础分析</option><option>深度研究</option><option>规则筛选</option>
 </select><span class="pill" id="c-doc"></span></div>
 <div class="grid" id="docgrid">%s</div>
 <div id="docview" style="display:none"><div class="bar">
@@ -1093,9 +1138,9 @@ def main():
 </ol>
 <h3>三类档案的等级（不得混淆）</h3>
 <table><thead><tr><th>等级</th><th>情景来源</th><th>能否登记预测</th><th>典型动作</th></tr></thead><tbody>
-<tr><td><span class="g 报告级">报告级</span></td><td>Bottom-Up 行业研究支撑</td><td>✅ 可以</td><td>Watch/Buy/Hold</td></tr>
-<tr><td><span class="g 研究级">研究级</span></td><td>以一致预期为锚 + 显式折扣假设</td><td>✅ 可以</td><td>Hold/Buy/Trim</td></tr>
-<tr><td><span class="g 规则级">规则级</span></td><td>机械规则（只看规模+增速+杠杆）</td><td>❌ <b>不可以</b></td><td>Watch（需研究后再决策）</td></tr>
+<tr><td><span class="g 基础分析">基础分析</span></td><td>Alpha Radar 基础财务与估值分析</td><td>❌ 需完成深度研究</td><td>Watch / 进一步研究</td></tr>
+<tr><td><span class="g 深度研究">深度研究</span></td><td>一致预期或行业研究为锚，并显式记录折扣假设</td><td>✅ 可以</td><td>Hold / Buy / Trim</td></tr>
+<tr><td><span class="g 规则筛选">规则筛选</span></td><td>机械规则（只看规模 + 增速 + 杠杆）</td><td>❌ <b>不可以</b></td><td>Watch（需研究后再决策）</td></tr>
 </tbody></table>
 <blockquote>规则只看「市值规模 + TTM 增速 + 杠杆 + 是否烧钱」，<b>完全不看行业地位、竞争格局、技术路线或管理层</b>。
 实测它把 NVDA 与 GOOGL 按同一增速上限处理。用它产生的赔率，实测与完整分析可差 <b>4 倍</b>（ORCL：0.65 vs 2.71）。</blockquote>
@@ -1168,7 +1213,7 @@ function showDoc(t){
   document.getElementById('docview').style.display='';
   document.querySelectorAll('.dossier').forEach(function(d){d.style.display='none';});
   var e=document.getElementById('doc-'+t); if(e)e.style.display='';
-  if(history.replaceState)history.replaceState(null,'','#'+t);
+  if(history.replaceState)history.replaceState(null,'','#doc-'+t);
   window.scrollTo(0,0);
 }
 function showDocList(){
@@ -1190,11 +1235,12 @@ function showDocList(){
          '仓库是<b>公开</b>的 —— <b>不要部署到公网</b>。'
          '要生成可公开版本，去掉 <code>--include-holdings</code> 重新构建。</div>'
          if (holds and any(v.get("weight_pct") is not None for v in holds.values())) else ''),
-        len(docs), n_doc["报告级"], n_doc["研究级"], n_doc["规则级"],
+        len(docs), n_doc["基础分析"], n_doc["深度研究"], n_doc["规则筛选"],
         len(odds_ok), len(preds),
-        build_board(analyses, prices, holds, doc_grades),
+        build_board(analyses, prices, holds),
         "".join(cards), "".join(details),
-        build_preds(preds), snapshots, build_decisions(decs), defects,
+        build_preds(preds), snapshots,
+        build_decisions(decs), defects,
         ("<h2>最近一次门禁</h2><pre>%s</pre>" % esc("\n".join(gates))) if gates else "",
         ("<br>⚠️ 含持仓" if holds else ""),
         json.dumps(chart_data, ensure_ascii=False).replace("</", "<\\/"),
@@ -1221,8 +1267,8 @@ function showDocList(){
     except ValueError:           # 输出在另一个盘（如 /tmp → C:）
         _rel = a.out
     print("✓ %s（%.0f KB）" % (_rel, kb))
-    print("  档案 %d（报告级 %d / 研究级 %d / 规则级 %d）｜预测 %d ｜决策 %d"
-          % (len(docs), n_doc["报告级"], n_doc["研究级"], n_doc["规则级"], len(preds), len(decs)))
+    print("  档案 %d（基础分析 %d / 深度研究 %d / 规则筛选 %d）｜预测 %d ｜决策 %d"
+          % (len(docs), n_doc["基础分析"], n_doc["深度研究"], n_doc["规则筛选"], len(preds), len(decs)))
     _gran = bool(holds) and any(v.get("weight_pct") is not None for v in holds.values())
     if _gran:
         print("  持仓数据：🔴 含数量（勿公开）")

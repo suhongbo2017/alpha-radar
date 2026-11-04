@@ -249,7 +249,7 @@ def main():
         "manual_prompts": manual_prompts,
         "stages": stages,
         "next_step": (
-            "补充一手资料、行业研究和研究级档案后再登记正式预测"
+            "补充一手资料、行业研究并形成深度研究档案后再登记正式预测"
             if status == "rule-screened" else
             ("修复数据校验错误后重跑" if status == "failed" else
              "修复数据源或补充真实 TTM Revenue/截止日")
@@ -297,7 +297,7 @@ def main():
     for s in stages:
         mark = "跳过" if s.get("skipped") else ("通过" if s.get("returncode", 0) == 0 else "失败")
         print("  %-12s %s" % (mark, s["name"]))
-    print("注意：自动规则情景不是研究级估值，也没有写入正式预测或投资决策。")
+    print("注意：自动规则情景不是深度研究估值，也没有写入正式预测或投资决策。")
     return 0 if status != "failed" else 1
 
 

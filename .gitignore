@@ -31,3 +31,6 @@ data/positions.json
 
 # ── 生成物：站点由 pages_build.py / CI 构建，不入库（D-75）──
 site/
+
+# 报告页由 build_site.py 生成（D-75 同类）
+analysis/*.html

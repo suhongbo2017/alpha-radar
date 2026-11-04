@@ -23,7 +23,7 @@ OUT = ROOT / "data" / "research_snapshots"
 
 def report_grade(text):
     head = text[:800]
-    if "研究级" in head:
+    if "深度研究" in head:
         return "research"
     if "规则输出" in text or "规则情景" in text:
         return "rule"

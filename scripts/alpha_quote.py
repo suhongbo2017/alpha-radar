@@ -120,7 +120,7 @@ def get_quote(ticker, proxy, offline=False, post=False):
 # ══════════════════════════════════════════════════════════════════
 #  [D-68] 一致预期（分析师预测）—— Yahoo quoteSummary 需要 crumb
 #  流程：fc.yahoo.com 取 cookie → /v1/test/getcrumb 取 crumb → 带两者请求
-#  这是研究级情景的必要输入（规则情景缺的就是这块）
+#  这是深度研究情景的必要输入（规则筛选情景缺的就是这块）
 # ══════════════════════════════════════════════════════════════════
 def fetch_estimates(ticker, proxy=DEFAULT_PROXY):
     import tempfile

@@ -559,22 +559,19 @@ def _run_one(a):
                 if any(abs(v - x) < 1 for x in seen):
                     continue
                 exp_cash += v; seen.append(v)
-        exp_debt = None
+        exp_debt, debt_found = 0.0, False
         for t in am.DEBT_TOTAL_TAGS:                      # 合计 tag 优先
             rows = {it["end"]: it["val"] for it in F._items(t) if "start" not in it}
             if asof in rows:
-                exp_debt = rows[asof]; break
-        if exp_debt is None:                              # 否则分项求和
-            tot = 0.0
+                exp_debt = rows[asof]; debt_found = True; break
+        if not debt_found:                                # 否则分项求和（[D-103] 全缺 = 无债务 = 0）
             for t in am.DEBT_PART_TAGS:
                 rows = {it["end"]: it["val"] for it in F._items(t) if "start" not in it}
                 if asof in rows:
-                    tot += rows[asof]
-            exp_debt = tot if tot else None
+                    exp_debt += rows[asof]; debt_found = True
         # [D-54] 融资租赁必须计入总债务；独立重算要跟上引擎的定义
         fl_eng, _ = F.finlease_at(asof)
-        if exp_debt is not None:
-            exp_debt += (fl_eng or 0.0)
+        exp_debt += (fl_eng or 0.0)
         eng_cash, eng_debt = bsv.get("cash"), bsv.get("debt")
         if not close_enough(eng_cash, exp_cash, 0.5) or not close_enough(eng_debt, exp_debt, 0.5):
             rec("L2", "MISMATCH", "净债务独立重算（同日 %s）" % asof,

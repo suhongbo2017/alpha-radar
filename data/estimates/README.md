@@ -6,4 +6,4 @@
 **已缓存 17 家**：APH ITRI INTU NOW MSFT CRM ASX NVDA GOOGL RKLB ORCL OKLO NFLX KTOS QCOM UMC NVTS
 **无覆盖 2 家**：SKHY（韩国）、SPCX（未上市）
 
-用途：**研究级情景的锚**。规则级情景（`alpha_scenario.py`）不用它。
+用途：**深度研究情景的锚**。规则筛选情景（`alpha_scenario.py`）不用它。

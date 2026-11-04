@@ -130,7 +130,7 @@ Top1 21.6% | Top3 59.3% | Top5 75.4% | HHI 0.139
 | 标记 | 标的 | 说明 |
 |---|---|---|
 | 🔴 | APH / ITRI | 持有中，但赔率 <1、分析为 Watch |
-| 🔴 | NVDA / GOOGL / ORCL / RKLB | 持有中，但规则口径赔率 <1（⚠️ 规则级结论，非研究级）|
+| 🔴 | NVDA / GOOGL / ORCL / RKLB | 持有中，但规则口径赔率 <1（⚠️ 规则筛选结论，非深度研究）|
 | 💡 | CRM / NOW | 赔率 ≥1 且分析为 Starter，但未持有 |
 | 🟡 | ASX / OKLO / NVTS / QCOM / UMC / SPCX / SKHY | 赔率输出无效或无法建档 |
 
@@ -213,11 +213,11 @@ py scripts/verify_data.py --all --require-cross  # 全量（G7 门禁）
 
 ---
 
-## 已建档案（19 家 = 6 家研究报告级 + 13 家持仓补齐）
+## 已建档案（19 家 = 6 家深度研究 + 13 家规则筛选）
 
-**报告级（有 Bottom-Up 研究支撑，情景为研究结论）**：APH / ITRI / INTU / NOW / MSFT / CRM
+**深度研究（有 Bottom-Up 研究支撑，情景为研究结论）**：APH / ITRI / INTU / NOW / MSFT / CRM
 
-**持仓补齐级（2026-10-12，规则化情景，低置信度）**：
+**规则筛选（2026-10-12，规则化情景，低置信度）**：
 ASX / NVDA / GOOGL / RKLB / ORCL / OKLO / NFLX / KTOS / NVTS / QCOM / UMC / SPCX / SKHY
 
 > ⚠️ 后 13 家的 Bull/Base/Bear 由 `alpha_scenario.py` 的**规则**生成，
@@ -225,13 +225,17 @@ ASX / NVDA / GOOGL / RKLB / ORCL / OKLO / NFLX / KTOS / NVTS / QCOM / UMC / SPCX
 > 且四类公司上赔率输出**无效**：pre-revenue（OKLO/SPCX）、零增长现金牛（QCOM）、
 > 收入崩塌（NVTS）、ADR 市值不可靠（ASX/UMC）。
 > **这 13 家一律不登记预测** —— 规则没有表达行业观点，无法被证伪。
->
+
 > 两家**根本无法建档**：**SPCX（SpaceX 未上市）**、**SKHY（SK hynix，SEC 只有发行费用数据，
 > 需韩国 DART）**。工具链的覆盖边界应扩充为「美股 SEC；港股/A股/韩国 未覆盖」。
+>
+---
+
+## 参考：6 家深度研究档案横向对照
 
 ---
 
-## 参考：6 家报告级档案横向对照
+## 参考：6 家深度研究档案横向对照
 
 | 标的 | Fundamental | 生命周期 | ROIC vs WACC | 净杠杆 | 现价/1年分位 | 赔率(一致口径) | 5年CAGR | 动作 |
 |---|---:|---|---|---|---:|---:|---:|---|

@@ -440,7 +440,7 @@ def cmd_holdings(a):
                 an = r["analysis"] or {}
                 od = an.get("odds")
                 print("%-6s %-10s %s" % (r["ticker"], an.get("action", "—"),
-                                         ("赔率 %.2f" % od) if od is not None else "无赔率（规则级或无效）"))
+                                         ("赔率 %.2f" % od) if od is not None else "无赔率（规则筛选或无效）"))
         print("-" * 62)
         print("共 %d 个持仓标的。要看仓位%%/盈亏：`sync --full` 拉取含数量的本地快照。"
               % sum(1 for r in rows if r["hold"]))

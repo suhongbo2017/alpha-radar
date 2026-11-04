@@ -74,7 +74,7 @@ CASH_LIKE_EXTRA = ["ShortTermInvestments", "MarketableSecuritiesCurrent",
                    "DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLossCurrent"]
 STI_TAGS = CASH_LIKE_EXTRA
 
-EQ_TAGS = ["StockholdersEquity", "Equity"]
+EQ_TAGS = ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest", "Equity"]
 # 债务 tag 优先级：同日期时前面的优先；跨日期时由 latest() 取【最大日期】
 # 1/2 是显式口径（"含流动部分" / "长短合计"），3/4 是总分口径，5 含义模糊仅供参考
 # [D-58] 债务 tag 分两类 —— 口径不同，不能混为一谈：
@@ -338,22 +338,23 @@ class Facts:
         cash_group = CASH_TAGS + CASH_LIKE_EXTRA
         # [D-62] 三项可用性统一定义：现金组有值 + 权益有值 + 债务（含融资租赁）> 0
         # 不再"debt_at 失败就回退到另一条路径" —— 那会产生第二条解析路径（D-50 的教训）
-        cd, ed, dd = set(), set(), set()
+        # [D-103] 但「无债务」是合法状态（NVTS 已还清可转债）：要求债务 >0 会把
+        #         整张资产负债表退回到最后一个有债务的日期（NVTS 是 2022-09-30），
+        #         净债务/ROIC 因此变成四年前的口径。改为：现金+权益决定日期，
+        #         债务取同日值，缺失即视为 0。
+        cd, ed = set(), set()
         for t_ in cash_group:
             cd |= set(self.instant_rows(t_))
         for t_ in EQ_TAGS:
             ed |= set(self.instant_rows(t_))
-        for t_ in DEBT_TOTAL_TAGS + DEBT_PART_TAGS:
-            for d_ in self.instant_rows(t_):
-                if self.debt_at(d_)[0]:
-                    dd.add(d_)
-        common = cd & ed & dd
+        common = cd & ed
         if not common:
             return None, {}, {}
         asof = max(common)
         _, bsv, bstag = self.latest_common({"cash": cash_group,
                                             "equity": EQ_TAGS,
-                                            "debt": DEBT_TAGS})
+                                            "debt": DEBT_TAGS},
+                                           required=("cash", "equity"))
         if not asof:
             return None, {}, {}
         # cash 组：同日可能命中多个 tag（现金 + 短期投资）→ 必须【求和】
@@ -402,9 +403,10 @@ class Facts:
                 return t, per_tag[t][best], best
         return None, None, None
 
-    def latest_common(self, groups):
+    def latest_common(self, groups, required=None):
         """所有分组都必须有值的【最近共同日期】—— 用于保证资产负债表同日
-        groups: {"cash": [...tags], "debt": [...], "equity": [...]}
+        groups: {"cash": [...tags], "debt": [...tags], "equity": [...]}
+        required: 只要求这些组同日；其余组在该日无值时取 0（[D-103] 无债务是合法状态）
         返回 (asof, {group: value}, {group: tag}) 或 (None, {}, {})
         """
         per = {}
@@ -415,12 +417,19 @@ class Facts:
                     per[g].setdefault(d_, (t, v_))
         if not per:
             return None, {}, {}
-        common = set.intersection(*[set(v) for v in per.values()]) if per else set()
+        req = [g for g in (required or per) if g in per]
+        if not req:
+            return None, {}, {}
+        common = set.intersection(*[set(per[g]) for g in req])
         if not common:
             return None, {}, {}
         best = max(common)
-        vals = {g: per[g][best][1] for g in per}
-        tags = {g: per[g][best][0] for g in per}
+        vals, tags = {}, {}
+        for g in per:
+            if best in per[g]:
+                tags[g], vals[g] = per[g][best]
+            else:
+                vals[g], tags[g] = 0.0, None
         return best, vals, tags
 
 
@@ -508,30 +517,8 @@ def main():
     ttm_da = F.ttm_or_parts(DA_TAGS, DA_PARTS)
     ttm_fcf = (ttm_ocf - ttm_cx) if (ttm_ocf is not None and ttm_cx is not None) else None
 
-    _, cash, cash_d = F.latest(CASH_TAGS)
-    _, eq, eq_d = F.latest(EQ_TAGS)
-    _, debt, debt_d = F.latest(DEBT_TAGS)
     # [D-42] 资产负债表三项必须同日，否则净债务/投入资本是混合口径的假数
-    # [D-42] 资产负债表三项必须同日，否则净债务/投入资本是混合口径的假数
-    # [D-46] 现金组 = 现金及等价物 + 短期投资（两者都具流动性）
-    CASH_GROUP = CASH_TAGS + CASH_LIKE_EXTRA
-    bs_date, bsv, bstag = F.latest_common({"cash": CASH_GROUP, "equity": EQ_TAGS, "debt": DEBT_TAGS})
-    if bs_date:
-        # cash 组可能命中多个 tag（现金 与 短期投资 分别在不同 tag），必须【求和】
-        # 同日可能同时命中多个 tag（现金 与 短期投资 各一个）—— 必须求和，
-        # 但不能重复计同一个 tag 的多个别名（如 AFS 公允价值与摊余成本）
-        tot_cash, used, seen_val = 0.0, [], []
-        for t in CASH_GROUP:
-            rows = F.instant_rows(t)
-            if bs_date in rows:
-                v = rows[bs_date]
-                if any(abs(v - x) < 1 for x in seen_val):
-                    continue          # 同一数字的另一个别名，不重复计
-                tot_cash += v; used.append(t); seen_val.append(v)
-        cash = tot_cash if used else bsv["cash"]
-        eq, debt = bsv["equity"], bsv["debt"]
-        cash_d = eq_d = debt_d = bs_date
-
+    # [D-103] 该口径只由 F.balance_sheet() 一处决定（消除第二条解析路径）。
     q_end = "?"
     _, _, yd = F.series(REV_TAGS, "ytd")
     if yd:
