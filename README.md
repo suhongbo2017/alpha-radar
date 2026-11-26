@@ -112,6 +112,10 @@ $env:ALPHA_SEC_UA = "alpha-radar research (contact: you@example.com)"
 └── Alpha_Radar_SKILL.md             # 详细研究方法与工作规则
 ```
 
+> 另有三个可安装 skill 源文件：`Alpha_Radar_SKILL.md`（建档与决策）、
+> `Investment_Bottom_Up_Research_SKILL.md`（行业研究）、`code_artifact.md`（浮亏持仓诊断），
+> 均由 `scripts/sync_skills.sh` 同步到本机 Pi skill 目录。
+
 SEC 原始 `*_facts.json`、券商凭据、持仓文件和派生报告默认被 `.gitignore` 排除。不要因为本地文件存在就假设它们会被版本控制保护，仍应定期检查：
 
 ```powershell
@@ -695,6 +699,7 @@ py scripts/build_site.py
 - [`analysis/README.md`](analysis/README.md)：当前研究资产、覆盖状态和业务待办。
 - [`DEFECTS.md`](DEFECTS.md)：历史缺陷、实测证据和修复记录。
 - [`Investment_Bottom_Up_Research_SKILL.md`](Investment_Bottom_Up_Research_SKILL.md)：行业与产业链研究方法。
+- [`code_artifact.md`](code_artifact.md)：浮亏持仓诊断框架（holding-thesis-evaluation-framework）—— 现金重置测试、四维红绿灯、处置与补仓纪律；用于已持仓且深度回撤标的，不替代 Alpha Radar 的建档流程。
 - [`templates/Company_Profile_Template.md`](templates/Company_Profile_Template.md)：公司档案模板。
 - [`templates/Review_Template.md`](templates/Review_Template.md)：复盘模板。
 - [`data/estimates/README.md`](data/estimates/README.md)：一致预期缓存说明。

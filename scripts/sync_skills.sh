@@ -10,6 +10,7 @@ DEST_DIR="${HOME:-/c/Users/Administrator}/.pi/agent/skills"
 PAIRS=(
   "Alpha_Radar_SKILL.md:alpha-radar"
   "Investment_Bottom_Up_Research_SKILL.md:investment-bottom-up-research"
+  "code_artifact.md:holding-thesis-evaluation-framework"
 )
 
 CHECK=0
