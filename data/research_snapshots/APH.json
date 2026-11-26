@@ -2,13 +2,13 @@
   "schema_version": 1,
   "ticker": "APH",
   "status": "verified",
-  "generated_at": "2026-11-04T13:32:33+00:00",
+  "generated_at": "2026-11-18T13:30:49+00:00",
   "report": {
     "path": "analysis/APH_AlphaRadar.md",
-    "sha256": "d13fff23f25eef127767bc36188973e405a9bcb26a5f6114197d8b63676982db",
+    "sha256": "484c571500af86480e761509ab008d3df44060c6ed5b3735fdf57f3d81fd4d60",
     "grade": "report",
     "assertions": {
-      "price": 83.87,
+      "price": 77.74,
       "ttm_revenue": 33049999999.999996,
       "ttm_fcf": 5120000000.0,
       "net_debt_ebitda": 1.19
@@ -47,8 +47,8 @@
     "shares": 2469261188,
     "shares_date": "2026-10-27",
     "shares_basis": "outstanding",
-    "price": 83.87,
-    "market_cap": 207096935837.56,
+    "price": 77.743,
+    "market_cap": 191967772538.684,
     "tax_rate": 0.29659304511278195,
     "nopat": 6443137366.071428,
     "invested_capital": 29693000000.0,

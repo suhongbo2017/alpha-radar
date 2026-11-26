@@ -2,13 +2,13 @@
   "schema_version": 1,
   "ticker": "UMC",
   "status": "verified",
-  "generated_at": "2026-10-30T07:34:55+00:00",
+  "generated_at": "2026-11-18T13:30:50+00:00",
   "report": {
     "path": "analysis/UMC_AlphaRadar.md",
-    "sha256": "a149033985e62697af9cbc17baad2df9223c9c881e2ca3e34af9f302d555f082",
+    "sha256": "3275705bbb50d59f8b5e66d66a289d365fc452ab6ab4921be3bbcc930ac77c79",
     "grade": "rule",
     "assertions": {
-      "price": 22.96,
+      "price": 14.15,
       "ttm_revenue": 7080000000.0,
       "roic_pct": 15.7
     }
@@ -46,8 +46,8 @@
     "shares": 12588156344,
     "shares_date": "2025-12-31",
     "shares_basis": "outstanding",
-    "price": 22.96,
-    "market_cap": 289024069658.24,
+    "price": 14.15,
+    "market_cap": 178122412267.6,
     "tax_rate": 0.14673030208621937,
     "nopat": 1343075515.6860197,
     "invested_capital": 8545791000.0,

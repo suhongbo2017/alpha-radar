@@ -2,12 +2,13 @@
   "schema_version": 1,
   "ticker": "SKHY",
   "status": "blocked",
-  "generated_at": "2026-10-30T09:20:39+00:00",
+  "generated_at": "2026-11-18T13:30:50+00:00",
   "report": {
     "path": "analysis/SKHY_AlphaRadar.md",
-    "sha256": "79a928bae023e6dcecb144286b7149bd9a6b2ed569e3c15a5b39b8d1bf2881d3",
+    "sha256": "a7eee97248a689c43f90f8ab4ce8074deb9bb92480284e9e346759aae9d0f016",
     "grade": "rule",
     "assertions": {
+      "price": 125.97,
       "ttm_revenue": null
     }
   },

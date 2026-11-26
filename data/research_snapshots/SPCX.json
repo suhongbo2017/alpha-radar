@@ -2,13 +2,13 @@
   "schema_version": 1,
   "ticker": "SPCX",
   "status": "blocked",
-  "generated_at": "2026-11-04T13:32:34+00:00",
+  "generated_at": "2026-11-18T13:30:50+00:00",
   "report": {
     "path": "analysis/SPCX_AlphaRadar.md",
-    "sha256": "8f7ceb4b9b2659d736e691ffa1f0bd25e811e19b84485810b2b0678a5fbd4726",
+    "sha256": "c3f3bc5acebd9ad613ffadbc7bdd5094c0dfc41aba87ab2ceac8b7f04c44eb79",
     "grade": "rule",
     "assertions": {
-      "price": 132.27
+      "price": 142.2
     }
   },
   "qualification": {

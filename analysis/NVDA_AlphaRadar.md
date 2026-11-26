@@ -1,6 +1,6 @@
 # NVDA（NVIDIA Corporation）— Alpha Radar（深度研究）
 
-> **Analysis Date**：2026-10-12　｜　**Current Price**：**$214.13**　｜　**市值 $5.16T**（24,100M 股）
+> **Analysis Date**：2026-10-12　｜　**Current Price**：**$159.68**　｜　**市值 $3.85T**（24,100M 股）
 > **数据校验**：`verify_data.py NVDA --require-cross` → **❌ 0 错误**
 > **一致预期**：`alpha_quote.py NVDA --estimates` → 59 位分析师，strong_buy
 > **Fiscal Year**：⚠️ **1 月结束**（52/53 周财年，季末逐年漂移）

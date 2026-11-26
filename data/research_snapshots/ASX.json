@@ -2,13 +2,13 @@
   "schema_version": 1,
   "ticker": "ASX",
   "status": "verified",
-  "generated_at": "2026-10-30T07:34:52+00:00",
+  "generated_at": "2026-11-18T13:30:49+00:00",
   "report": {
     "path": "analysis/ASX_AlphaRadar.md",
-    "sha256": "aee33e9f3e5a1e9c5e01a2efc7a0b8dc94c0c3bebf6a7c1c2bd5c7628a30ca60",
+    "sha256": "2fa5ff23335ce38b9d1f10e4e1186600eac0ee824489505701859569fa8aca18",
     "grade": "rule",
     "assertions": {
-      "price": 46.43,
+      "price": 32.81,
       "ttm_revenue": 20570000000.0,
       "roic_pct": 8.0,
       "net_debt_ebitda": 1.22
@@ -47,8 +47,8 @@
     "shares": 4447029782,
     "shares_date": "2025-12-31",
     "shares_basis": "outstanding",
-    "price": 46.43,
-    "market_cap": 206475592778.26,
+    "price": 32.81,
+    "market_cap": 145907047147.42,
     "tax_rate": 0.19699905651090027,
     "nopat": 1316256662.5409145,
     "invested_capital": 16378277000.0,

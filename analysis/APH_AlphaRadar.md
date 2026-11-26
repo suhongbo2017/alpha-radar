@@ -3,7 +3,7 @@
 > Skill：`alpha-radar` v1.2　｜　报告：`analysis/APH_BottomUp_Research.md`
 > **Analysis Date**：2026-10-12　｜　**数据更新**：2026-11-04（Q3 2026 财报后）
 > **Data Cutoff**：SEC companyfacts 截至 **2026-09-30**（Q3 10-Q，2026-10-30 申报）；行情截至 2026-11-04（盘后）
-> **Current Price**：**$83.87**（盘后；常规收盘 $84.19；NYSE，1 年区间第 **81** 分位）
+> **Current Price**：**$77.74**（盘后；常规收盘 $76.36；NYSE，1 年区间第 **61** 分位）
 > **Evidence Sources**：
 > - SEC EDGAR companyfacts（CIK 0000820313，452 个 us-gaap tag，最后申报 2026-10-30）
 > - 10-K FY2025 / 10-Q Q2–Q3 2026

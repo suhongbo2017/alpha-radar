@@ -1,7 +1,7 @@
 # OKLO（Oklo Inc）— Alpha Radar
 
-> **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py OKLO --require-cross` → ❌ **0 错误**
-> **Current Price**：$34.70　｜　**市值**：6.11B
+> **Analysis Date**：2026-10-12　｜　**数据更新**：2026-11-18（Q3 2026 财报后）
+> **Current Price**：$22.59　｜　**市值**：4.41B
 
 > ⚠️ **Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。**
 > 规则、参数与已知局限见 §6 与附录。**赔率因此是低置信度的。**
@@ -10,7 +10,7 @@
 
 ## 0. 一句话结论
 
-**尚无收入**：TTM 收入无、FCF −$276M、ROIC −26.8%；净现金 $2.46B 靠 SPAC 与融资。
+**尚无收入**：TTM 收入无、FCF −$452M、ROIC −21.9%；净现金 $2.50B 靠 SPAC 与融资（2026-09-30）。
 
 这是**纯粹的期权**，不是可以用 DCF 定价的资产。
 
@@ -30,13 +30,13 @@
 | Revenue Growth（TTM YoY） | —% |
 | Gross Margin | —% |
 | Operating Margin | —% |
-| FCF | -0.28B |
+| FCF | -0.45B |
 | FCF Margin | —% |
-| Cash Conversion | 181% |
-| ROIC | -26.8% |
-| Net Debt | -2.46B |
-| Net Debt / EBITDA | 11.37x |
-| 股数 | 176.2M |
+| Cash Conversion | 274% |
+| ROIC | -21.9% |
+| Net Debt | -2.50B |
+| Net Debt / EBITDA | 9.97x |
+| 股数 | 195.2M |
 
 ## 3. Moat
 
@@ -59,8 +59,8 @@
 | Bear | 25% | 0.00% | ×0.90 | ×0.00 | 0B |
 | **加权** | | | | | **0B** |
 
-> 规模上限 0%（市值 6.11B）　｜　
-> Bear 倍数 0.00（净杠杆 11.37x ＋ FCF负）
+> 规模上限 0%（市值 4.41B）　｜　
+> Bear 倍数 0.00（净杠杆 9.97x ＋ FCF负）
 
 ## 7. Valuation
 
@@ -82,7 +82,7 @@
 
 ## 9. Investment Thesis
 
-**关键正面**：**尚无收入**：TTM 收入无、FCF −$276M、ROIC −26.8%；净现金 $2.46B 靠 SPAC 与融资。
+**关键正面**：**尚无收入**：TTM 收入无、FCF −$452M、ROIC −21.9%；净现金 $2.50B 靠 SPAC 与融资（2026-09-30）。
 
 **主要风险**：**监管许可是单点事件**；商业化时间表以年计。
 

@@ -5,7 +5,7 @@
 > 落后实际约 **7 个季度**。Yahoo 显示最近季末已到 **2026-09-30**。
 > **在此数据基础上得出的任何 ROIC / 增速 / 估值结论都不应被采信。** 已登记为 **D-86**。
 > **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py UMC --require-cross` → ❌ **0 错误**
-> **Current Price**：$22.96　｜　**市值**：289.02B
+> **Current Price**：$14.15　｜　**市值**：—（ADR 口径不可靠，见下方警告）
 
 > 🔴 **ADR 估值倍数不可靠**：这是外国私人发行人的 ADR，`EntityCommonStockSharesOutstanding` 是**普通股**股数，而价格是 **ADS** 价格，两者比例不为 1:1。实测：由二者相乘得到的市值与 P/E 明显不合理。**本档案不使用其市值与估值倍数**，仅使用已校验的财务报表数据。
 > ⚠️ **Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。**

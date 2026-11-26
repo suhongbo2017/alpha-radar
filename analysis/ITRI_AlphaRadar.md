@@ -3,7 +3,7 @@
 > Skill：`alpha-radar` v1.2　｜　报告：`analysis/ITRI_BottomUp_Research.md`
 > **Analysis Date**：2026-10-12　｜　**数据更新**：2026-10-29（Q3 2026 财报后，§2/§7 已同步；§6 情景未改，因公司 FY2026 指引未变）
 > **Data Cutoff**：SEC companyfacts 截至 **2026-09-30**（Q3 10-Q，2026-10-27 申报）
-> **Current Price**：**$85.58**（NasdaqGS，1 年区间第 **13** 分位）
+> **Current Price**：**$93.95**（NasdaqGS，1 年区间第 **53** 分位）
 > **Evidence Sources**：
 > - SEC EDGAR companyfacts（CIK 0000780571，657 个 us-gaap tag，最后申报 2026-10-27）
 > - 10-K FY2025 / 10-Q Q1-Q3 2026

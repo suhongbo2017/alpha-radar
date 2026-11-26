@@ -86,7 +86,9 @@ DEBT_TOTAL_TAGS = ["LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturi
                    "DebtInstrumentCarryingAmount",
                    "Borrowings"]
 DEBT_PART_TAGS = ["ShorttermBorrowings", "CurrentPortionOfLongtermBorrowings",
-                  "LongtermBorrowings", "LongTermDebtNoncurrent"]
+                  "LongtermBorrowings", "LongTermDebtNoncurrent",
+                  # [D-104] 部分发行人（ORCL）只报 Notes 系列，不报 LongTermDebt*
+                  "LongTermNotesAndLoans", "NotesPayableCurrent"]
 DEBT_TAGS = DEBT_TOTAL_TAGS + DEBT_PART_TAGS   # 兼容旧引用
 # [D-54] **融资租赁负债属于有息债务**，必须计入总债务。
 # 实测：MSFT 用融资租赁建数据中心，金额 $66.59B。

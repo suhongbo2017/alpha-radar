@@ -2,13 +2,13 @@
   "schema_version": 1,
   "ticker": "ITRI",
   "status": "verified",
-  "generated_at": "2026-10-30T07:38:06+00:00",
+  "generated_at": "2026-11-18T13:30:49+00:00",
   "report": {
     "path": "analysis/ITRI_AlphaRadar.md",
-    "sha256": "1709c6378836504a4c287f622fc8f9ce59491b9101618053f386488de7a28fd4",
+    "sha256": "77ded0f02ca419dc0b01f146beee0381b21ea6ea49cf513dd2db6fe491cc62db",
     "grade": "report",
     "assertions": {
-      "price": 85.58,
+      "price": 93.95,
       "ttm_revenue": 2321000000.0,
       "ttm_fcf": 367500000.0,
       "net_debt_ebitda": 1.99
@@ -47,8 +47,8 @@
     "shares": 43846000,
     "shares_date": "2026-09-30",
     "shares_basis": "outstanding",
-    "price": 85.58,
-    "market_cap": 3752340680.0,
+    "price": 93.95,
+    "market_cap": 4119331700.0,
     "tax_rate": 0.1480405902606389,
     "nopat": 270744180.82107157,
     "invested_capital": 2468425000.0,

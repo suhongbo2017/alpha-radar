@@ -5,7 +5,7 @@
 > 但本项目的取数管道（SEC）取不到 → **本档案的 TTM 永久落后实际一个季度以上**。
 > 已登记为 **D-86**。要做真正的季度更新，需要接入台湾 MOPS 或公司 IR 月营收数据。
 > **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py ASX --require-cross` → ❌ **0 错误**
-> **Current Price**：$46.43　｜　**市值**：206.48B
+> **Current Price**：$32.81　｜　**市值**：—（ADR 口径不可靠，见下方警告）
 
 > 🔴 **ADR 估值倍数不可靠**：这是外国私人发行人的 ADR，`EntityCommonStockSharesOutstanding` 是**普通股**股数，而价格是 **ADS** 价格，两者比例不为 1:1。实测：由二者相乘得到的市值与 P/E 明显不合理。**本档案不使用其市值与估值倍数**，仅使用已校验的财务报表数据。
 > ⚠️ **Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。**

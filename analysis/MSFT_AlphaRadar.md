@@ -3,7 +3,7 @@
 > Skill：`alpha-radar` v1.2　｜　报告：`analysis/NOW_MSFT_CRM_BottomUp_Research.md` §5.2
 > **Analysis Date**：2026-10-12　｜　**数据更新**：2026-11-04（FY27 Q1 财报后）
 > **Data Cutoff**：XBRL 2026-09-30（FY27 Q1 10-Q）＋行情 2026-11-04
-> **Current Price**：**$531.163**（盘后，NasdaqGS 常规收盘 $520.99，1 年分位 **90**）
+> **Current Price**：**$506.00**（盘后，NasdaqGS 常规收盘 $506.24，1 年分位 **75**）
 > **数据校验**：`verify_data.py MSFT --require-cross` → ✅ 22 / ⚠️ 3 / ❌ **0**
 >
 > ```bash

@@ -1,7 +1,7 @@
 # SKHY（SK hynix（韩国，ADR））— Alpha Radar
 
 > **Analysis Date**：2026-10-12　｜　**数据校验**：`verify_data.py SKHY --require-cross` → ❌ **0 错误**
-> **Current Price**：—　｜　**市值**：—
+> **Current Price**：$125.97　｜　**市值**：—（无 XBRL 股数）
 
 > ⚠️ **Bull/Base/Bear 由 `alpha_scenario.py` 的规则生成，不是行业研究结论。**
 > 规则、参数与已知局限见 §6 与附录。**赔率因此是低置信度的。**
